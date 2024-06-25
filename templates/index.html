@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEMO</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Titillium+Web&display=swap" rel="stylesheet">
+
+    <!-- Get font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+    <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+    <div class="main">
+        <div class="container">
+
+            <!-- Section Title -->
+            <div class="sections">
+                <div class="section_header">
+                    <h2>goAls</h2>
+                </div>
+            </div>
+
+            <div class="sections">
+                <div class="goal_container">
+
+                    
+
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class = "main">
+    
+        <div class="container">
+
+            <!-- Section Title -->
+            <div class="sections">
+                <div class="section_header">
+                    <h2>deMo v0.1</h2>
+                </div>
+            </div>
+
+            <!-- Animation sections -->
+            <div class="sections">
+                <div class="animated_bar">
+
+                    <!-- visualize button -->
+                    <button id="animated_button" class="animated_button">
+                        <i class="fas fa-minus rotate"></i>
+                    </button>
+
+                    <!-- Direction Progress Bar -->
+                    <div class="progress_bar">
+                        <div class="progress">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="sections">
+                <div class="response_window">
+                    <span id="response_text"> This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph. This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph.This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph.This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph.This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph. This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph.This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph.This is example response text. The content example text is going to be here. Some more text to make it look like a paragraph.</span>
+                </div>
+            </div>
+
+            <div class="sections" >
+                <div class="inputs">
+
+                    <form enctype="multipart/form-data" class="input_buttons" id="upload_form">
+                        <label for="file-upload">
+                            <i class="fas fa-chevron-up" style="cursor: pointer;"></i>
+                            <input type="file" id="file-upload" name="file" style="display: none;">
+                        </label>
+                    </form>
+
+                    <span id = "voice_text"> Text Goes here </span>
+        
+                    <!-- Make microphone button -->
+                    <button id="microphone" class="input_buttons">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                </div>
+                
+            </div>
+        </div>
+
+    </div>
+
+    <div class="main">
+
+    </div>
+
+    <!-- Import jquery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+
+
+    <script>
+        // Upload pdf file
+
+        $("#file-upload").change(function () {
+            var file_data = $('#file-upload').prop('files')[0];
+            var form_data = new FormData();
+            form_data.append('file', file_data);
+
+            $(".rotate").toggleClass("down");
+
+            $.ajax({
+                url: 'http://localhost:8000/upload',
+                dataType: 'text',
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: form_data,
+                type: 'post',
+                success: function (response) {
+                    $(".rotate").toggleClass("down");
+                },
+                error: function (response) {
+                    $(".rotate").toggleClass("down");
+
+                    console.log(response);
+                }
+            });
+        });
+
+    </script>
+
+
+    <script>
+
+        var total_prompt = '';
+
+        if (annyang) {
+            annyang.start({ autoRestart: true, continuous: true, paused: true });
+            // Start listening.
+            annyang.addCallback('result', function (phrases) {
+                total_prompt += phrases[0] + ' ';
+                console.log('I think the user said: ', phrases);
+                $("#voice_text").text(phrases[0]);
+            });
+
+        } else {
+            console.log('Annyang not available');
+        }
+
+        var currently_speaking = false;
+        $("#microphone").click(function () {
+            if (currently_speaking) {
+                annyang.pause();
+                console.log(total_prompt);
+                
+                $(".rotate").toggleClass("down");
+
+                // Send the total prompt to the server
+                $.ajax({
+                    url: 'http://localhost:8000/speech',
+                    type: 'post',
+                    data: { 'prompt': total_prompt },
+                    success: function (response) {
+                        $(".rotate").toggleClass("down");
+
+                        $("#response_text").text(response.response);
+                        console.log(response);
+                    },
+                    error: function (response) {
+                        $(".rotate").toggleClass("down");
+                        
+                        $("#response_text").text("error in response");
+                        console.log(response);
+                    }
+                });
+                
+                $("#voice_text").text('');
+                total_prompt = '';
+                console.log('Stopped Listening...');
+
+                currently_speaking = false;
+                $(this).removeClass("input_active");
+            } 
+            else {
+                annyang.resume();
+                console.log('Listening...');
+                
+                currently_speaking = true;
+                $(this).addClass("input_active");
+            }
+        });
+
+    </script>
+
+</body>
+</html>

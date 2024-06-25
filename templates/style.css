@@ -1,0 +1,226 @@
+body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+    background-color: #000;
+
+    font-family: "titillium web", sans-serif;
+    color: #fff;
+}
+
+.main {
+    width : 400px !important;
+    height : 90% !important;
+    background-color: #000;
+
+    margin-left: 30px;
+    margin-right: 30px;
+    
+    border-radius: 10px;
+    border: 2px solid #fff;
+}
+
+.main h1, h2 {
+    font-family: "Major Mono Display", monospace;
+    font-size: 1.2em;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px;
+}
+
+.sections {
+    width: 80%;
+
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.section_header h2 {
+    margin: 0px;
+}
+
+
+/* ============================== */
+/* Chatbot Styles */
+/* ============================== */
+
+.animated_bar{
+    width: 100%;
+    height: 80%;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.animated_button {
+    width: 50px;
+    height: 50px;
+    border-radius: 80px;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.animated_button i {
+    font-size: 2em;
+}
+
+.progress_bar {
+    width: 70%;
+    height: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+}
+
+.response_window{
+    height: 480px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    border-radius: 10px;
+    border: 2px solid #fff;
+
+
+    overflow: scroll;
+
+    /* Hide the scroll */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.display_window::-webkit-scrollbar {
+    display: none;
+}
+
+.response_window span {
+    padding: 20px;
+}
+
+.inputs {
+    width: 100% !important;
+    height: 100% !important;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.input_buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    
+    font-size: 2em;
+}
+
+#voice_text {
+    width: 60%; 
+    height: 100%; 
+    border-radius: 10px; 
+    padding: 20px; 
+
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+
+.input_active {
+    box-shadow: 0 0 10px #fff;
+}
+
+/* ============================== */
+/* Goal Styles */
+/* ============================== */
+
+.goal_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    border-radius: 10px;
+    border: 2px solid #fff;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================== */
+/* Chatbot Styles */
+/* ============================== */
+
+/* Animations */
+
+.rotate {
+    -moz-transition: all .7s linear;
+    -webkit-transition: all .7s linear;
+    transition: all .7s linear;
+}
+
+.rotate.down {
+    animation: rotate-infinite .7s linear infinite;
+}
+
+@keyframes rotate-infinite {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

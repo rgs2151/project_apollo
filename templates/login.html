@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Apollo</title>
+
+    <!-- Get font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+
+    <style>
+        body {
+
+            font-family: "monospace", sans-serif;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+
+            background-color: #000;
+        }
+
+        .main {
+            width : 400px !important;
+            height : 90% !important;
+            background-color: #fff;
+            
+            border-radius: 10px;
+            border: 2px solid #000;
+        }
+
+        .login {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            height: 60%;
+        }
+
+        .sections div{
+            margin-top: 10px;
+        }
+
+    </style>
+
+</head>
+<body>
+    <div class = "main">
+    
+        <div class = "login">
+
+            <!-- login with ajax -->
+            <div class = "sections">
+
+                <h1>Login</h1>
+
+                <div class = "inputs">
+                    <input type = "text" id = "username" placeholder = "Username">
+                </div>
+                <div class = "inputs">
+                    <input type = "password" id = "password" placeholder = "Password">
+                </div>
+                <div class = "inputs">
+                    <button id = "login">Login</button>
+                </div>
+                <span id = "error"></span>
+                <br>
+                <span>Don't have an account? <a href = "http://localhost:5000/register">Register</a></span>
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <!-- Import jquery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $("#login").click(function() {
+                var username = $("#username").val();
+                var password = $("#password").val();
+
+                $.ajax({
+                    url: "http://localhost:8000/auth",
+                    type: "POST",
+                    data: {
+                        username: username,
+                        password: password
+                    },
+                    success: function(response) {
+                        // if wrong, let them know and try again
+                        // if username == "admin" and password == "admin":
+                        //     return {"status": "success"}
+                        // else:
+                        //     return {"status": "error"}
+
+                        if (response.status == "success") {
+                            window.location.href = "http://localhost:8000/app";
+                        } else {
+                            $("#error").html("Invalid username or password");
+                        }
+                    }
+                });
+            });
+        });
+
+    </script>
+
+</body>
+</html>
