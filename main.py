@@ -1,14 +1,49 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, g
 from flask_cors import CORS
 from health_gpt import FileHistoryWithFAISS, DocumentKeyValuePairExtraction
-
+from registry import APIRegistry, APIRegistryBaseParameter, API_MAPS
+import requests
 # client = OpenAI(api_key=api_key)
+
+MODE = "DEV"
+
+API_REGISTER = APIRegistry(API_MAPS, base_params = APIRegistryBaseParameter(MODE).base_params)
+
+
 app = Flask(__name__)
 CORS(app)
 
 import conversation as conv
 
-FH = FileHistoryWithFAISS(10, history_location="./history")
+
+
+@app.before_request
+def authenticate():
+    token = request.headers.get('Authorization', None)
+    user_details = None
+    if token:
+        headers = {"Authorization": f"Bearer {token}"}
+        api = API_REGISTER.get_api("user-details")
+        response = requests.get(api, headers=headers)
+        # print(response.content)
+        if response.status_code == 200 and not "error" in response.json():
+            user_details = response.json()
+
+    g.user_details = user_details
+
+
+@app.route("/test", methods=["POST"])
+def test():
+
+    if not g.user_details: return {"error": "unauthorized"}
+    user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
+    if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
+
+    FH = FileHistoryWithFAISS(user_id, "./history")
+    retrieved = FH.retrieve()
+    
+
+    return {"status": "success"}
 
 
 # Route for the login page
@@ -24,7 +59,13 @@ def application():
 # Route to save the uploaded file
 @app.route("/upload", methods=["POST"])
 def upload():
+
     if request.method == "POST":
+
+        if not g.user_details: return {"error": "unauthorized"}
+        user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
+        if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
+
         # Get the file from the request
         file = request.files["file"]
         
@@ -35,6 +76,7 @@ def upload():
 
         responses, stash = DKVPE.extract()
         
+        FH = FileHistoryWithFAISS(user_id, history_location="./history")
         FH.update(DKVPE.get_results(stash))
 
         # Return success
@@ -43,6 +85,10 @@ def upload():
 @app.route("/speech", methods=["POST"])
 def speech():
     if request.method == "POST":
+
+        if not g.user_details: return {"error": "unauthorized"}
+        user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
+        if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
         
         # Get the file from the request
         # new_prompt = request.json["prompt"]
@@ -50,6 +96,7 @@ def speech():
         
         # handle new prompt in the conversation
 
+        FH = FileHistoryWithFAISS(user_id, history_location="./history")
         to_user, flag_for_front = conv.ingest_user_input(new_prompt, FH)
 
         return {"status": "success", "response": to_user, "flag": flag_for_front}
