@@ -53,8 +53,8 @@ class FileHistory(History):
         
         
         location = self.__initialize_history_if_necessary(history)
-        self.__history_file = location
-        self.H = pd.read_csv(str(self.__history_file))
+        self._history_file = location
+        self.H = pd.read_csv(str(self._history_file))
 
 
     def __initialize_history_if_necessary(self, location: Path):
@@ -82,7 +82,7 @@ class FileHistory(History):
         new_history = new_history.drop_duplicates("parameter_label").reset_index(drop=True)
 
         self.H = new_history
-        new_history.to_csv(self.__history_file, index=False)
+        new_history.to_csv(self._history_file, index=False)
 
         return new_history, indexes_dropped
 
@@ -104,10 +104,18 @@ class FileHistoryWithFAISS(FileHistory):
         return self.encode(history['index_context'].values.tolist())
 
     def __set_up_faiss_store(self):
-        embeddings = self.__encode_history(self.retrieve())
-        self.store_index = faiss.IndexFlatL2(embeddings.shape[1])
-        print("adding", {embeddings.shape})
-        self.store_index.add(embeddings)
+
+        self.store_index_file = self._history_file.parent / "faiss.index"
+
+        if not self.store_index_file.exists():
+            embeddings = self.__encode_history(self.retrieve())
+            self.store_index = faiss.IndexFlatL2(embeddings.shape[1])
+            self.store_index.add(embeddings)
+            faiss.write_index(self.store_index, str(self.store_index_file))
+
+        else:
+            self.store_index = faiss.read_index(str(self.store_index_file))
+
 
     def update(self, updated_history):
         _, deleted_indexes = super().update(updated_history)
@@ -117,6 +125,8 @@ class FileHistoryWithFAISS(FileHistory):
             embeddings = self.__encode_history(self.retrieve())
             self.store_index.add(embeddings)
             self.store_index.remove_ids(np.array(deleted_indexes))
+            faiss.write_index(str(self.store_index_file))
+
 
     def get(self, context, k=1):
         
@@ -127,6 +137,7 @@ class FileHistoryWithFAISS(FileHistory):
             return self.H.iloc[indexes, :]
             
         return pd.DataFrame(columns=["parameter_label", "parameter_type", "parameter_value"])
+
 
 
 class DocumentKeyValuePairExtraction:
