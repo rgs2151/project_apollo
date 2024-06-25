@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Titillium+Web&display=swap" rel="stylesheet">
 
     <!-- Get font awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <link rel="stylesheet" href="./style.css">
 
@@ -27,12 +27,89 @@
             </div>
 
             <div class="sections">
+
                 <div class="goal_container">
 
+                    <!-- Different Goals from database -->
+
+                    <div class="goal">
+
+                        <div class="goal_icon">
+                            <i class="fas fa-child"></i>
+                        </div>
+
+                        <div class="goal_details">
+
+                            <div class="goal_title">
+                                <span>Reach 20.5 BMI</span>
+                            </div>
+
+                            <div class="goal_progress_bar">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="goal">
+
+                        <div class="goal_icon">
+                            <i class="fas fa-person-running"></i>
+                        </div>
+
+                        <div class="goal_details">
+
+                            <div class="goal_title">
+                                <span>Run daily 20 miles</span>
+                            </div>
+
+                            <div class="goal_progress_bar">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="goal">
+
+                        <div class="goal_icon">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+
+                        <div class="goal_details">
+
+                            <div class="goal_title">
+                                <span>Daily Gym</span>
+                            </div>
+
+                            <div class="goal_progress_bar">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="goal">
+
+                        <div class="goal_icon">
+                            <i class="fas fa-bowl-food"></i>
+                        </div>
+
+                        <div class="goal_details">
+
+                            <div class="goal_title">
+                                <span>Calorie limit</span>
+                            </div>
+
+                            <div class="goal_progress_bar">
+                            </div>
+
+                        </div>
+
+                    </div>
                     
-
-
                 </div>
+
             </div>
 
         </div>
@@ -61,6 +138,8 @@
 
                     <!-- Direction Progress Bar -->
                     <div class="progress_bar">
+                        <i class="fas fa-comments"></i>
+                        
                         <div class="progress">
                         </div>
                     </div>
@@ -84,9 +163,15 @@
                         </label>
                     </form>
 
-                    <span id = "voice_text"> Text Goes here </span>
-        
-                    <!-- Make microphone button -->
+                    <!-- <span id = "voice_text"> Text Goes here </span> -->
+                    <input type="text" id="voice_text" class="input_text" placeholder="Type or Speak here...">
+                    
+                    <!-- post button -->
+                    <button id="send_button" class="input_buttons">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+
+                    <!-- microphone button -->
                     <button id="microphone" class="input_buttons">
                         <i class="fas fa-microphone"></i>
                     </button>
@@ -99,14 +184,129 @@
     </div>
 
     <div class="main">
+        <div class="container">
 
+            <!-- Section Title -->
+            <div class="sections">
+                <div class="section_header">
+                    <h2>dAta</h2>
+                </div>
+            </div>
+
+            <div class="sections">
+                <div class="search_bar_container">
+                    <input type="text" class="search_bar" placeholder="Search for data">
+                    <button class="search_button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sections">
+
+                <div class="data_container">
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+                    <div class="data_holder">
+                        <div class="data_title">
+                            <span>Data Title</span>
+                        </div>
+                        <div class="data_date">
+                            <span>07/2023</span>
+                        </div>
+                        <div class="data_content">
+                            <span>Content</span>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <!-- Import jquery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
 
-
+    <!-- Upload pdf file -->
     <script>
         // Upload pdf file
 
@@ -139,17 +339,19 @@
     </script>
 
 
-    <script>
 
-        var total_prompt = '';
+    <!-- Voice Recognition -->
+    <script>
 
         if (annyang) {
             annyang.start({ autoRestart: true, continuous: true, paused: true });
             // Start listening.
             annyang.addCallback('result', function (phrases) {
+                
+                var total_prompt = $("#voice_text").val();
                 total_prompt += phrases[0] + ' ';
-                console.log('I think the user said: ', phrases);
-                $("#voice_text").text(phrases[0]);
+                console.log('I think the user said: ', phrases[0]);
+                $("#voice_text").val(total_prompt);
             });
 
         } else {
@@ -160,33 +362,8 @@
         $("#microphone").click(function () {
             if (currently_speaking) {
                 annyang.pause();
-                console.log(total_prompt);
-                
-                $(".rotate").toggleClass("down");
 
-                // Send the total prompt to the server
-                $.ajax({
-                    url: 'http://localhost:8000/speech',
-                    type: 'post',
-                    data: { 'prompt': total_prompt },
-                    success: function (response) {
-                        $(".rotate").toggleClass("down");
-
-                        $("#response_text").text(response.response);
-                        console.log(response);
-                    },
-                    error: function (response) {
-                        $(".rotate").toggleClass("down");
-                        
-                        $("#response_text").text("error in response");
-                        console.log(response);
-                    }
-                });
-                
-                $("#voice_text").text('');
-                total_prompt = '';
                 console.log('Stopped Listening...');
-
                 currently_speaking = false;
                 $(this).removeClass("input_active");
             } 
@@ -197,6 +374,38 @@
                 currently_speaking = true;
                 $(this).addClass("input_active");
             }
+        });
+
+    </script>
+
+    <!-- Send prompt to server on click of send -->
+    <script>
+
+        $("#send_button").click(function () {
+            var prompt = $("#voice_text").val();
+            console.log(prompt);
+
+            $(".rotate").toggleClass("down");
+
+            $.ajax({
+                url: 'http://localhost:8000/speech',
+                type: 'post',
+                data: { 'prompt': prompt },
+                success: function (response) {
+                    $(".rotate").toggleClass("down");
+
+                    $("#response_text").text(response.response);
+                    console.log(response);
+                },
+                error: function (response) {
+                    $(".rotate").toggleClass("down");
+
+                    $("#response_text").text("error in response");
+                    console.log(response);
+                }
+            });
+
+            $("#voice_text").val('');
         });
 
     </script>
