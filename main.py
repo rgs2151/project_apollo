@@ -3,6 +3,7 @@ from flask_cors import CORS
 from health_gpt import FileHistoryWithFAISS, DocumentKeyValuePairExtraction
 from registry import APIRegistry, APIRegistryBaseParameter, API_MAPS
 import requests
+import numpy as np
 # client = OpenAI(api_key=api_key)
 
 MODE = "DEV"
@@ -42,17 +43,13 @@ def test():
     FH = FileHistoryWithFAISS(user_id, "./history")
     retrieved = FH.retrieve()
     
+    print("user_id", g.user_details)
+    print("retrieved", retrieved)
 
     return {"status": "success"}
 
-
-# Route for the login page
-@app.route("/")
-def home():
-    return render_template("login.html")
-
 # Route for the app
-@app.route("/app")
+@app.route("/")
 def application():
     return render_template("index.html")
 
@@ -101,16 +98,18 @@ def speech():
 
         return {"status": "success", "response": to_user, "flag": flag_for_front}
 
-@app.route("/auth", methods=["POST"])
-def auth():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+@app.route("/data", methods=["GET"])
+def data():
+    # if not g.user_details: return {"error": "unauthorized"}
+    # user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
+    # if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
+    
+    # FH = FileHistoryWithFAISS(user_id, history_location="./history")
+    FH = FileHistoryWithFAISS(1, history_location="./history")
+    retrieved = FH.retrieve().replace({np.nan: None})
+    
+    return {"status": "success", "data": retrieved.to_dict("records")}
 
-        if username == "alpha" and password == "alpha":
-            return {"status": "success"}
-        else:
-            return {"status": "error"}
 
 # Set the port
 # Run the app
