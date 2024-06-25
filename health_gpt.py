@@ -35,13 +35,42 @@ class FileHistory(History):
 
     __REQ_COLUMNS = ["parameter_label", "parameter_type", "parameter_value"]
 
-    def __init__(self, history_id, history_location='.', name="history") -> None:
+    """
+    history_config = {
+        "columns": ["parameter_label", "parameter_type", "parameter_value"],
+        "indexes": ["parameter_label"]
+    }
+    """
+
+    def __init__(self, history_config, history_id, history_location='.', name="history") -> None:
         super().__init__(history_id)
         self.name = str(name)
 
+        self._check_history_config(history_config)
         self.__load_history(history_location)
 
     
+    def _check_history_config(self, history_config):
+        print("HERE!!!", history_config)
+        if history_config and isinstance(history_config, dict) and ("columns" in history_config) and ("indexes" in history_config):
+            print("HERE!!")
+            if history_config['columns'] and isinstance(history_config['columns'], list) and history_config['indexes'] and isinstance(history_config['indexes'], list):
+                print("HERE!")
+                if all(col in history_config['columns'] for col in history_config['indexes']):
+                    print("HERE")
+                    self.history_config = history_config
+                    return
+        
+        raise ValueError("unable to configure history_config")
+
+
+    def validate_history(self, H):
+        if isinstance(H, pd.DataFrame):
+            if not all(col in self.history_config['columns'] for col in H.columns):
+                return False
+
+            return True
+
     def __load_history(self, history_location):
 
         if not history_location: history_location = '.'
@@ -51,17 +80,19 @@ class FileHistory(History):
         if not (history.exists()):
             raise ValueError("invalid history location ! does not exist")
         
-        
         location = self.__initialize_history_if_necessary(history)
         self._history_file = location
         self.H = pd.read_csv(str(self._history_file))
+        if not self.validate_history(self.H):
+            raise ValueError("loaded history incompatible with the history_config")
+        for col in self.H.columns: self.H[col] = self.H[col].astype(str)
 
 
     def __initialize_history_if_necessary(self, location: Path):
         location /= f"{self.history_id}"
         if not location.exists(): location.mkdir()
         location /= f"{self.name}.csv"
-        if not location.exists(): pd.DataFrame(columns=self.__REQ_COLUMNS).to_csv(str(location), index=False)
+        if not location.exists(): pd.DataFrame(columns=self.history_config['columns']).to_csv(str(location), index=False)
         return location
 
 
@@ -70,16 +101,15 @@ class FileHistory(History):
 
     def update(self, updated_history):
         if not isinstance(updated_history, pd.DataFrame): raise TypeError("required type dataframe")
-        if not all(col in updated_history.columns for col in self.__REQ_COLUMNS):
-            raise Exception(f"required columns {'\n'.join(self.__REQ_COLUMNS)}")
+        if not self.validate_history(updated_history): raise ValueError("update history is invalid")
         
-        new_history = pd.concat([self.H, updated_history[self.__REQ_COLUMNS]])
+        new_history = pd.concat([self.H, updated_history])
         
         for col in new_history.columns:
             new_history[col] = new_history[col].str.lower().str.strip()
         
-        indexes_dropped = new_history.duplicated("parameter_label").index.tolist()
-        new_history = new_history.drop_duplicates("parameter_label").reset_index(drop=True)
+        indexes_dropped = new_history.duplicated(self.history_config["indexes"]).index.tolist()
+        new_history = new_history.drop_duplicates(self.history_config["indexes"]).reset_index(drop=True)
 
         self.H = new_history
         new_history.to_csv(self._history_file, index=False)
@@ -89,8 +119,8 @@ class FileHistory(History):
 
 class FileHistoryWithFAISS(FileHistory):
 
-    def __init__(self, history_id, history_location: Path = None, name="history"):
-        super().__init__(history_id, history_location, name)
+    def __init__(self, history_config, history_id, history_location: Path = None, name="history"):
+        super().__init__(history_config, history_id, history_location, name)
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
         self.store_index = None
@@ -100,12 +130,14 @@ class FileHistoryWithFAISS(FileHistory):
         return self.embedding_model.encode(texts)
 
     def __encode_history(self, history):
-        history['index_context'] = "parameter: " + history["parameter_label"] + " | parameter type: " + history["parameter_type"] + ' | parameter value: ' + history["parameter_value"]
+        tdf = history[self.history_config['indexes']].copy()
+        tdf = tdf.apply(lambda x: f"{x.name} :" + x)
+        history['index_context'] = tdf.apply(lambda x: " | ".join(x.tolist()), axis=1)
         return self.encode(history['index_context'].values.tolist())
 
     def __set_up_faiss_store(self):
 
-        self.store_index_file = self._history_file.parent / "faiss.index"
+        self.store_index_file = self._history_file.parent / f"{self._history_file.name}.index"
 
         if not self.store_index_file.exists():
             embeddings = self.__encode_history(self.retrieve())
@@ -136,8 +168,7 @@ class FileHistoryWithFAISS(FileHistory):
             indexes = [i for i in result[1][0] if i >= 0]
             return self.H.iloc[indexes, :]
             
-        return pd.DataFrame(columns=["parameter_label", "parameter_type", "parameter_value"])
-
+        return pd.DataFrame(columns=self.history_config['columns'])
 
 
 class DocumentKeyValuePairExtraction:
@@ -158,6 +189,7 @@ class DocumentKeyValuePairExtraction:
             """,
             
             "parameters": {
+
                 "type": "object",
             
                 "properties": {

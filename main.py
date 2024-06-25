@@ -40,7 +40,10 @@ def test():
     user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
     if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
 
-    FH = FileHistoryWithFAISS(user_id, "./history")
+    FH = FileHistoryWithFAISS({
+        "columns": ["parameter_label", "parameter_type", "parameter_value"],
+        "indexes": ["parameter_label"]
+    }, user_id, "./history", name="history")
     retrieved = FH.retrieve()
     
     print("user_id", g.user_details)
@@ -73,7 +76,10 @@ def upload():
 
         responses, stash = DKVPE.extract()
         
-        FH = FileHistoryWithFAISS(user_id, history_location="./history")
+        FH = FileHistoryWithFAISS({
+            "columns": ["parameter_label", "parameter_type", "parameter_value"],
+            "indexes": ["parameter_label"]
+        }, user_id, history_location="./history", name="history")
         FH.update(DKVPE.get_results(stash))
 
         # Return success
@@ -93,7 +99,10 @@ def speech():
         
         # handle new prompt in the conversation
 
-        FH = FileHistoryWithFAISS(user_id, history_location="./history")
+        FH = FileHistoryWithFAISS({
+            "columns": ["parameter_label", "parameter_type", "parameter_value"],
+            "indexes": ["parameter_label"]
+        }, user_id, history_location="./history")
         to_user, flag_for_front = conv.ingest_user_input(new_prompt, FH)
 
         return {"status": "success", "response": to_user, "flag": flag_for_front}
@@ -109,6 +118,31 @@ def data():
     retrieved = FH.retrieve().replace({np.nan: None})
     
     return {"status": "success", "data": retrieved.to_dict("records")}
+
+@app.route("/goal", methods=["GET"])
+def goal():
+
+    if request.method == "GET":
+        
+        if not g.user_details: return {"error": "unauthorized"}
+        user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
+        if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
+
+        FH = FileHistoryWithFAISS({
+            "columns": ["goal", "reminder", "progress"],
+            "indexes": ["goal"]
+        }, user_id, history_location="./history", name="goal")
+
+        data = FH.retrieve().replace({np.nan: None}).to_dict("records")
+
+        return {"data": data}
+
+
+@app.route("/auth", methods=["POST"])
+def auth():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
 
 
 # Set the port
