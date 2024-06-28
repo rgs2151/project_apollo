@@ -24,6 +24,11 @@ input {
     color: #000;
 }
 
+h1, h2 {
+    font-family: "Major Mono Display", monospace;
+    font-size: 1.2em;
+}
+
 .nav {
     display: flex;
     flex-direction: row;
@@ -84,29 +89,79 @@ input {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 
     overflow: hidden;
-
-    background-color: aliceblue;
 }
 
-.main {
-    width : 400px !important;
-    height : 95% !important;
-    background-color: #000;
+.left {
+    width: 30vw;
+    height: 100%;
+}
 
-    margin-left: 50px;
-    margin-right: 50px;
-    
+.right {
+    width: 70vw;
+    height: 100%;
+}
+
+.dashboard_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 100%;
+    height: 95%;
+
     border-radius: 10px;
     border: 2px solid #fff;
 }
 
-.main h1, h2 {
-    font-family: "Major Mono Display", monospace;
-    font-size: 1.2em;
+.dashboard_section {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
 }
+
+.dashboard_header {
+    padding-top: 50px;
+    padding-left: 50px;
+    font-size: 1.5em;
+}
+
+.dashboard_subdivider {
+    width: 80%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    width : 100% !important;
+    background-color: #000;
+
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+/* main and conversation class together */
+.conversation_main {
+    height: 95%;
+
+    border-radius: 10px;
+    border: 2px solid #fff;
+}
+
+.goal_main {
+    height: 50%;
+}
+
+.data_main {
+    height: 90%;
+
+    border-left: 2px solid #fff;
+}
+
 
 .container {
     display: flex;
@@ -119,7 +174,7 @@ input {
 }
 
 .sections {
-    width: 80%;
+    width: 100%;
 
     padding: 10px;
 
@@ -195,7 +250,7 @@ input {
     justify-content: space-between;
 
     border-radius: 10px;
-    border: 2px solid #fff;
+    border: 1px solid #fff;
 
     overflow: scroll;
 
@@ -265,10 +320,12 @@ input {
     justify-content: flex-start;
 
     width: 100%;
-    height: 600px;
+    height: 200px;
 
     /* border-radius: 10px;
     border: 2px solid #fff; */
+
+    overflow: scroll;
 
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
@@ -382,7 +439,7 @@ input {
     flex-wrap: wrap;
 
     width: 100%;
-    height: 500px;
+    height: 450px;
 
     overflow: scroll;
 
@@ -466,6 +523,32 @@ input {
     font-size: 1em;
     padding: 10px;
 }
+
+/* ============================== */
+/* Task style */
+/* ============================== */
+
+.task_container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    width: 100%;
+    height: 200px;
+
+    overflow: scroll;
+
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.task_container::-webkit-scrollbar {
+    display: none;
+}
+
+
+
 
 /* ============================== */
 /* Animations */
