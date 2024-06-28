@@ -109,13 +109,17 @@ def speech():
 
 @app.route("/data", methods=["GET"])
 def data():
-    # if not g.user_details: return {"error": "unauthorized"}
-    # user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
-    # if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
+    if not g.user_details: return {"error": "unauthorized"}
+    user_id = g.user_details.get("user_details", {}).get("user", {}).get('id', None)
+    if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
     
-    # FH = FileHistoryWithFAISS(user_id, history_location="./history")
-    FH = FileHistoryWithFAISS(1, history_location="./history")
+    FH = FileHistoryWithFAISS({
+        "columns": ["parameter_label", "parameter_type", "parameter_value"],
+        "indexes": ["parameter_label"]
+    }, user_id, history_location="./history")
     retrieved = FH.retrieve().replace({np.nan: None})
+
+    print("token is valid")
     
     return {"status": "success", "data": retrieved.to_dict("records")}
 
@@ -136,13 +140,6 @@ def goal():
         data = FH.retrieve().replace({np.nan: None}).to_dict("records")
 
         return {"data": data}
-
-
-@app.route("/auth", methods=["POST"])
-def auth():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
 
 
 # Set the port

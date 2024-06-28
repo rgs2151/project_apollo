@@ -137,7 +137,7 @@ class FileHistoryWithFAISS(FileHistory):
 
     def __set_up_faiss_store(self):
 
-        self.store_index_file = self._history_file.parent / f"{self._history_file.name}.index"
+        self.store_index_file = self._history_file.parent / f"{self._history_file.stem}.index"
 
         if not self.store_index_file.exists():
             embeddings = self.__encode_history(self.retrieve())
@@ -148,17 +148,17 @@ class FileHistoryWithFAISS(FileHistory):
         else:
             self.store_index = faiss.read_index(str(self.store_index_file))
 
-
     def update(self, updated_history):
-        _, deleted_indexes = super().update(updated_history)
-        
-        if not self.store_index: self.__set_up_faiss_store()
-        else:
+            _, deleted_indexes = super().update(updated_history)
+            
+            if not self.store_index: 
+                self.__set_up_faiss_store()
+                return
+                
+            self.store_index.remove_ids(np.array(deleted_indexes))
             embeddings = self.__encode_history(self.retrieve())
             self.store_index.add(embeddings)
-            self.store_index.remove_ids(np.array(deleted_indexes))
-            faiss.write_index(str(self.store_index_file))
-
+            faiss.write_index(self.store_index, str(self.store_index_file))
 
     def get(self, context, k=1):
         
@@ -166,7 +166,10 @@ class FileHistoryWithFAISS(FileHistory):
             embeddings = self.encode([context])
             result = self.store_index.search(embeddings, k=k)
             indexes = [i for i in result[1][0] if i >= 0]
-            return self.H.iloc[indexes, :]
+            print("indexes", indexes)
+            print(self.H)
+            if indexes:
+                return self.H.iloc[indexes, :]
             
         return pd.DataFrame(columns=self.history_config['columns'])
 
