@@ -25,7 +25,7 @@ class History(APIView):
     @request_schema_validation(schema={
         "type": {"type": "string", "required": True, "empty": False, "allowed": ["history"]},
         "k": {"type": "integer", "required": False, "nullable": True, "min": 1, "default": None},
-        "context": {"type": "string", "required": True, "empty": False, "nullable": True, "default": None},
+        "context": {"type": "string", "required": False, "empty": False, "nullable": True, "default": None},
     })
     def post(self, request: Request):
         
@@ -74,7 +74,4 @@ class Converse(APIView):
         
         Message(USER_PROMPT_DEFAULT,)
         
-
-
-
 
