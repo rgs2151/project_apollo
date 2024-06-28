@@ -12,16 +12,16 @@ class Message:
 
         self.context = context
         self.prompt = str(prompt)
-        self.prompt.format(context)
+        self.prompt = self.prompt.format(**context)
 
         self.system_instructions = system_instructions
         self.history = history
 
-        if not isinstance(tools, Tools):
+        if tools and not isinstance(tools, Tools):
             raise TypeError("tools should be of instance Tools")
         
         self.tools =  tools
-        self.response = self.call_gpt()
+        self.response, self.tool_response = self.call_gpt()
         
 
     def make_message(self):
@@ -30,9 +30,11 @@ class Message:
         user_prompt = User(self.prompt)
 
         if self.history:
-            history_messages = Messages.from_text()
+            history_messages = Messages.from_text(self.history)
+            prompts = [system] + history_messages.prompts + [user_prompt]
 
-        prompts = [system] + history_messages.prompts + [user_prompt]
+        else: prompts = [system, user_prompt]
+
         return Messages(prompts)
     
 
@@ -42,20 +44,22 @@ class Message:
 
         client = OpenAI(api_key=GPT_KEY)
      
-        response = None
-        if self.self.tools:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[ {"role": "user", "content":"Understand and anlayze this prompt. Your response should strictly not be more than 5 words: "+prompt}],
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=message.get_entries()
+        )
+
+
+        tool_response = None
+        if self.tools:
+            tool_response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=message.get_entries(),
                 tools = self.tools.get_tools(),
                 tool_choice="auto" # auto, required, disabled
             )
-        
-        else:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=message.get_entries(),
-            )
+
+        return response, tool_response
 
 
     def get_history(self, apetite=30):
@@ -73,9 +77,9 @@ class Message:
         reply = self.response.choices[0].message.content
         tool_calls = {}
         
-        if self.tools:
+        if self.tool_response:
             tool_calls = {}
-            tool_calls = self.tools.get_results(self.response, tool_calls)
+            tool_calls = self.tools.get_results(self.tool_response, tool_calls)
 
         return reply, tool_calls
     
