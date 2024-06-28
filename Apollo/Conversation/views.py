@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from Apollo.settings import MONGO_INSTANCE
 
 from UserManager.authentication import TokenAuthentication
-from history.mongoengine import MongoHistoryWithFAISS
+from store.mongoengine import MongoHistoryWithFAISS
 
 from turbochat.gptprompts import *
 
