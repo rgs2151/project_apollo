@@ -897,10 +897,10 @@ h1, h2 {
             $(".rotate").toggleClass("down");
 
             $.ajax({
-                url: 'http://localhost:8000/speech',
+                url: window.location.origin + '/conversation/speech',
                 headers: {"Authorization": localStorage.getItem("token")},
                 type: 'post',
-                data: { 'prompt': prompt },
+                data: JSON.stringify({ 'prompt': prompt, }),
                 success: function (response) {
                     $(".rotate").toggleClass("down");
 
@@ -921,7 +921,6 @@ h1, h2 {
     </script>
 
     <script>
-
         function set_data_holder(data) {
             $(".data_container").empty();
 
@@ -937,9 +936,10 @@ h1, h2 {
             $(".rotate").toggleClass("down");
 
             $.ajax({
-                url: 'http://localhost:8000/data',
+                url: window.location.origin + '/conversation/history',
                 headers: {"Authorization": localStorage.getItem("token")},
-                type: 'get',
+                type: 'post',
+                data: JSON.stringify({ 'type': 'data'}),
                 success: function (response) {
                     $(".rotate").toggleClass("down");
 
@@ -971,14 +971,14 @@ h1, h2 {
             }
         }
 
-        // On document load
-        $(document).ready(function () {
+        $("#search_button").click(function () {
             // Send ajax get request to get goals
 
             $.ajax({
-                url: 'http://localhost:8000/goal',
+                url: window.location.origin + '/conversation/history',
                 headers: {"Authorization": localStorage.getItem("token")},
-                type: 'get',
+                type: 'post',
+                data: JSON.stringify({ 'type': 'goal'}),
                 success: function (response) {
                     console.log(response.data);
                     make_goal_item(response.data);
