@@ -1,0 +1,11 @@
+service_name,service_provider,i_service_description,service_cost,service_duration
+Annual Physical Exam,Health First Clinic,"Comprehensive health check-up including blood tests, vital signs, and overall wellness assessment.",$200,1 hour
+Vaccination Services,ImmunoCare Center,"Provides vaccinations for various diseases including flu, HPV, and hepatitis.",$50 per shot,30 minutes
+Physical Therapy,MoveWell Rehab Center,Tailored physical therapy sessions for injury recovery and mobility improvement.,$100 per session,45 minutes
+Dental Cleaning,SmileBright Dental,Professional teeth cleaning and oral health check-up.,$120,1 hour
+Vision Screening,ClearView Optics,Comprehensive eye exam and vision test.,$80,45 minutes
+Nutritional Counseling,NutriLife Wellness,Personalized dietary and nutrition advice to promote healthy eating habits.,$90,1 hour
+Mental Health Counseling,MindEase Therapy,One-on-one counseling sessions to support mental health and well-being.,$150,1 hour
+Prenatal Care,MaternalCare Center,Comprehensive prenatal check-ups and support for expecting mothers.,$250 per visit,1.5 hours
+Diabetes Management,SugarControl Clinic,Specialized care and guidance for managing diabetes effectively.,$200,1 hour
+Smoking Cessation Program,QuitNow Health Services,Structured program to help individuals quit smoking with support and resources.,$300,8 weeks (1 hour per week)

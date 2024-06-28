@@ -1,0 +1,11 @@
+dr_name,dr_specialist,i_dr_description,dr_days,dr_time_start,dr_time_end
+Dr. John Smith,Cardiologist,Expert in heart diseases and treatments with 20 years of experience.,"Monday, Wednesday, Friday",9:00 AM,3:00 PM
+Dr. Emily Clark,Pediatrician,"Specializes in children's health and wellness, known for her compassionate care.","Tuesday, Thursday",10:00 AM,4:00 PM
+Dr. Raj Patel,Neurologist,Renowned for his research in neurological disorders and patient-centric approach.,"Monday, Thursday",8:00 AM,2:00 PM
+Dr. Lisa Wong,Dermatologist,Skilled in treating skin conditions and cosmetic dermatology.,"Wednesday, Friday",1:00 PM,7:00 PM
+Dr. Mark Brown,Orthopedic Surgeon,"Specializes in bone and joint surgeries, with a focus on sports injuries.","Monday, Wednesday",7:00 AM,1:00 PM
+Dr. Sarah Adams,Obstetrician/Gynecologist,Dedicated to women's reproductive health and prenatal care.,"Tuesday, Friday",10:00 AM,5:00 PM
+Dr. Ahmed Khan,Gastroenterologist,Expert in digestive system disorders with a holistic treatment approach.,"Monday, Thursday",9:00 AM,3:00 PM
+Dr. Priya Mehta,Endocrinologist,Specializes in hormonal disorders and diabetes management.,"Tuesday, Thursday",11:00 AM,5:00 PM
+Dr. David Lee,Psychiatrist,Focuses on mental health issues with a blend of medication and therapy.,"Monday, Wednesday, Friday",12:00 PM,6:00 PM
+Dr. Ana Silva,Oncologist,Renowned for her compassionate cancer care and innovative treatment plans.,"Tuesday, Thursday",8:00 AM,2:00 PM

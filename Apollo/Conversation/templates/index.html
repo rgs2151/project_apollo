@@ -452,7 +452,7 @@ h1, h2 {
     display: flex;
     flex-direction: row;
     align-content: flex-start;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
 
     width: 100%;
@@ -804,10 +804,10 @@ h1, h2 {
 
     <!-- Set access token -->
     <script>
-        var url_string = window.location.href;
-        var url = new URL(url_string);
-        var access_token = url.searchParams.get("token");
-        localStorage.setItem("token", access_token);
+        // var url_string = window.location.href;
+        // var url = new URL(url_string);
+        // var access_token = url.searchParams.get("token");
+        // localStorage.setItem("token", access_token);
 
         localStorage.getItem("token")
     </script>
@@ -829,7 +829,7 @@ h1, h2 {
 
             $.ajax({
                 url: 'http://localhost:8000/upload',
-                headers: {"Authorization": localStorage.getItem("token")},
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
                 dataType: 'text',
                 cache: false,
                 contentType: false,
@@ -897,10 +897,10 @@ h1, h2 {
             $(".rotate").toggleClass("down");
 
             $.ajax({
-                url: window.location.origin + '/conversation/speech',
-                headers: {"Authorization": localStorage.getItem("token")},
+                url: window.location.origin + '/conversation/converse/',
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`, 'Content-Type': 'application/json'},
                 type: 'post',
-                data: JSON.stringify({ 'prompt': prompt, }),
+                data: JSON.stringify({ 'message': prompt, }),
                 success: function (response) {
                     $(".rotate").toggleClass("down");
 
@@ -920,12 +920,13 @@ h1, h2 {
 
     </script>
 
+    <!-- Get data from server -->
     <script>
         function set_data_holder(data) {
             $(".data_container").empty();
 
             for (var i = 0; i < data.length; i++) {
-                new_data_element = '<div class="data_holder"><div class="data_title"><span>' + data[i].parameter_label + '</span></div><div class="data_date"><span>' + data[i].parameter_type + '</span></div><div class="data_content"><span>' + data[i].parameter_value + '</span></div></div>';
+                new_data_element = '<div class="data_holder"><div class="data_title"><span>' + data[i].i_parameter_label + '</span></div><div class="data_date"><span>' + data[i].parameter_type + '</span></div><div class="data_content"><span>' + data[i].parameter_value + '</span></div></div>';
                 $(".data_container").append(new_data_element);
             }
         }
@@ -936,10 +937,10 @@ h1, h2 {
             $(".rotate").toggleClass("down");
 
             $.ajax({
-                url: window.location.origin + '/conversation/history',
-                headers: {"Authorization": localStorage.getItem("token")},
+                url: window.location.origin + '/conversation/history/',
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`, 'content-type': 'application/json'},
                 type: 'post',
-                data: JSON.stringify({ 'type': 'data'}),
+                data: JSON.stringify({ 'type': 'history'}),
                 success: function (response) {
                     $(".rotate").toggleClass("down");
 
@@ -976,7 +977,7 @@ h1, h2 {
 
             $.ajax({
                 url: window.location.origin + '/conversation/history',
-                headers: {"Authorization": localStorage.getItem("token")},
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
                 type: 'post',
                 data: JSON.stringify({ 'type': 'goal'}),
                 success: function (response) {
