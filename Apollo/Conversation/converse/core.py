@@ -7,9 +7,6 @@ class Message:
 
     def __init__(self, prompt, context={}, system_instructions=None, history=None, tools: Tools=None) -> None:
         
-        if not "message" in context:
-            raise Exception("user message is required in context")
-
         self.context = context
         self.prompt = str(prompt)
         self.prompt = self.prompt.format(**context)
@@ -56,7 +53,7 @@ class Message:
                 model="gpt-3.5-turbo",
                 messages=message.get_entries(),
                 tools = self.tools.get_tools(),
-                tool_choice="auto" # auto, required, disabled
+                tool_choice="required" # auto, required, disabled
             )
 
         return response, tool_response

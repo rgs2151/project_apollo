@@ -6,7 +6,9 @@ EXTRACT_USER_RELATED_INFO = {
     "function": {
         "name": "extract_user_health_information_entry",
         "description": """
-            from USER RESPONSE, extracts information related to user's mental/physical health, medical information, habits, everything related to the user's health. Multiple information entries can be extracted.
+            This tool will run all the time to extract smallest of the user details in the specified format.
+            from user response, extracts information related to user's mental/physical health, medical information, habits, everything related to the user's health. Multiple information entries can be extracted.
+            All sorts of entries describing user's lifestyle, medication, state, symptoms is extracted.
             Do not extract information about user goals.
         """,
         "parameters": {
@@ -22,8 +24,9 @@ EXTRACT_USER_RELATED_INFO = {
                             "health_parameter": {
                                 "type": "string",
                                 "description": """
-                                    health parameter, 
-                                    Example: BMI, weight, height, heart rate, stress level, etc,
+                                    health parameter,
+                                    extracted perameter that will determine user's state / probles / conditions
+                                    Example: BMI, weight, height, heart rate, stress level, back pain, sleep schedule, etc,
                                 """
                             },
                             
@@ -31,7 +34,7 @@ EXTRACT_USER_RELATED_INFO = {
                                 "type": "string",
                                 "description": """
                                     category of health parameter propertie
-                                    Example: Diet, Report, Mental, Lifestyle, etc
+                                    Example: Diet, Report, Mental, Lifestyle, symptom, habit etc
                                 """
                             },
                             
@@ -39,7 +42,7 @@ EXTRACT_USER_RELATED_INFO = {
                                 "type": "string",
                                 "description": """
                                     value of health parameter propertie
-                                    Example: 127cm, 40Kg, High, Low, Irregular, balanced etc.
+                                    Example: 127cm, 40Kg, High, Low, Irregular, balanced, bad breadth, severe etc.
                                 """
                             },
                         

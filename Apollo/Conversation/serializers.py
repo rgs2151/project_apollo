@@ -13,3 +13,21 @@ class ConvHistorySerializer(DocumentSerializer):
         model = ConvHistory
         fields = '__all__'
 
+        
+class ConversationStateSerializer(DocumentSerializer):
+    class Meta:
+        model = ConversationState
+        fields = '__all__'
+
+        
+class DoctorsWithFaissSupportSchemaSerializer(DocumentSerializer):
+    class Meta:
+        model = DoctorsWithFaissSupportSchema
+        fields = '__all__'
+
+
+class ServiceWithFaissSupportSchemaSerializer(DocumentSerializer):
+    class Meta:
+        model = ServiceWithFaissSupportSchema
+        fields = '__all__'
+

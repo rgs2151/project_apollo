@@ -16,6 +16,7 @@ from .converse.tools import *
 
 import numpy as np
 import pandas as pd
+import datetime
 
 from utility.views import *
 
@@ -69,7 +70,7 @@ class ConversationHistory(APIView):
     authentication_classes = [TokenAuthentication]
 
     def get(self, request):
-        instances = ConvHistory.objects(user_id=request.user_details.user_id)
+        instances = ConvHistory.objects(user_id=request.user_details.user.id)
         return Response({"data": ConvHistorySerializer(instances, many=True).data})
 
 
@@ -112,38 +113,68 @@ class Converse(APIView):
 
         # loading history
         faiss_history = MongoHistoryWithFAISS(
-            request.user_details.user_id, 
+            request.user_details.user.id, 
             MONGO_INSTANCE, 
             ConversationHistoryWithFaissSupportSchema, 
             ConversationHistoryWithFaissSupportSchemaSerializer
         )
         history_data = faiss_history.get(req["message"], k=RELEVANCE)
 
-        
+
+        # doctors
+        faiss_doctors = MongoHistoryWithFAISS(
+            0,
+            MONGO_INSTANCE, 
+            DoctorsWithFaissSupportSchema,
+            DoctorsWithFaissSupportSchemaSerializer
+        )
+        doctors = faiss_doctors.get(req["message"], k=10)
+
+        # services
+        faiss_services = MongoHistoryWithFAISS(
+            0,
+            MONGO_INSTANCE, 
+            ServiceWithFaissSupportSchema,
+            ServiceWithFaissSupportSchemaSerializer
+        )
+        services = faiss_services.get(req["message"], k=10)
+
         context = {
             "message": req["message"],
             "assistant_instructions": "",
-            "history": json.dumps(history.to_dict("records"), indent=2) if not history_data.empty else "",
+            "history": json.dumps(history_data.to_dict("records"), indent=2) if not history_data.empty else "",
             "goals": "",
-            "events": "",
-            "doctors": ""
+            "services": json.dumps(services.to_dict("records"), indent=2) if not services.empty else "",
+            "doctors": json.dumps(doctors.to_dict("records"), indent=2) if not doctors.empty else ""
         }
 
 
-        if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user_id, role="user", content=req["message"]).save()
+        # conversation state
+        conversation_state = ConversationState.objects(user_id=request.user_details.user.id).first()
+        if not conversation_state:
+            conversation_state = ConversationState(user_id=request.user_details.user.id, conversation_state="DEFAULT")
+        
+
+        if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user.id, role="user", content=req["message"]).save()
         
         message = Message(USER_PROMPT_DEFAULT, context, SYSTEM_MESSAGE, history=history_messages.to_text(), tools=CONVERSE_TOOLS)
         reply, tool_calls = message.get_results()
 
-        if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user_id, role="assistant", content=reply).save()
+        if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user.id, role="assistant", content=reply).save()
 
 
         # updating index
+        history = []
         if tool_calls and "collected_health_information_entries" in tool_calls:
             history = tool_calls["collected_health_information_entries"][0]
             faiss_history.update(history)
 
 
-        return Response({"response": reply})
+        # updating conversation state
+        conversation_state.last_updated_at = datetime.datetime.now()
+        conversation_state.save()
+
+
+        return Response({"response": reply, "message": message.make_message().get_entries()})
         
 
