@@ -94,8 +94,8 @@ def speech():
         if not user_id: return {"error": {"code": "Internal server error", "message": "something went wrong"}}
         
         # Get the file from the request
-        # new_prompt = request.json["prompt"]
-        new_prompt = request.form["prompt"]
+        new_prompt = request.json["prompt"]
+        # new_prompt = request.form["prompt"]
         
         # handle new prompt in the conversation
 

@@ -30,20 +30,30 @@ class Messages:
     def __init__(self, prompts: list) -> None:
         self.__set_prompts(prompts) 
         
+    
     def __set_prompts(self, prompts):
         if not isinstance(prompts, list): raise TypeError
         if not all(isinstance(prompt, Prompt) for prompt in prompts): raise TypeError
         self.prompts = prompts
 
+    
     def get_entries(self):
         return [prompt.get_entry() for prompt in self.prompts]
 
-    @classmethod
-    def from_txt_file(cls, file_path):
-        with open(file_path, 'r') as f:
-            file_text = f.read()
+
+    def to_text(self):
+        entries = self.get_entries()
+        history_text = "\n\n"
+        for entry in entries:
+            history_text += f"[{entry["role"]}]\n"
+            history_text += f"{entry["content"]}\n\n"
         
-        sections = re.split(r'\n\[(.*?)\]\n', file_text)
+        return history_text
+
+
+    @classmethod
+    def from_text(cls, text):
+        sections = re.split(r'\n\[(.*?)\]\n', text)
         sections = [section.replace("\n", "") for section in sections]
         sections = [section for section in sections if section]
         
@@ -59,6 +69,12 @@ class Messages:
             result.append(value)
         
         return cls(result)
+
+
+    @classmethod
+    def from_txt_file(cls, file_path):
+        with open(file_path, 'r') as f:
+            return cls.from_text(f.read())
 
 
 class Tools:

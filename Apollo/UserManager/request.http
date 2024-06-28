@@ -1,0 +1,15 @@
+
+
+POST http://127.0.0.1:8000/user/register/
+Content-Type: application/json
+
+{}
+
+
+###
+GET http://127.0.0.1:8000/user/register?hello=world
+
+
+### Admin User Dashboard
+GET http://127.0.0.1:8000/user/admin-users/?hello=world
+Authorization: Bearer gAAAAABmfFyeuOLKEZwco9gfatXy80oaK9rSL5irfzrF4HzkJNPCSZVjWD7Q9UCpXnzpfkldScpDE5DNxhbxMHnb_K3XwiSBjeIFyHsv9_O90Cf_TgjjcdcST_tnMFqjKApPgjk03XIRdbGUYwIIcK9MZT88WW7LOUaqYwUyv1N7xftBVV9EhLGHYlpYW9F1L-369rBYOiAFGXvr1t6LValvMzzM3rWWXiUztyFMFKYFm3J3WNmjeUOiRd6ahfzVVbfMCwl7iqF12n2rRZcEv46vWdNzDKppLg==
