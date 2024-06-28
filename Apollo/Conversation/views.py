@@ -24,7 +24,7 @@ APETITE = 30
 RELEVANCE = 20
 
 
-SAVE_CONVERSATION_HISTORY = False
+SAVE_CONVERSATION_HISTORY = True
 
 
 class History(APIView):
@@ -123,7 +123,7 @@ class Converse(APIView):
         context = {
             "message": req["message"],
             "assistant_instructions": "",
-            "history": json.dumps(history.to_dict("records"), indent=2) if not history_data.empty else "",
+            "history": json.dumps(history_data.to_dict("records"), indent=2) if not history_data.empty else "",
             "goals": "",
             "events": "",
             "doctors": ""
