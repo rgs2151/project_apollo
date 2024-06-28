@@ -155,7 +155,7 @@ class Converse(APIView):
 
         context = {
             "message": req["message"],
-            "assistant_instructions": "",
+            "assistant_instructions": "Using the context above if relevant, answer the user's query or ask a follow up question.",
             "history": json.dumps(history_data.to_dict("records"), indent=2) if not history_data.empty else "",
             "goals": "",
             "services": json.dumps(services.to_dict("records"), indent=2) if not services.empty else "",
