@@ -8,4 +8,5 @@ urlpatterns = [
     path("history/", History.as_view(), name="conversation-history"),
     path("converse/", Converse.as_view(), name="conversation-converse"),
     path("converse-history/", ConversationHistory.as_view(), name="conversation-converse-history"),
+    path("events/", Events.as_view(), name="conversation-events"),
 ]

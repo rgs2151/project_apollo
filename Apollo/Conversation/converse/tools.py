@@ -60,3 +60,53 @@ EXTRACT_USER_RELATED_INFO = {
     },
 }
 
+
+
+APPOINTMENT_SERVICE_PURCHASE_EVENT = {
+    "type": "function",
+    "function": {
+        "name": "trigger_if_user_wants_to_set_an_appointment_or_service_purchase",
+        "description": """
+            By looking at the entire conversation history, if over the course of the conversation, the user has requested to set an appointment with the doctor or has requested to purchase a service package, this tool will trigger.
+            Trigger if user has requested to set an appointment with the doctor or has requsted to purchase a service package. 
+        """,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "event_type": {
+                    "type": "string",
+                    "enum": ["appointment", "service_purchase"],
+                    "description": "Type of event requested by the user",
+                },
+
+                "event_description": {
+                    "type": "string",
+                    "description": "description of the event. For example, 'Requested diabeties appointment checkup' or 'Requested to purchase a XYZ package' etc",
+                },
+
+                "event_contact": {
+                    "type": "string",
+                    "description": "Name of the Doctor or service provider company",
+                },
+
+                "event_date": {
+                    "type": "string",
+                    "description": "Date of the event. in Python datetime Format: %Y-%m-%d",
+                },
+
+                "event_time": {
+                    "type": "string",
+                    "description": "Time of the event. in Python datetime Format: %H:%M:%S",
+                },
+
+            },
+            "required": [
+                "event_type",
+                "event_description",
+                "event_contact",
+                "event_date",
+                "event_time",
+            ],
+        },
+    },
+}

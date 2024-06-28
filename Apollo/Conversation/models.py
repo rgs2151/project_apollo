@@ -65,3 +65,17 @@ class ServiceWithFaissSupportSchema(Document):
     }
 
 
+class EventsData(Document):
+    user_id = fields.IntField(required=True, min=0)
+    event_type = fields.StringField(required=True)
+    i_event_description = fields.StringField(required=True)
+    event_contact = fields.StringField(required=True)
+    event_date = fields.StringField(required=True)
+    event_time = fields.StringField(required=True)
+    
+    meta = {
+        "collection": "Events"
+    }
+
+
+

@@ -79,12 +79,24 @@ def collected_health_information_entries(entries):
     df.columns = ["i_parameter_label", "parameter_type", "parameter_value"]
     return df
 
+def collect_events(event_type,event_description,event_contact,event_date,event_time):
+    return {"event_type": event_type, "i_event_description": event_description, "event_contact": event_contact, "event_date": event_date, "event_time": event_time}
 
-CONVERSE_TOOLS = Tools([
+
+TOOL_CONVERSATION = Tools([
     {
         "name": "collected_health_information_entries",
         "function": collected_health_information_entries,
         "definition": EXTRACT_USER_RELATED_INFO
+    }
+])
+
+
+TOOL_EVENTS = Tools([
+    {
+        "name": "collect_events",
+        "function": collect_events,
+        "definition": APPOINTMENT_SERVICE_PURCHASE_EVENT
     }
 ])
 
@@ -130,6 +142,7 @@ class Converse(APIView):
         )
         doctors = faiss_doctors.get(req["message"], k=10)
 
+
         # services
         faiss_services = MongoHistoryWithFAISS(
             0,
@@ -138,6 +151,7 @@ class Converse(APIView):
             ServiceWithFaissSupportSchemaSerializer
         )
         services = faiss_services.get(req["message"], k=10)
+
 
         context = {
             "message": req["message"],
@@ -157,7 +171,7 @@ class Converse(APIView):
 
         if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user.id, role="user", content=req["message"]).save()
         
-        message = Message(USER_PROMPT_DEFAULT, context, SYSTEM_MESSAGE, history=history_messages.to_text(), tools=CONVERSE_TOOLS)
+        message = Message(USER_PROMPT_DEFAULT, context, SYSTEM_MESSAGE, history=history_messages.to_text(), tools=[(TOOL_CONVERSATION, True), (TOOL_EVENTS, False)])
         reply, tool_calls = message.get_results()
 
         if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user.id, role="assistant", content=reply).save()
@@ -170,11 +184,33 @@ class Converse(APIView):
             faiss_history.update(history)
 
 
+        # updating events
+        event = {}
+        if tool_calls and "collect_events" in tool_calls:
+            event = tool_calls["collect_events"]
+            event_instance = EventsData(user_id=request.user_details.user.id, **event)
+            event_instance.save()
+
+
         # updating conversation state
         conversation_state.last_updated_at = datetime.datetime.now()
         conversation_state.save()
 
 
-        return Response({"response": reply, "message": message.make_message().get_entries()})
+        return Response({"response": reply, "events": event, "message": message.make_message().get_entries()})
         
+
+class Events(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    def get(self, request: Request):
+
+        req = request.data
+        instances = EventsData.objects(user_id=req.user_details.user.id)
+        event_data = EventsDataSerializer(instances, many=True).data
+
+        return Response({"data": event_data})
+
 

@@ -5,7 +5,7 @@ from Apollo.settings import GPT_KEY
 
 class Message:
 
-    def __init__(self, prompt, context={}, system_instructions=None, history=None, tools: Tools=None) -> None:
+    def __init__(self, prompt, context={}, system_instructions=None, history=None, tools=[]) -> None:
         
         self.context = context
         self.prompt = str(prompt)
@@ -14,11 +14,12 @@ class Message:
         self.system_instructions = system_instructions
         self.history = history
 
-        if tools and not isinstance(tools, Tools):
+        if tools and not all(isinstance(x[0], Tools) for x in tools):
             raise TypeError("tools should be of instance Tools")
         
-        self.tools =  tools
-        self.response, self.tool_response = self.call_gpt()
+        self.tools =  [x[0] for x in tools]
+        self.tools_required = [x[1] for x in tools]
+        self.response, self.tool_responses = self.call_gpt()
         
 
     def make_message(self):
@@ -47,16 +48,19 @@ class Message:
         )
 
 
-        tool_response = None
-        if self.tools:
+        tool_responses = []
+        for tool, required in zip(self.tools, self.tools_required):
+            tool: Tools
             tool_response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=message.get_entries(),
-                tools = self.tools.get_tools(),
-                tool_choice="required" # auto, required, disabled
+                tools = tool.get_tools(),
+                tool_choice="required" if required else "auto"
             )
 
-        return response, tool_response
+            tool_responses.append(tool_response)
+
+        return response, tool_responses
 
 
     def get_history(self, apetite=30):
@@ -74,9 +78,11 @@ class Message:
         reply = self.response.choices[0].message.content
         tool_calls = {}
         
-        if self.tool_response:
+        if self.tool_responses:
             tool_calls = {}
-            tool_calls = self.tools.get_results(self.tool_response, tool_calls)
+            for response, tools in zip(self.tool_responses, self.tools):
+                tools: Tools
+                tool_calls = tools.get_results(response, tool_calls)
 
         return reply, tool_calls
     

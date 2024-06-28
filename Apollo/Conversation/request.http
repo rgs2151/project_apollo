@@ -22,5 +22,13 @@ Content-Type: application/json
 Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
 
 {
-    "message": "I think i have been overworking recently!"
+    "message": "I have heart issues"
 }
+
+
+### events
+GET http://127.0.0.1:8000/conversation/events/
+Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+
+
+
