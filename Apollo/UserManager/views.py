@@ -3,15 +3,17 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import generics
+from rest_framework.exceptions import NotFound
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.contrib.auth.models import Group
 # from django.http import Http404
 
 from utility.views import *
 from .models import *
 from .serializers import *
 from .authentication import TokenAuthentication
-from .permissions import HasAdminPermissions
+from .permissions import UserAdminPermissions
 from .pagination import *
 
 from django.db import models
@@ -250,39 +252,183 @@ class UserChangePassword(APIView):
 
 
 # Admin Routes for Dashboard
-class UserDashboard(APIView): pass
 
+class UserDashboard(FilteredListView):
 
-class FilteredListView(APIView):
-    
     authentication_classes=[TokenAuthentication]
-    permission_classes = [HasAdminPermissions]
+    permission_classes = [UserAdminPermissions]
 
-    model = UserDetails.objects.all()
-    serializer = UserDetailsSerializer
-    pagination = DefaultPagination
+    model = UserDetails
+    serializer = UserDetailsAdminDashboardSerializer
+    pagination = DefaultPagination()
 
-    
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self._check_view()
+    allow_filters = {
+        "user__username": {"type": "string", "required": False, "empty": False}
+    }
 
 
-    def _check_view(self):
+class Groups(FilteredListView):
 
-        if not hasattr(self, "model") and not isinstance(self.model, models.Model):
-            raise TypeError(f"{self.__class__.__name__} model field is not defined or is invalid")
+    authentication_classes=[TokenAuthentication]
+    permission_classes = [UserAdminPermissions]
+
+    model = Group
+    serializer = GroupSerializer
+    pagination = DefaultPagination()
+
+    allow_filters = {
+        "name": {"type": "string", "required": False, "empty": False}
+    }
+
+
+class GroupManager(APIView):
+
+
+    @exception_handler()
+    @request_schema_validation({
+        "name": {"type": "string", "required": True, "empty": False}
+    })
+    def post(self, request: Request):
+
+        req = request.data
+        name=req.get("name", "")
+        if Group.objects.filter(name=name).exists():
+            raise APIException("Already Exists", "group with the name already exists", status_code=400)
         
-        if not hasattr(self, "serializer") and not isinstance(self.serializer, ModelSerializer):
-            raise TypeError(f"{self.__class__.__name__} model field is not defined or is invalid")
+        group_instance = Group(name=name)
+        group_instance.save()
+
+        return Response({"group": GroupSerializer(group_instance).data})
+
+
+    @exception_handler()
+    @request_schema_validation({
+        "id": {"type": "integer", "required": True, "empty": False, 'min': 0},
+        "name": {"type": "string", "required": True, "empty": False}
+    })
+    def put(self, request: Request):
+
+        req = request.data
+        group_id = req.get("id")
+        group_name = req.get("name")
+
+        if not Group.objects.filter(id=group_id).exists():
+            raise APIException("Not Found", "group not found", status_code=404)
         
-        if not hasattr(self, "pagination") and not isinstance(self.pagination, PageNumberPagination):
-            raise TypeError(f"{self.__class__.__name__} model field is not defined or is invalid")
+        group_instance = Group.objects.filter(id=group_id).first()
+        
+        if group_instance.name == group_name:
+            raise APIException("Bad Request", "group already has the name", status_code=404)
+        
+        group_instance.name = group_name
+        group_instance.save()
+
+        return Response({"group": GroupSerializer(group_instance).data})
 
 
-    def get(self, request, *args, **kwargs):
-        print(request, args, kwargs)
-        print(request.GET)
-        return super().get(request, *args, **kwargs)
+    @exception_handler()
+    @request_schema_validation({
+        "id": {"type": "integer", "required": True, "empty": False, 'min': 0},
+        "name": {"type": "string", "required": True, "empty": False}
+    })
+    def delete(self, request: Request):
 
+        req = request.data
+        group_id = req.get("id")
+        group_name = req.get("name")
+
+        if not Group.objects.filter(id=group_id).exists():
+            raise APIException("Not Found", "group not found", status_code=404)
+        
+        group_instance = Group.objects.filter(id=group_id).first()
+        
+        if group_instance.name != group_name:
+            raise APIException("Bad Request", "confirmation group name invalid", status_code=400)
+
+        group_instance.delete()
+
+        return Response({"group": GroupSerializer(group_instance).data})
+
+
+class UserGroupManager(APIView):
+
+
+    @exception_handler()
+    @request_schema_validation({
+        "user_id": {"type": "integer", "required": True, "min": 0},
+        "group_ids": {
+            "type": "list", "required": True, "empty": False, "schema": {
+                "type": "integer", "min": 0
+            }
+        }
+    })
+    def post(self, request: Request):
+
+        req = request.data
+        user_id = req.get("user_id")
+        group_ids = req.get("group_ids")
+
+        
+        if not UserDetails.objects.filter(user__id=user_id).exists():
+            raise APIException("Not Found", "user with id not found", status_code=404)
+        
+        user_details_instance = UserDetails.objects.filter(user__id=user_id).first()
+
+
+        for _id in group_ids:
+            if not Group.objects.filter(id=_id).exists():
+                raise APIException("Not Found", f"group with id: {_id} not found", status_code=404)
+                    
+
+        if user_details_instance.user.groups.filter(id__in=group_ids).exists():
+            raise APIException("Already Exists", f"group already assigned to user", status_code=400)
+
+        
+        for _id in group_ids:
+            group_instance = Group.objects.filter(id=_id).first()
+            user_details_instance.user.groups.add(group_instance)
+
+        user_details_instance.user.save()
+
+        user_detail_instance = UserDetails.objects.filter(user__id=user_id).first()
+        return Response({"user_details": UserDetailsAdminDashboardSerializer(user_detail_instance).data})
+
+
+    @exception_handler()
+    @request_schema_validation({
+        "user_id": {"type": "integer", "required": True, "min": 0},
+        "groups": {
+            "type": "list", "required": True, "empty": False, "schema": {
+                "type": "dict", "schema": {
+
+                    "id": {"type": "integer", "required": True, "min": 0},
+                    "name": {"type": "string", "required": True, "empty": False},
+                
+                }
+            }
+        }
+    })
+    def delete(self, request: Request):
+
+        req = request.data
+        user_id = req.get("user_id")
+        groups = req.get("groups")
+
+
+        if not UserDetails.objects.filter(user__id=user_id).exists():
+            raise APIException("Not Found", "user with id not found", status_code=404)
+        
+        user_details_instance = UserDetails.objects.filter(user__id=user_id).first()
+
+        for group_data in groups:
+            if not user_details_instance.user.groups.filter(id=group_data["id"]).exists():
+                raise APIException("Not Found", f"group with id: {group_data['id']} not found", status_code=404)
+            
+        removed = []
+        for group_data in groups:
+            group_instance = user_details_instance.user.groups.filter(id=group_data["id"]).first()
+            user_details_instance.user.groups.remove(group_instance)
+            removed.append(GroupSerializer(group_instance).data)
+
+        return Response({"groups": removed})
 

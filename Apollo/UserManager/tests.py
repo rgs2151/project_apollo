@@ -9,7 +9,7 @@ import requests
 from utility.secret import *
 from .middleware import TokenAuthMiddleware
 from .authentication import TokenAuthentication
-from .permissions import IsEmailVerified
+from .permissions import *
 
 from django.db.models import Field
 
@@ -262,7 +262,7 @@ class TestUserDetails(TestCase):
             "first_name": "manan",
             "last_name": "lad",
             "email": "mananlad38@gmail.com",
-            "password": "somerandompassword",
+            "password": "1Password!",
         }, content_type='application/json')
         
         if response.status_code == 200:
@@ -314,14 +314,20 @@ class TestTokenAuthentication(TestCase):
         self.assertEqual(self.user_details_instance, request.user_details)
 
 
+
+from django.contrib.auth.models import Group
+
+
+
 "python manage.py test UserManager.tests.TestPermissions.test_verify_email_permission"
+"python manage.py test UserManager.tests.TestPermissions.test_is_super_user_permission"
+"python manage.py test UserManager.tests.TestPermissions.test_has_group"
 class TestPermissions(TestCase):
     
     def setUp(self) -> None:
-        self.IsEmailVerified = IsEmailVerified()
         self.factory = RequestFactory()
         
-        
+
     def test_verify_email_permission(self):
         # should allow only if email is not verified
         
@@ -329,11 +335,54 @@ class TestPermissions(TestCase):
         user_details_instance, response = TestUserDetails.register_user(self.client)
         response = response.json()
         user_details_instance: UserDetails
+
         
         secret = response['email_verification_link'].split(r'/')[-1]
         status, user_details_instance = user_details_instance.validate_email(secret)
         request.user_details = user_details_instance
+                
+        self.assertTrue(IsEmailVerified().has_permission(request, None))
+
+
+    def test_is_super_user_permission(self):
+
+
+        request = self.factory.get('some/path')
+        user_details_instance, response = TestUserDetails.register_user(self.client)
+        response = response.json()
+        user_details_instance: UserDetails
+
+        self.assertFalse(IsSuperUser().has_permission(request, None))
         
-        self.assertFalse(self.IsEmailVerified.has_permission(request, None))
+        user_details_instance.user.is_superuser = 1
+        user_details_instance.user.save()
+        request.user_details = user_details_instance
+
+        self.assertTrue(IsSuperUser().has_permission(request, None))
+
+
+    def test_has_group(self):
+
+        default_group, created_status = Group.objects.get_or_create(name="default")
+        doctor_group, created_status = Group.objects.get_or_create(name="doctor")
+
+        request = self.factory.get('some/path')
+        user_details_instance, response = TestUserDetails.register_user(self.client)
+        response = response.json()
+        user_details_instance: UserDetails
+
+        self.assertFalse(HasGroupPermissions("doctor").has_permission(request, None))
+
+        user_details_instance.user.groups.add(doctor_group)
+        user_details_instance.user.save()
+        request.user_details = user_details_instance
+       
+        self.assertEqual(Group.objects.all().count(), 2)
+        self.assertEqual(user_details_instance.user.groups.all().count(), 1)
+        self.assertEqual(user_details_instance.user.groups.first().name, doctor_group.name)
+
+        self.assertTrue(HasGroupPermissions("doctor").has_permission(request, None))
+        
+
 
 

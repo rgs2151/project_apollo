@@ -1,11 +1,16 @@
 
 import cerberus, re
 import traceback as tb
+from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
+from rest_framework.serializers import ModelSerializer
+from rest_framework.pagination import PageNumberPagination
 from django.urls.exceptions import NoReverseMatch
 from django.urls import reverse, get_resolver, get_callable
 from django.http import Http404
+from django.db import models
 
 
 def serialize_query_dict_object(query_dict):
@@ -129,7 +134,10 @@ def exception_handler(default_code="Internal Server Error", default_message="som
 
             except Http404 as err:
                 handler_404 = get_404_handler()
-                return handler_404(err.request, "")
+                if handler_404: return handler_404(err.request, "")
+                else: 
+                    trace = ''.join(tb.format_exception(None, err, err.__traceback__))
+                    return APIException("Not Found", "page not found", trace=trace, status_code=400).get_response()
 
             except Exception as err:
                 trace = ''.join(tb.format_exception(None, err, err.__traceback__))
@@ -166,4 +174,67 @@ def get_url_or_named_url(url, request, kwargs={}):
         
     except NoReverseMatch:
         raise ValueError(f"invalid url or url not found")
+
+
+class FilteredListView(APIView):
+    
+    model = None
+    serializer = None
+    pagination = None
+
+    allow_filters = {}
+    
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._check_view()
+
+    def _check_view(self):
+
+        if not hasattr(self, "model") and not isinstance(self.model, models.Model):
+            raise TypeError(f"{self.__class__.__name__} model field is not defined or is invalid")
+        
+        if not hasattr(self, "serializer") and not isinstance(self.serializer, ModelSerializer):
+            raise TypeError(f"{self.__class__.__name__} model field is not defined or is invalid")
+        
+        if not hasattr(self, "pagination") and not isinstance(self.pagination, PageNumberPagination):
+            raise TypeError(f"{self.__class__.__name__} model field is not defined or is invalid")
+
+        # check allow_filters:
+        
+        if self.allow_filters:
+            filters = self.allow_filters.copy()
+            awailable_fields = self.model._meta.get_fields()
+            for field in filters:
+                
+                # for some reason this key comming even if we ignore it
+                if field == "page": continue
+
+                if not any(field.startswith(key.name) for key in awailable_fields):
+                    raise ValueError(f"{self.__class__.__name__} allow_filters, key not found: {field}")
+                
+
+        self.validator = cerberus.Validator()
+
+        # adding page number rule to schema which will defualt to 1
+        self.allow_filters["page"] = {"coerce": int, "type": "integer", "required": False, "min": 1, "default": 1}
+
+        # decorating get method
+        self.get = exception_handler()(request_schema_validation(query_dict_schema=self.allow_filters)(self.get))
+                
+
+    def get(self, request, *args, **kwargs):
+        
+        req = serialize_query_dict_object(request.GET)
+        _ = req.pop("page", 1)
+
+        if not self.allow_filters: queryset = self.model.objects.all()
+        else: queryset = self.model.objects.filter(**req)
+
+        try: paginated_queryset = self.pagination.paginate_queryset(queryset, request)
+        except NotFound as err: raise Http404(request)
+
+        serialized = self.serializer(paginated_queryset, many=True)
+
+        return Response({"data": serialized.data})
+
 

@@ -242,7 +242,6 @@ class UserDetails(models.Model):
             
             return 0
 
-
     def issue_password_change(self, request: Request):
         date_now = timezone.make_aware(datetime.datetime.now(), timezone.get_current_timezone())
         if self.get_issue_password_change_cooldown(date_now):
