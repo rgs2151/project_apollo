@@ -30,7 +30,15 @@ urlpatterns = [
     path("forgot-password/", lambda request: render(request, template_name="user_forgotpassword.html"), name="user-forgotpassword"),
 
     # admin dashboard apis
-    path("admin-users/", UserDashboard.as_view(), name="user-admin-users")
+    path("admin-users/", UserDashboard.as_view(), name="user-admin-users"),
+    path("admin-groups/", Groups.as_view(), name="user-admin-groups"),
+    path("admin-groups-manager/", GroupManager.as_view(), name="user-admin-groups-manager"),
+    path("admin-user-groups-manager/", UserGroupManager.as_view(), name="user-admin-user-groups-manager"),
+    
+    path("admin-dashboard/", lambda request: render(request, template_name="user_admin_dashboard.html"), name="user-admin-dashboard"),
 
 
 ]
+
+
+

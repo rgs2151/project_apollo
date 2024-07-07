@@ -1,6 +1,11 @@
 import re, json
 
 
+MESSAGES_OBJECT_SCHEMA = {
+    
+}
+
+
 class Prompt():
     
     def __init__(self, content: str): self.content = str(content)
@@ -75,6 +80,11 @@ class Messages:
     def from_txt_file(cls, file_path):
         with open(file_path, 'r') as f:
             return cls.from_text(f.read())
+
+
+    @classmethod
+    def from_object(cls, _object):
+        pass
 
 
 class Tools:

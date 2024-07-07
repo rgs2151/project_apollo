@@ -1,10 +1,26 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from .models import *
+from django.contrib.auth.models import Group
+
+
+class GroupSerializer(ModelSerializer):
+    class Meta:
+        model = Group
+        exclude = ("permissions",)
+
 
 class LimitedUserSerializer(ModelSerializer):
+    groups = GroupSerializer(many=True)
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name']
+        fields = ['id', 'email', 'first_name', 'last_name', 'is_staff', "groups"]
+
+
+class UserSerializer(ModelSerializer):
+    groups = GroupSerializer(many=True)
+    class Meta:
+        model = User
+        exclude = ("password", "user_permissions", "last_login")
         
         
 class UserDetailsSerializer(ModelSerializer):
@@ -16,6 +32,7 @@ class UserDetailsSerializer(ModelSerializer):
         model = UserDetails
         fields = ['user', 'onboarding_status', 'cooldowns']
         
+
     def get_onboarding_status(self, model_instance: UserDetails):
         
         onboarding_status = {}
@@ -40,4 +57,15 @@ class UserDetailsSerializer(ModelSerializer):
         cooldowns['request_password_change_cooldown'] = password_change_cooldown
 
         return cooldowns
+
+
+class UserDetailsAdminDashboardSerializer(ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = UserDetails
+        exclude = ("email_secret", "password_change_secret")
+
+
+
 
