@@ -183,11 +183,12 @@ class Converse(APIView):
             history = tool_calls["collected_health_information_entries"][0]
             faiss_history.update(history)
 
+        print(tool_calls)
 
         # updating events
         event = {}
         if tool_calls and "collect_events" in tool_calls:
-            event = tool_calls["collect_events"]
+            event = tool_calls["collect_events"][0]
             event_instance = EventsData(user_id=request.user_details.user.id, **event)
             event_instance.save()
 
@@ -208,7 +209,7 @@ class Events(APIView):
     def get(self, request: Request):
 
         req = request.data
-        instances = EventsData.objects(user_id=req.user_details.user.id)
+        instances = EventsData.objects(user_id=request.user_details.user.id)
         event_data = EventsDataSerializer(instances, many=True).data
 
         return Response({"data": event_data})
