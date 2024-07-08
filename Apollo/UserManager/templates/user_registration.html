@@ -1,220 +1,82 @@
-{% extends "user_base.html" %}
+{% extends 'unlogged_body.html' %}
+{% load static %}
 
+{% block page_title %}Register{% endblock %}
 
-{% block title %}Register{% endblock title %}
-
-{% block body %}
-
-    
-<div class="content" >
-
-    <div class="card">
-
-        <div class="card-header" >
-            Register User
-        </div>
-
-        <div class="card-input">
-            <div> 
-                Email <div class="card-input-error-message"></div>
-            </div>
-            <div > <input id="email" class="card-input-in" type="email" > </div>
-        </div>
-
-        <div class="card-input">
-            <div> First Name <div class="card-input-error-message"></div> </div>
-            <div > <input id="first_name" class="card-input-in" type="text" > </div>
-        </div>
-
-        <div class="card-input">
-            <div> Last Name <div class="card-input-error-message"></div> </div>
-            <div > <input id="last_name" class="card-input-in" type="text" > </div>
-        </div>
-
-        <div class="card-input">
-            <div> Password <div class="card-input-error-message"></div> </div>
-            <div > <input onchange="document.getElementById('confirm_password').value = ''" id="password" class="card-input-in" type="password" > </div>
-        </div>
-
-        <div class="card-input">
-            <div> Confirm Password <div class="card-input-error-message"></div> </div>
-            <div > <input id="confirm_password" class="card-input-in" type="password" > </div>
-        </div>
-
-        <button id="register-button" style="margin-top:4vh;margin-bottom:2vh;" class="card-button" onclick="onUserRegister(event)" disabled >Register</button>
-
-        <span style="font-size:x-small;margin:1vh auto;cursor:pointer;" ><a style="color:black;" href="/user/forgotPassword" ><u>Forgot Password?</u></a></span>
-        <span style="font-size:x-small;margin:0.5vh auto;margin-bottom:2vh;cursor:pointer;" ><a style="color:black;" href="/user/signin" ><u>Sign In Instead?</u></a></span>
-
-    </div>
-
-
-
-</div>
-
-
-<script>
-    
-    var payload_instance = new Payload(
-        // config
-        {
-            "email": {
-                "id": "email",
-                "check_with": [
-                    Payload.Checks.cannotBeNull(),
-                    Payload.Checks.cannotBeBlank(),
-                    Payload.Checks.emailCheck(),
-                ],
-            },
-
-            "first_name": {
-                "id": "first_name",
-                "check_with": [
-                    Payload.Checks.cannotBeNull(),
-                    Payload.Checks.cannotBeBlank(),
-                    Payload.Checks.minLength(3),
-                    Payload.Checks.maxLength(55),
-                ]
-            },
-
-            "last_name": {
-                "id": "last_name",
-                "check_with": [
-                    Payload.Checks.cannotBeNull(),
-                    Payload.Checks.cannotBeBlank(),
-                    Payload.Checks.minLength(3),
-                    Payload.Checks.maxLength(55),
-                ]
-            },
-
-            "password": {
-                "id": "password",
-                "check_with": [
-                    Payload.Checks.cannotBeNull(),
-                    Payload.Checks.cannotBeBlank(),
-                    Payload.Checks.minLength(8),
-                    Payload.Checks.maxLength(36),
-                    Payload.Checks.containsNumerical(),
-                    Payload.Checks.containsLowerCaseAlphabet(),
-                    Payload.Checks.containsUpperCaseAlphabet(),
-                    Payload.Checks.containsAtleastOne(["@", "#", "$", "%", "^", "&", "+", "=", "!"]),
-                ]
-            },
-
-            "confirm_password": {
-                "id": "confirm_password",
-                "check_with": [
-                    Payload.Checks.cannotBeNull(),
-                    Payload.Checks.cannotBeBlank(),
-                    (key, value) => {
-                        if (value !== document.getElementById("password").value) return `should match password`
-                    }
-                ]
-
-            }
-
-        },
-
-        // error callback
-        (key_element, errors) => {
-            
-            let error = null;
-            if (errors.length) error = errors[0];
-            
-            let parent = key_element.parentNode.parentNode;
-            let error_message_element = parent.getElementsByClassName("card-input-error-message");
-            if (error_message_element && error_message_element.length) {
-                error_message_element = error_message_element[0];
-            };
-
-            if (error) {
-                parent.classList.add("card-input-error");
-                if (error_message_element) error_message_element.innerHTML = error;
-                
-            } else {
-                let classList = parent.classList;
-                if (classList.contains("card-input-error")) classList.remove("card-input-error");
-                if (error_message_element) error_message_element.innerHTML = "";
-            };
-
-        },
-
-        // when payload is valid
-        (payload) => {
-            
-            
-            let button = document.getElementById("register-button");
-            if (button) {
-
-                if (payload.isPayloadValid()) button.disabled = false
-                else button.disabled = true;
-            }
-        }
-
-    );
-
-
-    async function onUserRegister(event) {
-        
-        
-        if (!payload_instance.isPayloadValid()) {
-            payload_instance.setErrors();
-            return null;
-            }
-            
-        showLoader();
-
-        let url = window.location.origin + "/user/register/";
-
-        const payload = payload_instance.getPayload();
-        delete payload["confirm_password"];
-
-        event.target.disabled = true;
-        
-        
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(payload),
-            });
-            const result = await response.json();
-
-            if ("error" in result && result["error"]["code"] === "RequestValidationFailed") {
-                console.log(result["error"]["message"]["failed_validations"])
-            } else if ("error" in result) {
-                setError(`${result["error"]["code"]}<br />${result["error"]["message"]}`);
-                hideLoader();
-                payload_instance.clear();
-            }
-
-            console.log("Success:", result);
-
-            if ("auth_token" in result && result["auth_token"]) {
-
-                var token_manager = new Token();
-                token_manager.update(result["auth_token"]);
-
-                setTimeout(() => {
-                    hideLoader();
-                    payload_instance.clear();
-                    window.location.href = window.location.origin + "/user/home/";
-                }, 1000)
-            }
-                    
-        } catch (error) {
-            hideLoader();
-            console.error("Error:", error);
-        }
-
-
+{% block custom_header %}
+<style>
+    .bg-register-image {
+        background-image: url("{% static 'img/undraw_register.svg' %}");
+        background-position: center;
+        background-size: 100%;
+        background-repeat: no-repeat;
     }
+</style>
+{% endblock %}
 
+{% block page_content %}
 
-</script>
+<div class="card o-hidden border-0 shadow-lg my-5">
+    <div class="card-body p-0">
+        <!-- Nested Row within Card Body -->
+        <div class="row">
+            <div class="col-lg-5 d-none d-lg-block bg-register-image"></div>
+            <div class="col-lg-7">
+                <div class="p-5">
+                    <div class="text-center">
+                        <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
+                    </div>
+                    <form class="user">
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="text" class="form-control form-control-user" id="exampleFirstName"
+                                    placeholder="First Name">
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control form-control-user" id="exampleLastName"
+                                    placeholder="Last Name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-control form-control-user" id="exampleInputEmail"
+                                placeholder="Email Address">
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="password" class="form-control form-control-user"
+                                    id="exampleInputPassword" placeholder="Password">
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="password" class="form-control form-control-user"
+                                    id="exampleRepeatPassword" placeholder="Repeat Password">
+                            </div>
+                        </div>
+                        <a href="#" class="btn btn-primary btn-user btn-block">
+                            Register Account
+                        </a>
+                        <hr>
+                        <a href="#" class="btn btn-google btn-user btn-block">
+                            <i class="fab fa-google fa-fw"></i> Register with Google
+                        </a>
+                        <a href="#" class="btn btn-facebook btn-user btn-block">
+                            <i class="fab fa-facebook-f fa-fw"></i> Register with Facebook
+                        </a>
+                    </form>
+                    <hr>
+                    <div class="text-center">
+                        <a class="small" href="/user/forgot-password/">Forgot Password?</a>
+                    </div>
+                    <div class="text-center">
+                        <a class="small" href="/user/signin/">Already have an account? Login!</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+{% endblock %}
 
-{% endblock body %}
-
-
-
-
+{% block custom_scripts %}
+<script src="{% static 'js/user/registration.js' %}"></script>
+{% endblock %}
