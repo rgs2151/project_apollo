@@ -1,0 +1,18 @@
+{
+    "title": "Frontend Template",
+    "name": "bootstrap-frontend",
+    "description": "Node scripts to watch and build the frontend assets",
+    "version": "0.0.1",
+    "author": {
+        "name": "Rudramani Singha",
+        "email": "rgs2151@columbia.edu"
+    },
+    "scripts": {
+        "watch": "sass --watch scss:public/css"
+    },
+    "dependencies": {
+        "autoprefixer": "^10.4.19",
+        "bootstrap": "^5.3.3",
+        "sass": "^1.77.6"
+    }
+}
