@@ -1,5 +1,6 @@
 from pathlib import Path
 from mongoengine import connect
+import os
 
 
 with open("openai_key", "r") as f:
@@ -76,8 +77,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'user_management',
         'USER': 'root',
-        # 'PASSWORD': 'password',
-        'PASSWORD': '1234',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -114,3 +114,10 @@ USER_MANAGER_SETTINGS = {
     
 }
 
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
