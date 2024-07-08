@@ -8,7 +8,7 @@
         "email": "rgs2151@columbia.edu"
     },
     "scripts": {
-        "watch": "sass --watch scss:public/css"
+        "watch": "sass --watch scss:Apollo/static/css"
     },
     "dependencies": {
         "autoprefixer": "^10.4.19",
