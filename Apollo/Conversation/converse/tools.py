@@ -1,3 +1,9 @@
+import pandas as pd
+
+def extract_user_health_information_entry(entries):
+    df = pd.DataFrame(entries)
+    df.columns = ["i_parameter_label", "parameter_type", "parameter_value"]
+    return df
 
 
 # finds form user message: key in prompt
