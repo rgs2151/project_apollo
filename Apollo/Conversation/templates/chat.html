@@ -11,4 +11,62 @@
                 class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
     </div>
 
+    <!-- Content Row -->
+    <!-- A card that takes up the entire remaining space -->
+    <div class="row">
+
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <!-- Card Header-->
+                <div
+                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Talk to your health assistant</h6>
+
+                    <div class="dropdown no-arrow">
+                        <span>Mode: </span>
+                        <a class="dropdown-toggle" href="#" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span id="convModeDisplay">Normal</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="chat_bot_container">
+
+                        <div class="col-12 chat_bot_messages" style="height: 380px;">
+                            <p id = "assistantResponseDisplay">Hi, I am your health assistant. How are you doing today?</p>
+                        </div>
+
+                        
+                        <div class="col-12">
+                            <div class="input-group">
+
+                                <input type="text" class="form-control bg-light border-0 small" placeholder="Your message..."
+                                    aria-label="Search" aria-describedby="basic-addon2" id="responseInput">
+
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="submitResponseButton">
+                                        <i class="fas fa-paper-plane fa-sm"></i>
+                                    </button>
+                                    <button class="btn btn-primary" type="button" id="microphoneButton">
+                                        <i class="fas fa-microphone fa-sm"></i>
+                                    </button>
+                                    <button class="btn btn-primary" type="file" id="uploadDocumentButton">
+                                        <i class="fas fa-paperclip fa-sm"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block custom_scripts %}
+    <script src="{% static 'js/conversation/chat.js' %}"></script>
 {% endblock %}

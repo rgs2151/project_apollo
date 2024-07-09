@@ -7,54 +7,67 @@ function make_columns(data) {
     });
 }
 
-// Health Indicators
-var healthIndicatorsData = [
-    {
-        "name":       "Tiger Nixon",
-        "position":   "System Architect",
-        "salary":     "$3,120",
-        "start_date": "2011/04/25",
-        "office":     "Edinburgh",
-        "extn":       "5421"
-    },
-    {
-        "name":       "Garrett Winters",
-        "position":   "Director",
-        "salary":     "$5,300",
-        "start_date": "2011/07/25",
-        "office":     "Edinburgh",
-        "extn":       "8422"
-    }
-]
 
-// Upcoming Events
-var upcomingEventsData = [
-    {
-        "date": "2011/04/25",
-        "event": "Event 1",
-        "location": "Hospital A",
-    },
-    {
-        "date": "2011/07/25",
-        "event": "Event 2",
-        "location": "Hospital A",
-    }
-]
 
-// Make the DataTables
 $(document).ready(function() {
-    $('#healthIndicators').DataTable(
-        {
-            data: healthIndicatorsData,
-            columns: make_columns(healthIndicatorsData)
-        }
-    );
+    $.ajax({
+        url: window.location.origin + '/conversation/history/',
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`, 
+            'content-type': 'application/json'
+        },
+        type: 'post',
+        data: JSON.stringify({ 'type': 'history'}),
+        success: function (response) {
+            console.log(response);
 
-    $('#upcomingEvents').DataTable(
-        {
-            data: upcomingEventsData,
-            columns: make_columns(upcomingEventsData),
-            searching: false,
+            if (response.data.length === 0) {
+                $('#healthIndicators').text("No history found");
+                return;
+            }
+
+            // Make the DataTable
+            $('#healthIndicators').DataTable(
+                {
+                    data: response.data,
+                    columns: make_columns(response.data),
+                }
+            );
+
+            $('#healthIndicators').DataTable().columns([0,1]).visible(false);
+
+        },
+        error: function (response) {
+            console.log(response);
         }
-    );
+    });
+
+    $.ajax({
+        url: window.location.origin + '/conversation/events/',
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            'content-type': 'application/json'
+        },
+        type: 'get',
+        success: function (response) {
+            console.log(response);
+
+            if (response.data.length === 0) {
+                $('#upcomingEvents').text("No upcoming events found");
+                return;
+            }
+
+            // Make the DataTable
+            $('#upcomingEvents').DataTable(
+                {
+                    data: response.data,
+                    columns: make_columns(response.data),
+                    searching: false,
+                }
+            );
+
+            $('#upcomingEvents').DataTable().columns([0,1,2,6]).visible(false);
+
+        },
+    });
 });
