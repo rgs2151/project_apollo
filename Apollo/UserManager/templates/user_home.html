@@ -1,0 +1,575 @@
+{% extends "user_base.html" %}
+
+
+{% block title %}Home{% endblock title %}
+
+{% block body %}
+
+<style>
+    body {
+        background:
+        linear-gradient(45deg, #ffffff 25%, transparent 25%) 0 0 / 2rem 2rem,
+        linear-gradient(45deg, transparent 75%, #ffffff 75%) 0 0 / 2rem 2rem,
+        linear-gradient(45deg, #ffffff 25%, transparent 25%) 1rem 1rem / 2rem 2rem,
+        linear-gradient(45deg, transparent 75%, #ffffff 75%) 1rem 1rem / 2rem 2rem;
+        background-color: #ebebeb; /* Color of the dark squares */
+    }
+
+    .card-narrow {
+        width: 5vw;
+        max-width: none;
+        min-width: auto;
+    }
+
+    .card-narrow-button {
+        margin:0 0;
+        font-size:small;
+        font-weight: bold;
+        padding: 5px 0;
+    }
+
+</style>
+
+
+<script>
+    var token_manager = new Token();
+</script>
+
+    
+<div class="content" style="background-color: white;" >
+
+    <div style="display:flex;height: 100%;">
+        
+        <div id="user-details" class="card" style="margin-right:0;" >
+    
+            <div class="card-header" >
+                User Management Home Page
+            </div>
+    
+            <div class="card-sub-header">
+                User Details
+            </div>
+    
+            <div id="user-details-table" style="width:100%;padding:0;margin:0;">
+            </div>
+            
+            <div class="card-sub-header">
+                User Status
+            </div>
+                
+            <div id="user-status-table" style="width:100%;padding:0;margin:0;margin-bottom:1vh;">
+            </div>
+            
+            <span style="font-size:x-small;margin:0.5vh auto;margin-bottom:2vh;cursor:pointer;" ><a style="color:black;" href="/user/signin" ><u>Sign In</u></a></span>
+            <span style="font-size:x-small;margin:0.5vh auto;margin-bottom:2vh;cursor:pointer;" ><a style="color:black;" href="/user/registration" ><u>Register</u></a></span>
+            <span id="log-out" style="display:block;font-size:x-small;margin:0.5vh auto;margin-bottom:2vh;cursor:pointer;" onclick="log_out(event)">
+                <u>Log out</u>
+            </span>
+    
+        </div>
+
+        <div id="user-update" class="card" style="margin-right:0;display: none;" >
+    
+            <div class="card-header" >
+                Update User
+            </div>
+    
+            <div class="card-input">
+                <div> 
+                    Email <div class="card-input-error-message"></div>
+                </div>
+                <div > <input id="email" class="card-input-in" type="email" > </div>
+            </div>  
+    
+            <div class="card-input">
+                <div> First Name <div class="card-input-error-message"></div> </div>
+                <div > <input id="first_name" class="card-input-in" type="text" > </div>
+            </div>
+    
+            <div class="card-input">
+                <div> Last Name <div class="card-input-error-message"></div> </div>
+                <div > <input id="last_name" class="card-input-in" type="text" > </div>
+            </div>
+            
+            <button id="update-user-button" style="margin-top:4vh;margin-bottom:2vh;" class="card-button" onclick="onUserUpdate(event, token_manager)" disabled >Update</button>
+
+            <span style="font-size:x-small;margin:0.5vh auto;margin-bottom:2vh;cursor:pointer;" ><a style="color:black;" href="/user/forgot-password" ><u>Change password?</u></a></span>
+    
+        </div>
+
+        <div id="user-reissue" class="card" style="margin-right:0;display: none;" >
+    
+            <div class="card-header" >
+                Re Issue Secrets
+            </div>
+
+            <div class="card-sub-header">
+                Cooldown
+            </div>
+    
+            <div id="user-cooldown-table" style="width:100%;padding:0;margin:0;">
+            </div>
+
+            <div class="card-sub-header">
+                Generate Secrets
+            </div>
+    
+            <button id="reissue-user-email-verification-button" style="margin-top:1vh;margin-bottom:2vh;font-size:small;" class="card-button" onclick="onResendEmailVerification(event, token_manager)"  >Resend Email Verification</button>
+
+        </div>
+        
+        <div id="nav-bar" class="card" style="height:auto; width:10vw;max-width:none;min-width:auto;margin-left:0;display: flex;" >
+
+            <div style="display: flex;flex-direction: column;">
+                <button style="height:4vh;margin:0 0;font-size:small;font-weight: bold;" class="card-button" onclick="toggleDiv(event, 'user-details');" disabled>
+                    Details
+                </button>
+                <button style="height:4vh;margin:0 0;font-size:small;font-weight: bold;" class="card-button" onclick="toggleDiv(event, 'user-update');" >
+                    Update
+                </button>
+                <button style="height:4vh;margin:0 0;font-size:small;font-weight: bold;" class="card-button" onclick="toggleDiv(event, 'user-reissue');" >
+                    ReIssue
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+</div>
+
+
+<script>
+
+
+    function getCardTable(tableConf) {
+
+        let table = document.createElement("table");
+        table.classList.add("card-table");
+        Object.keys(tableConf).forEach(key => {
+            let td1 = document.createElement("td");
+            td1.innerHTML = key;
+            let td2 = document.createElement("td");
+
+            if (tableConf[key] && typeof tableConf[key] === 'object' && "nodeType" in tableConf[key]) td2.appendChild(tableConf[key]);
+            else td2.innerHTML = tableConf[key];
+
+            let tr = document.createElement("tr");
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            table.appendChild(tr);
+        });
+
+        return table;
+
+    };
+
+
+    function setUserDetails(token_details) {
+
+        let table_conf = {
+            "Logged In": "False",
+            "Id": "",
+            "Email": "",
+            "First Name": "",
+            "Last Name": ""
+        };
+        if (token_details && "user_details" in token_details && token_details["user_details"]) {
+            let user_details = token_details["user_details"]["user"];
+            table_conf['Logged In'] = "True"
+            Object.keys(user_details).forEach(key => {
+
+                if (key === 'id') table_conf["Id"] = String(user_details[key]);
+                else if (key === 'email') table_conf["Email"] = user_details[key];
+                else if (key === 'first_name') table_conf["First Name"] = user_details[key];
+                else if (key === 'last_name') table_conf["Last Name"] = user_details[key];
+
+            });
+        };
+
+        let table = getCardTable(table_conf);
+        document.getElementById("user-details-table").appendChild(table);
+
+
+        table_conf = {
+            "Status": "False",
+            "Email Verification": "",
+        };
+        if (token_details && "user_details" in token_details && token_details["user_details"]) {
+            let onboarding_status = token_details["user_details"]["onboarding_status"];
+            Object.keys(onboarding_status).forEach(key => {
+
+                let value = (onboarding_status[key])? "True": "False";
+                if (key === 'user_valid') table_conf["Status"] = value;
+                else if (key === 'email_verificataion') table_conf["Email Verification"] = value;
+
+            });
+        };
+
+        table = getCardTable(table_conf);
+        document.getElementById("user-status-table").appendChild(table);
+    
+    };
+
+
+    function setUserUpdateDetails(token_details) {
+
+        if (token_details && "user_details" in token_details && token_details["user_details"]) {
+            
+            let user_details = token_details["user_details"]["user"];
+            Object.keys(user_details).forEach(key => {
+
+                if (key === 'email') document.getElementById("email").placeholder = user_details[key];
+                else if (key === 'first_name') document.getElementById("first_name").placeholder = user_details[key];
+                else if (key === 'last_name') document.getElementById("last_name").placeholder = user_details[key];
+
+            });                        
+
+        }
+
+    }
+
+
+    function setUserReissueSecrets(token_details) {
+
+        if (token_details && "user_details" in token_details && token_details["user_details"]) {
+            
+            let user_cooldowns = token_details["user_details"]["cooldowns"];
+            
+            table_conf = {
+                "Email verification": null,
+                "Issue password Change": null,
+            };
+            if (token_details && "user_details" in token_details && token_details["user_details"]) {
+            Object.keys(user_cooldowns).forEach(key => {
+                
+                let value = user_cooldowns[key]
+                if (user_cooldowns[key] && user_cooldowns[key] > 0) {
+                    
+                    let span = document.createElement('span');
+                    span.style.border = 'none';
+
+                    let timer = Timer.from_seconds(user_cooldowns[key], (minuites, seconds) => {
+                        span.innerHTML = `${minuites}:${seconds}`;
+
+                        if (minuites === 0 && seconds === 0 && key === 'email_secret_cooldown') {
+                            document.getElementById('reissue-user-email-verification-button').disabled = false;
+                        }
+                    });
+
+                    span.innerHTML = `${timer.__minuites__}:${timer.__seconds__}`;
+                    
+                    timer.start();
+
+                    value = span;
+
+                }
+
+                if (key === "email_secret_cooldown") table_conf["Email verification"] = value;
+                else if (key === "request_password_change_cooldown") table_conf["Issue password Change"] = value;
+ 
+            });
+
+            table = getCardTable(table_conf);
+            document.getElementById("user-cooldown-table").appendChild(table);
+        };
+
+
+            // enable reissue-user-email-verification-button if email is not verified
+            let user_onboarding = token_details["user_details"]["onboarding_status"];
+            let resend_email_verification_button = document.getElementById("reissue-user-email-verification-button");
+            if (!user_onboarding["email_verificataion"] && !user_cooldowns["email_secret_cooldown"]) {
+                resend_email_verification_button.disabled = false;
+            };
+
+
+            resend_email_verification_button.addEventListener('click', (event) => {
+
+
+
+            });
+
+        }        
+
+    }
+
+    
+    async function onResendEmailVerification(event, token_manager) {
+
+        let url = window.location.origin + "/user/resend-email-verification/";
+
+        event.target.disabled = true;
+
+        let headers = {"Content-Type": "application/json"};
+        headers = token_manager.get_token_header(headers);
+
+        // try {
+
+
+        const request = new Request(
+            url,
+            "POST",
+            headers,
+            JSON.stringify({}),
+            [
+                (response_json) => {
+                    
+                    setTimeout(() => {
+                        hideLoader();
+                        payload_instance.clear();
+                        setInfo("Email Verification Link Sent", "Click on the verification link sent on your email to verify your email");
+                        token_manager.get_token_details().then(token_details => {onUserDetails(token_details)});
+                    }, 1000);
+                }
+            ],
+
+            [
+                { "status": 403, "callbacks": [authenticationhandler, (error_response) => {
+                    setTimeout(() => {
+                        hideLoader();
+                        payload_instance.clear();
+                    }, 1000);
+                }] },
+                { "callbacks": [ defaulthandler, (error_response) => {
+                    setTimeout(() => {
+                        hideLoader();
+                        payload_instance.clear();
+                    }, 1000);
+                } ] }
+            ],
+
+            [
+                (response_json) => { 
+                    showLoader();
+                    event.target.disabled = true;
+                }
+            ]
+        )
+    
+        await request.response();
+        
+    }
+
+
+    function onUserDetails(details) {
+
+        setUserDetails(details);
+        setUserUpdateDetails(details);
+        setUserReissueSecrets(details);
+
+        // logged out
+        if (!details) {
+            document.getElementById("log-out").style.display = "none";
+            let navBar = document.getElementById("nav-bar");
+            Array.from(navBar.children).forEach(child => { child.disabled = true; })
+
+        // logged in
+        } else {
+
+            document.getElementById("log-out").style.display = "block";
+
+            if (details.user_details.user.is_staff) { 
+                userisadmin(); 
+            }
+
+
+        }
+
+    }
+
+
+    document.addEventListener("DOMContentLoaded", event => {
+
+        token_manager.get_token_details().then(token_details => {onUserDetails(token_details)});
+
+    });
+
+
+    function log_out(event) {
+        token_manager.discard(); 
+        location.reload();
+    }
+
+
+    function toggleDiv(event, divId) {
+
+        let div = document.getElementById(divId);
+        if (div) {
+        
+            Array.from(div.parentNode.children).forEach((childdiv, i) => {
+                if (i == div.parentNode.children.length - 1) return;
+                childdiv.style.display = "none";
+            });
+
+            div.style.display = "flex";
+
+            Array.from(event.target.parentNode.children).forEach(button => {
+                button.disabled = false;
+            });
+    
+            event.target.disabled = true;
+
+        }
+
+    }
+
+
+    var payload_instance = new Payload(
+        // config
+        {
+            "email": {
+                "id": "email",
+                "nullable": true,
+                "coerc": [
+                    Payload.Coerc.onFalseSetNull
+                ],
+                "check_with": [
+                    Payload.Checks.cannotBeBlank(),
+                    Payload.Checks.emailCheck(),
+                ],
+            },
+
+            "first_name": {
+                "id": "first_name",
+                "nullable": true,
+                "coerc": [
+                    Payload.Coerc.onFalseSetNull
+                ],
+                "check_with": [
+                    Payload.Checks.minLength(3),
+                    Payload.Checks.maxLength(55),
+                ]
+            },
+
+            "last_name": {
+                "id": "last_name",
+                "nullable": true,
+                "coerc": [
+                    Payload.Coerc.onFalseSetNull
+                ],
+                "check_with": [
+                    Payload.Checks.minLength(3),
+                    Payload.Checks.maxLength(55),
+                ]
+            }
+
+        },
+
+        // error callback
+        (key_element, errors) => {
+            
+            let error = null;
+            if (errors.length) error = errors[0];
+            
+            let parent = key_element.parentNode.parentNode;
+            let error_message_element = parent.getElementsByClassName("card-input-error-message");
+            if (error_message_element && error_message_element.length) {
+                error_message_element = error_message_element[0];
+            };
+
+            if (error) {
+                parent.classList.add("card-input-error");
+                if (error_message_element) error_message_element.innerHTML = error;
+                
+            } else {
+                let classList = parent.classList;
+                if (classList.contains("card-input-error")) classList.remove("card-input-error");
+                if (error_message_element) error_message_element.innerHTML = "";
+            };
+
+        },
+
+        // when payload is valid
+        (payload_instance) => {
+            
+            
+            let button = document.getElementById("update-user-button");
+            if (button) {
+
+                if (payload_instance.isPayloadValid()) button.disabled = false
+                else button.disabled = true;
+            }
+        },
+
+        ignore_null = true, can_be_empty = false
+
+    );
+
+    
+    async function onUserUpdate(event, token_manager) {
+        
+
+        let onError = (error_response) => {
+            setTimeout(() => {
+                hideLoader();
+                payload_instance.clear();
+            }, 1000);
+        }
+
+        let payload = payload_instance.getPayload();
+        let headers = {"Content-Type": "application/json"};
+        headers = token_manager.get_token_header(headers);
+
+        // event.target.disabled = true;
+        const request = new Request(
+            window.location.origin + "/user/update/",
+            "PUT",
+            headers,
+            JSON.stringify(payload),
+            [
+                (response_json) => {
+                    
+                    setTimeout(() => {
+                        hideLoader();
+                        payload_instance.clear();
+                        location.reload();
+                    }, 1000);
+
+                }
+            ],
+
+            [
+                { "status": 403, "callbacks": [authenticationhandler, onError] },
+                { "callbacks": [ defaulthandler, onError ] }
+            ],
+
+            [
+                (response_json) => { 
+                    showLoader();
+                    event.target.disabled = true; 
+                }
+            ]
+        )
+
+        await request.response();
+
+
+    }
+
+
+    function userisadmin() {
+
+        let button = document.createElement('button');
+        button.classList.add("card-button");
+        button.classList.add("card-narrow-button");
+        button.innerText = "Admin Dashboard";
+
+        button.onclick = () => {
+            window.location.href = window.location.origin + '/user/admin-dashboard/';
+        }
+
+        document.getElementById("user-details").appendChild(button);
+
+    }
+
+
+
+</script>
+
+{% endblock body %}
+
+
+
+

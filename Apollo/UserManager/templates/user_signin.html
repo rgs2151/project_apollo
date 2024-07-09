@@ -1,0 +1,169 @@
+{% extends "user_base.html" %}
+
+
+{% block title %}Register{% endblock title %}
+
+{% block body %}
+
+    
+<div class="content" >
+
+    <div class="card">
+
+        <div class="card-header" >
+            Sign In
+        </div>
+
+        <div class="card-input">
+            <div> 
+                Email <div class="card-input-error-message"></div>
+            </div>
+            <div > <input id="email" class="card-input-in" type="email" > </div>
+        </div>
+
+        <div class="card-input">
+            <div> Password <div class="card-input-error-message"></div> </div>
+            <div > <input id="password" class="card-input-in" type="password" > </div>
+        </div>
+
+        <button id="signin-button" style="margin-top:4vh;margin-bottom:2vh;" class="card-button" onclick="onSignIn(event)" disabled >Sign In</button>
+
+        <span style="font-size:x-small;margin:1vh auto;cursor:pointer;" ><a style="color:black;" href="/user/forgot-password" ><u>Forgot Password?</u></a></span>
+        <span style="font-size:x-small;margin:0.5vh auto;margin-bottom:2vh;cursor:pointer;" ><a style="color:black;" href="/user/registration" ><u>Register</u></a></span>
+
+    </div>
+
+
+
+</div>
+
+
+<script>
+
+    var payload_instance = new Payload(
+        // config
+        {
+            "email": {
+                "id": "email",
+                "check_with": [
+                    Payload.Checks.cannotBeNull(),
+                    Payload.Checks.cannotBeBlank(),
+                    Payload.Checks.emailCheck(),
+                ],
+            },
+
+            "password": {
+                "id": "password",
+                "check_with": [
+                    Payload.Checks.cannotBeNull(),
+                    Payload.Checks.cannotBeBlank(),
+                    Payload.Checks.minLength(8),
+                    Payload.Checks.maxLength(36),
+                    Payload.Checks.containsNumerical(),
+                    Payload.Checks.containsLowerCaseAlphabet(),
+                    Payload.Checks.containsUpperCaseAlphabet(),
+                    Payload.Checks.containsAtleastOne(["@", "#", "$", "%", "^", "&", "+", "=", "!"]),
+                ]
+            },
+
+
+        },
+
+        // error callback
+        (key_element, errors) => {
+            
+            let error = null;
+            if (errors.length) error = errors[0];
+            
+            let parent = key_element.parentNode.parentNode;
+            let error_message_element = parent.getElementsByClassName("card-input-error-message");
+            if (error_message_element && error_message_element.length) {
+                error_message_element = error_message_element[0];
+            };
+
+            if (error) {
+                parent.classList.add("card-input-error");
+                if (error_message_element) error_message_element.innerHTML = error;
+                
+            } else {
+                let classList = parent.classList;
+                if (classList.contains("card-input-error")) classList.remove("card-input-error");
+                if (error_message_element) error_message_element.innerHTML = "";
+            };
+
+        },
+
+        // when payload is valid
+        (payload) => {
+            
+            
+            let button = document.getElementById("signin-button");
+            if (button) {
+
+                if (payload.isPayloadValid()) button.disabled = false
+                else button.disabled = true;
+            }
+        }
+
+    );
+
+
+    async function onSignIn(event) {
+        
+        if (!payload_instance.isPayloadValid()) {
+            payload_instance.setErrors();
+            return null;
+        }
+
+        showLoader();
+        
+        let url = window.location.origin + "/user/login/";
+
+        let payload = payload_instance.getPayload();
+        delete payload["confirm_password"];
+        
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            });
+            const result = await response.json();
+
+            if ("error" in result && result["error"]["code"] === "RequestValidationFailed") {
+                console.log(result["error"]["message"]["failed_validations"])
+            } else if ("error" in result) {
+                setError(`${result["error"]["code"]}<br />${result["error"]["message"]}`);
+                hideLoader();
+                payload_instance.clear();
+            }
+
+            console.log("Success:", result);
+
+            if ("auth_token" in result && result["auth_token"]) {
+
+                var token_manager = new Token();
+                token_manager.update(result["auth_token"]);
+
+                setTimeout(() => {
+                    hideLoader();
+                    window.location.href = window.location.origin + "/user/home/";
+                }, 1000)
+            }
+
+        } catch (error) {
+            hideLoader();
+            payload_instance.clear();
+            console.error("Error:", error);
+        }
+
+    }
+
+
+</script>
+
+{% endblock body %}
+
+
+
+
