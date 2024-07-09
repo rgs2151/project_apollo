@@ -244,6 +244,7 @@ class Converse(APIView):
             h_res = result.to_dict("records")
             faiss_history.update(result)
 
+        print(tool_calls)
 
         # updating events
         # event = {}
@@ -272,7 +273,7 @@ class Events(APIView):
     def get(self, request: Request):
 
         req = request.data
-        instances = EventsData.objects(user_id=req.user_details.user.id)
+        instances = EventsData.objects(user_id=request.user_details.user.id)
         event_data = EventsDataSerializer(instances, many=True).data
 
         return Response({"data": event_data})
