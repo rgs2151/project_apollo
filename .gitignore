@@ -3,3 +3,4 @@ history
 *.pyc
 gpt-tools/*
 node_modules
+*__pycache__

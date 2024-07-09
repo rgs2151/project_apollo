@@ -32,6 +32,7 @@ class Assistant(Prompt):
 
 class Messages:
     
+
     def __init__(self, prompts: list) -> None:
         self.__set_prompts(prompts) 
         

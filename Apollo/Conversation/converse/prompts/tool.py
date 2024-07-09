@@ -61,7 +61,6 @@ EXTRACT_USER_RELATED_INFO = {
 }
 
 
-
 APPOINTMENT_SERVICE_PURCHASE_EVENT = {
     "type": "function",
     "function": {
@@ -110,3 +109,6 @@ APPOINTMENT_SERVICE_PURCHASE_EVENT = {
         },
     },
 }
+
+
+

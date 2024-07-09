@@ -3,7 +3,8 @@
 ### history
 POST http://127.0.0.1:8000/conversation/history/
 Content-Type: application/json
-Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+# Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+Authorization: Bearer gAAAAABmjONSxBO61gYwsTpCeG7nsqe3YUZgMEERUC5C_7sVILi1UIxCR7x5Yya2XiIgVYDYlYV5lfR82UNhkXewZrdtuXh6uydr2ZCndwC0b_aL-PAmP8lioIl-XkG3tG5yqpPHTt3M2L60xhQV2v-dSgnqW5VLN1icWWfwgSpbKb3rYp7-qyeJj4NAawljg5f8I9iD2zWykoDXyS32FMVi0LDe1klTQaqdIFPno-SU_ecmCmJyFFDwh-15YXRgQ-LZVY0oRGu9mUgGkZFVtxTEUtfEoBcOaw==
 
 {
     "type": "history"
@@ -19,10 +20,19 @@ Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KT
 ### converse
 POST http://127.0.0.1:8000/conversation/converse/
 Content-Type: application/json
-Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+# Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+Authorization: Bearer gAAAAABmjONSxBO61gYwsTpCeG7nsqe3YUZgMEERUC5C_7sVILi1UIxCR7x5Yya2XiIgVYDYlYV5lfR82UNhkXewZrdtuXh6uydr2ZCndwC0b_aL-PAmP8lioIl-XkG3tG5yqpPHTt3M2L60xhQV2v-dSgnqW5VLN1icWWfwgSpbKb3rYp7-qyeJj4NAawljg5f8I9iD2zWykoDXyS32FMVi0LDe1klTQaqdIFPno-SU_ecmCmJyFFDwh-15YXRgQ-LZVY0oRGu9mUgGkZFVtxTEUtfEoBcOaw==
 
 {
-    "message": "I have heart issues"
+    "message": {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "How to get out of procastination?"
+            }
+        ]
+    }
 }
 
 

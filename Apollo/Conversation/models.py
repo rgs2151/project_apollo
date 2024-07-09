@@ -26,6 +26,15 @@ class ConvHistory(Document):
     }
 
 
+class ChatHistory(Document):
+    user_id = fields.IntField(required=True, min=0)
+    prompt = fields.DictField(required=True)
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
+    meta = {
+        'collection': 'Chat_History',
+    }
+
+
 class ConversationState(Document):
     user_id = fields.IntField(required=True, min=0)
     conversation_state = fields.StringField(required=False, default="")
