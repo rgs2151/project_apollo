@@ -1,0 +1,823 @@
+{% extends "user_base.html" %}
+
+
+{% block title %}Admin Dashboard{% endblock title %}
+
+{% block body %}
+
+<style>
+
+    #user-details-table > table {
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: rgba(26, 26, 26, 0.9);
+        color: white;
+    }
+
+    .card-table-row:hover, .card-table-row-active {
+        background: rgba(26, 26, 26, 0.2);
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .card-table-row {
+        z-index: 2;
+    }
+
+    .group-list {
+        width: 15vw;
+        min-width: 15vw;
+        background-color: rgba(26, 26, 26, 0.2);
+        height: 25vh;
+        min-height: 25vh;
+        max-height: 25vh;
+        overflow-y: auto;
+        margin: 0 2vw;
+    }
+
+    .group-list-entry {
+        padding: 1vh 1vw;
+        font-size: smaller;
+    }
+
+    .group-list-entry:hover, .group-list-entry-selected {
+        background-color: rgba(26, 26, 26, 0.4);
+        cursor: pointer;
+    }
+
+    .card-modal {
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .card-modal > .card {
+        background-color: white;
+    }
+
+</style>
+
+
+<div id="group-manager" class="card-modal" style="z-index: 5;display: none;" >
+    <dic class="card">
+
+        <div style="display: flex;justify-content: flex-end;">
+            <div class="card-text card-close" style="cursor:pointer;" onclick="hideModal(event)" ><b >X</b></div>
+        </div>
+ 
+        <div class="card-header" style="margin-top: 0;padding-top: 0;">Manage Groups</div>
+
+        <div class="card-sub-header" > Create Group </div>
+
+        <div class="card-input">
+            <div> Name <div class="card-input-error-message"></div></div>
+            <div > <input id="create-name" class="card-input-in" type="text" > </div>
+        </div>
+
+        <button id="create-group-button" style="margin-top:1vh;margin-bottom:2vh;" class="card-button" onclick="onCreateGroup(event)" disabled >Create</button>
+
+        <div class="card-sub-header" > Delete Group </div>
+
+        <div class="card-input">
+            <div> Name <div class="card-input-error-message"></div></div>
+            <div > <input id="delete-name" class="card-input-in" type="text" > </div>
+        </div>
+
+        <button id="delete-group-button" style="margin-top:1vh;margin-bottom:4vh;" class="card-button" onclick="onDeleteGroup(event)" disabled >Delete</button>
+
+    </dic>
+</div>
+
+    
+<div class="content" >
+
+    
+    <div id="user-details-dashboard" class="card" style="width:99%;max-width:99%;min-width:99%;margin:1vh auto;" >
+
+        <div class="card-header" >
+            Admin Dashboard
+        </div>
+
+        <div class="card-sub-header">
+            User Details
+        </div>
+
+        <div id="user-details-table" style="padding: 0 2vw" >
+        </div>
+
+    
+        <div style="display:flex;">
+
+            <div style="border: 1px solid rgba(208,208,208,0.8);width: 50%;min-height:10vh;padding: 1vh 1vw;">
+
+                <div id="user-more-details" class="card-sub-header">
+                    More Details
+                </div>
+
+                <div id="more-user-details-table" ></div>
+
+            </div>
+
+            <div style="border: 1px solid rgba(208,208,208,0.8);width: 50%;min-height:10vh;padding: 1vh 1vw;">
+
+                <div id="user-more-details" class="card-sub-header">
+                    Groups
+                </div>
+
+                <div style="display: flex;justify-content: space-around;">
+
+                    <div style="display: flex;flex-direction: column;">
+                        <div style="font-size:smaller;margin:0 auto;display: inline-block;" >Available Groups</div>
+                        <div id="user-groups-available" class="group-list"></div>
+                        <button id="group-manager-button" class="card-button" style="margin-top:1vh;margin-bottom:2vh;font-size:small;" onclick="showModal('group-manager')" >Manage Groups</button>
+                    </div>
+
+                    <div style="display: flex;justify-content: center;flex-direction: column;">
+                        <button id="button-shift" class="card-button" style="margin: 1vh 2vw;" onclick="ShiftGroups()" disabled >></button>
+                        <button id="button-revert" class="card-button" style="margin: 1vh 2vw;" onclick="RevertGroups()" disabled><</button>
+                    </div>
+
+                    <div style="display: flex;flex-direction: column;">
+                        <div style="font-size:smaller;margin:0 auto;display: inline-block;" >Assigned Groups</div>
+                        <div id="user-groups-assigned" class="group-list"></div>
+                        <button id="user-group-assignment-button" class="card-button" style="margin-top:1vh;margin-bottom:2vh;font-size:small;" disabled >Confirm Group Assignment</button>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- group manager -->
+<script>
+    
+    var availableGroupDataGlobal = undefined;
+
+    
+    function hideModal(event) {
+        event.target.parentNode.parentNode.parentNode.style.display = "none";
+        event.target.parentNode.parentNode.parentNode.style.zIndex = -1;
+    }
+
+    
+    function showModal(id) {
+        let modal = document.getElementById(id);
+        modal.style.display = "block";
+        modal.style.zIndex = 5;
+    }
+
+
+    function errorCallback(key_element, errors) {
+        
+        let error = null;
+        if (errors.length) error = errors[0];
+        
+        let parent = key_element.parentNode.parentNode;
+        let error_message_element = parent.getElementsByClassName("card-input-error-message");
+        if (error_message_element && error_message_element.length) {
+            error_message_element = error_message_element[0];
+        };
+
+        if (error) {
+            parent.classList.add("card-input-error");
+            if (error_message_element) error_message_element.innerHTML = error;
+            
+        } else {
+            let classList = parent.classList;
+            if (classList.contains("card-input-error")) classList.remove("card-input-error");
+            if (error_message_element) error_message_element.innerHTML = "";
+        };
+
+    }
+
+
+    let createGroupPayloadInstance = new Payload(
+        // config
+        {
+            "name": {
+                "id": "create-name",
+                "check_with": [
+                    Payload.Checks.cannotBeNull(),
+                    Payload.Checks.cannotBeBlank(),
+                    (key, value) => {
+                        if (!availableGroupDataGlobal) return `group name not available`;
+                        if (Array.from(availableGroupDataGlobal.data).filter(item => item.name === value ).length) return `group name not available`;
+                    }
+                ],
+            },
+        },
+
+        // error callback
+        (key_element, errors) => errorCallback(key_element, errors),
+
+        // when payload is valid
+        (payload) => {
+            
+            let button = document.getElementById("create-group-button");
+            if (button) {
+
+                if (payload.isPayloadValid()) button.disabled = false
+                else button.disabled = true;
+            }
+            
+        }
+
+    );
+
+
+    let deleteGroupPayloadInstance = new Payload(
+        // config
+        {
+            "name": {
+                "id": "delete-name",
+                "check_with": [
+                    Payload.Checks.cannotBeNull(),
+                    Payload.Checks.cannotBeBlank(),
+                    (key, value) => {
+                        if (!availableGroupDataGlobal) return `group name not available`;
+                        if (!Array.from(availableGroupDataGlobal.data).filter(item => item.name === value ).length) return `group name not available`;
+                    }
+                ],
+            },
+        },
+
+        // error callback
+        (key_element, errors) => errorCallback(key_element, errors),
+
+        // when payload is valid
+        (payload) => {
+            
+            let button = document.getElementById("delete-group-button");
+            if (button) {
+
+                if (payload.isPayloadValid()) button.disabled = false
+                else button.disabled = true;
+            }
+            
+        }
+
+    );
+
+
+    async function onCreateGroup() {
+
+        let name = ""
+
+        if (availableGroupDataGlobal) {
+            
+            if (!createGroupPayloadInstance.isPayloadValid()) {
+                payload_instance.setErrors();
+                return null;
+            }
+
+            let payload = createGroupPayloadInstance.getPayload();
+            
+            showLoader();
+
+            let headers = {"Content-Type": "application/json"};
+            headers = token_manager.get_token_header(headers);
+            
+            const request = new Request(
+                window.location.origin + "/user/admin-groups-manager/",
+                "POST",
+                headers,
+                JSON.stringify(payload),
+                [
+                    (response_json) => {
+                        
+                        setTimeout(() => {
+                            createGroupPayloadInstance.clear();
+                            hideLoader();
+                            location.reload();
+                        }, 1000);
+                    }
+                ],
+
+                [
+                    { "status": 403, "callbacks": [authenticationhandler, (error_response) => {
+                        setTimeout(() => {
+                            hideLoader();
+                        }, 1000);
+                    }] },
+                    { "callbacks": [ defaulthandler, (error_response) => {
+                        setTimeout(() => {
+                            hideLoader();
+                        }, 1000);
+                    } ] }
+                ],
+
+                [
+                    (response_json) => { 
+                        showLoader();
+                    }
+                ]
+            )
+            
+            await request.response();
+
+
+
+
+        }
+    }
+
+
+    async function onDeleteGroup(event) {
+
+        let name = ""
+
+        if (availableGroupDataGlobal) {
+            
+            if (!deleteGroupPayloadInstance.isPayloadValid()) {
+                payload_instance.setErrors();
+                return null;
+            }
+
+            let payload = deleteGroupPayloadInstance.getPayload();
+            payload = availableGroupDataGlobal.data.filter(item => item.name === payload.name)[0];
+            
+            showLoader();
+
+            let headers = {"Content-Type": "application/json"};
+            headers = token_manager.get_token_header(headers);
+            
+            const request = new Request(
+                window.location.origin + "/user/admin-groups-manager/",
+                "DELETE",
+                headers,
+                JSON.stringify(payload),
+                [
+                    (response_json) => {
+                        
+                        setTimeout(() => {
+                            createGroupPayloadInstance.clear();
+                            hideLoader();
+                            location.reload();
+                        }, 1000);
+                    }
+                ],
+
+                [
+                    { "status": 403, "callbacks": [authenticationhandler, (error_response) => {
+                        setTimeout(() => {
+                            hideLoader();
+                        }, 1000);
+                    }] },
+                    { "callbacks": [ defaulthandler, (error_response) => {
+                        setTimeout(() => {
+                            hideLoader();
+                        }, 1000);
+                    } ] }
+                ],
+
+                [
+                    (response_json) => { 
+                        showLoader();
+                    }
+                ]
+            )
+            
+            await request.response();
+
+
+
+
+        }
+    }
+
+
+</script>
+
+
+<script>
+
+    var token_manager = new Token();
+    
+
+    function getKeyValueCardTable(tableConf) {
+
+        let table = document.createElement("table");
+        table.classList.add("card-table");
+        Object.keys(tableConf).forEach(key => {
+            let td1 = document.createElement("td");
+            td1.innerHTML = key;
+            let td2 = document.createElement("td");
+
+            if (tableConf[key] && typeof tableConf[key] === 'object' && "nodeType" in tableConf[key]) td2.appendChild(tableConf[key]);
+            else td2.innerHTML = tableConf[key];
+
+            let tr = document.createElement("tr");
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            table.appendChild(tr);
+        });
+
+        return table;
+
+    };
+
+
+    function getCardRow(tableRow) {
+        
+        let tr = document.createElement("tr");
+
+        Object.keys(tableRow).forEach(key => {
+
+            let td = document.createElement("td");
+            if (tableRow[key] && typeof tableRow[key] === 'object' && "nodeType" in tableRow[key]) td.appendChild(tableRow[key]);
+            else td.innerHTML = tableRow[key];
+
+            tr.appendChild(td);
+
+        });
+
+        return tr;
+
+    };
+
+
+    function getCardTable(tableColumns, tableContent, tableRowClass=undefined) {
+
+        let table = document.createElement("table");
+        table.classList.add("card-table");
+        
+        let tr = document.createElement("tr");
+        tableColumns.forEach(column => {
+            let th = document.createElement("th");
+            th.innerText = column;
+            tr.appendChild(th);
+        })
+
+        let thead = document.createElement("thead");
+        thead.appendChild(tr)
+        table.appendChild(thead);
+
+        let tbody = document.createElement("tbody");
+        tableContent.forEach(content => {
+            let tr = getCardRow(content);
+            if (tableRowClass) tr.classList.add(tableRowClass);
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+
+        return table;
+
+    }
+
+
+    function onUserDetails(response) {
+
+        let data = response.data;
+        if (data) {
+
+            let tableContent = [];
+            response.data.forEach(details => {
+                if (details.user) {
+                    let user = {...details.user};
+                    delete user.groups;
+                    tableContent.push(user);
+                }
+            })
+
+            let tableHeaders = [];
+            if (tableContent.length) tableHeaders = Array.from(Object.keys(tableContent[0]));
+
+            let table = getCardTable(tableHeaders, tableContent, "card-table-row");
+            let dashboard = document.getElementById("user-details-table");
+            dashboard.innerHTML = "";
+            table.classList.add("card-table-1");
+            dashboard.appendChild(table);
+
+            setMoreUserDetailsEvents(table, data);
+        
+        }
+
+    }
+
+
+    async function loadUserDetails() {
+
+        let headers = {"Content-Type": "application/json"};
+        headers = token_manager.get_token_header(headers);
+        
+        const request = new Request(
+            window.location.origin + "/user/admin-users/",
+            "GET",
+            headers,
+            JSON.stringify({}),
+            [
+                (response_json) => {
+                    
+                    setTimeout(() => {
+                        onUserDetails(response_json);
+                        hideLoader();
+                    }, 1000);
+                }
+            ],
+
+            [
+                { "status": 403, "callbacks": [authenticationhandler, (error_response) => {
+                    setTimeout(() => {
+                        hideLoader();
+                    }, 1000);
+                }] },
+                { "callbacks": [ defaulthandler, (error_response) => {
+                    setTimeout(() => {
+                        hideLoader();
+                    }, 1000);
+                } ] }
+            ],
+
+            [
+                (response_json) => { 
+                    showLoader();
+                }
+            ]
+        )
+        
+        await request.response();
+
+    }
+
+
+    function onGroupListEntryClick (event) {
+        if (event.target.classList.contains("group-list-entry-selected")) event.target.classList.remove("group-list-entry-selected");
+        else event.target.classList.add("group-list-entry-selected");
+    }
+
+
+    function HideGroups() {
+
+        let groupAssigned = document.getElementById("user-groups-assigned");
+        let groupAvailable = document.getElementById("user-groups-available");
+
+        let groupIdsAssigned = Array.from(groupAssigned.children).map(x => {return x.dataset.id});
+
+        if (groupIdsAssigned && groupAvailable.children) {
+            Array.from(groupAvailable.children).forEach(child => {
+                if (groupIdsAssigned.includes(child.dataset.id)) child.style.display = "none";
+                else child.style.display = "block";
+
+            })
+        }
+
+    }
+
+
+    function ShiftGroups() {
+
+        let groupAssigned = document.getElementById("user-groups-assigned");
+        let groupAvailable = document.getElementById("user-groups-available");
+
+        Array.from(groupAvailable.getElementsByClassName("group-list-entry-selected")).forEach(child => {
+            child.classList.remove("group-list-entry-selected");
+            child = child.cloneNode(true);
+            child.onclick = onGroupListEntryClick;
+            groupAssigned.appendChild(child);
+        })
+
+        HideGroups();
+
+    }
+
+
+    function RevertGroups() {
+
+        let groupAssigned = document.getElementById("user-groups-assigned");
+        let groupAvailable = document.getElementById("user-groups-available");
+
+        Array.from(groupAssigned.getElementsByClassName("group-list-entry-selected")).forEach(child => {
+            child.parentNode.removeChild(child);
+            child.classList.remove("group-list-entry-selected");
+        })
+
+        HideGroups();
+
+    }
+
+
+    function arraySubtract(arr1, arr2) {
+        let set2 = new Set(arr2);   
+        return arr1.filter(item => !set2.has(item));
+    }
+
+
+    async function performGroupManager(method, payload) {
+
+        let headers = {"Content-Type": "application/json"};
+        headers = token_manager.get_token_header(headers);
+
+        console.log(JSON.stringify(payload));
+
+        const request = new Request(
+            window.location.origin + "/user/admin-user-groups-manager/",
+            method,
+            headers,
+            JSON.stringify(payload),
+            [
+                (response_json) => {}
+            ],
+
+            [
+                { "status": 403, "callbacks": [authenticationhandler] },
+                { "callbacks": [ defaulthandler] }
+            ],
+
+            []
+        )
+        
+        await request.response();
+    }
+
+
+    async function performUpdateGroup(user_id, removed, updated) {
+
+        if (!removed.length && !updated.length) return;
+        
+        showLoader();
+
+        if (removed.length) {
+            await performGroupManager("DELETE", {
+                "user_id": user_id,
+                "groups": removed
+            });
+        }
+        
+        if (updated.length) {
+            await performGroupManager("POST", {
+                "user_id": user_id,
+                "group_ids": updated.map(x => {return parseInt(x.id)})
+            });
+        }
+
+        if (removed.length || updated.length) {
+            loadUserDetails();
+            setTimeout(() => {}, 1000)
+            
+        }
+
+
+    };
+
+
+    function setMoreUserDetailsEvents(table, userDetails) {
+
+        let data = userDetails;
+
+        let tbody = table.getElementsByTagName("tbody")[0];
+
+        let previousSelectedRow = undefined;
+
+        Array.from(tbody.children).forEach((child, index) => {
+
+            child.addEventListener('click', (event) => {
+
+                document.getElementById("button-shift").disabled = false;
+                document.getElementById("button-revert").disabled = false;
+                document.getElementById("user-group-assignment-button").disabled = false;
+
+                if (previousSelectedRow) previousSelectedRow.classList.remove("card-table-row-active")
+                
+                event.target.parentNode.classList.add("card-table-row-active");
+                previousSelectedRow = event.target.parentNode;
+                
+                let details = {...data[index]};
+                delete details.user;
+                let table = getKeyValueCardTable(details);
+                let parent = document.getElementById("more-user-details-table");
+                parent.innerHTML = "";
+                parent.appendChild(table);
+
+                let groups = data[index].user.groups;
+                let groupList = document.getElementById("user-groups-assigned");
+                groupList.innerHTML = "";
+                groups.forEach(groupData => {
+                    let div = document.createElement("div");
+                    div.classList.add("group-list-entry")
+                    div.innerHTML = groupData.name;
+                    div.dataset.id = groupData.id;
+                    div.addEventListener("click", onGroupListEntryClick)
+                    groupList.appendChild(div);
+                });
+
+                HideGroups();
+
+
+                let user_id = data[index].user.id;
+                let userOriginalGroupsRaw = data[index].user.groups
+                let userOriginalGroups = userOriginalGroupsRaw.map(x => {return x["id"];});
+                let groupAssignmentButton = document.getElementById("user-group-assignment-button");
+                groupAssignmentButton.onclick = () => {
+
+                    let groupAssigned = document.getElementById("user-groups-assigned");
+                    let groupAssignedChildrenRaw = Array.from(groupAssigned.children)
+                    let groupAssignedChildrenIds = groupAssignedChildrenRaw.map(x => {return parseInt(x.dataset.id);})
+                    
+                    let removed = arraySubtract(userOriginalGroups, groupAssignedChildrenIds);
+                    removed = removed.map(id => {
+                        return userOriginalGroupsRaw.filter(item => item.id === id)[0]
+                    });
+
+                    let added = arraySubtract(groupAssignedChildrenIds, userOriginalGroups);
+                    added = added.map(id => {
+                        let group = groupAssignedChildrenRaw.filter(item => parseInt(item.dataset.id) === id)[0];
+                        return { "id": group.dataset.id, "name": group.innerText }
+                    });
+
+                    performUpdateGroup(user_id, removed, added);
+
+                }
+
+            })
+
+        })
+
+    }
+
+
+    function onAvailableGroupsData(groupData) {
+
+        let groupDiv = document.getElementById("user-groups-available");
+
+        availableGroupDataGlobal = {...groupData}
+        
+        groupData.data.forEach(group => {
+            let div = document.createElement("div");
+            div.classList.add("group-list-entry")
+            div.innerHTML = group.name;
+            div.dataset.id = group.id;
+
+            div.addEventListener("click", onGroupListEntryClick);
+            groupDiv.appendChild(div);
+
+        });
+
+    }
+
+
+    async function fetchAllGroups() {
+
+        let headers = {"Content-Type": "application/json"};
+        headers = token_manager.get_token_header(headers);
+        
+        const request = new Request(
+            window.location.origin + "/user/admin-groups/",
+            "GET",
+            headers,
+            JSON.stringify({}),
+            [
+                (response_json) => {onAvailableGroupsData(response_json);}
+            ],
+
+            [
+                { "status": 403, "callbacks": [authenticationhandler] },
+                { "callbacks": [ defaulthandler] }
+            ],
+
+            []
+        )
+        
+        await request.response();
+    }
+
+    
+    document.addEventListener("DOMContentLoaded", event => {
+
+        token_manager.get_token_details().then(token_details => {
+            
+            // setting admin user details
+            loadUserDetails();
+            
+            // fetching all group details
+            fetchAllGroups();
+
+        });
+
+
+    });
+
+
+
+
+
+</script>
+
+
+{% endblock body %}
+
+
+
+

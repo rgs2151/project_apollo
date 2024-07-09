@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}{% endblock title %}
+    </title>
+</head>
+
+<style>
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .content {
+        width: 90vw;
+        height: 95vh;
+        border: 1px solid rgba(208,208,208,0.5);
+        margin: auto;
+    }
+
+    .card {
+        width: 40vw;
+        max-width: 400px;
+        min-width: 400px;
+        height: auto;
+        border: 2px solid rgba(208,208,208,0.8);
+        margin: auto;
+        margin-top: 10vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-header {
+        font-size: larger;
+        font-weight: bold;
+        padding: 2vh 2vw;
+        margin: 1vh 0;
+        color: rgba(26, 26, 26, 0.9);
+    }
+
+    .card-sub-header {
+        font-size: medium;
+        font-weight: bold;
+        padding: 1vh 2vw;
+        margin: 1vh 0;
+        color: rgba(26, 26, 26, 0.8);
+    }
+
+    .card-text {
+        font-size: small;
+        padding: 1vh 2vw;
+        margin: 1vh 0;
+        color: rgba(26, 26, 26, 0.9);
+    }
+
+    .card-table {
+        font-size: small;
+        padding: 0 2vw;
+        margin: 1vh 0;
+        width: 100%;
+    }
+
+    .card-table * {
+        padding: 2.5px 5px;
+        border: 1px solid rgba(26, 26, 26, 0.9);
+    }
+
+    .card-input {
+        display: flex;
+        flex-direction: column;
+        margin: 1vh 0;
+    }
+
+    .card-input > div {
+        padding: 0vh 2vw;
+        vertical-align: baseline;
+    }
+
+    .card-input-error > div > input {
+        border: 2px solid red;
+    }
+
+    .card-input-in {
+        width: 90%;
+    }
+
+    .card-button {
+        border-radius: 2px;
+        border: 2px solid rgba(26, 26, 26, 0.9);
+        background-color: white;
+        font-size: larger;
+        margin: 4vh 2vw;
+        cursor: pointer;
+    }
+
+    .card-button:hover {
+        border: 2px solid rgba(26, 26, 26, 0.2);
+        background-color: rgba(26, 26, 26, 0.9);
+        color: white;
+    }
+
+    .card-button:active {
+        border: 2px solid rgba(26, 26, 26, 0.9);
+        background-color: white;
+        color: rgba(26, 26, 26, 0.9);
+    }
+
+    .card-button:disabled {
+        border: 2px solid rgba(26, 26, 26, 0.2);
+        background-color: rgba(26, 26, 26, 0.2);
+        color: rgba(26, 26, 26, 0.9);
+        cursor: default;
+    }
+
+    .card-input-error-message {
+        display: inline-block;
+        font-size: x-small;
+        margin: 0 1vw;
+        color: red;
+    }
+
+    .card-error {
+        background-color: rgba(208,208,208,0.8);
+        width: 30vw;
+        max-width: 340px;
+        min-width: 340px;
+        flex-direction:row;
+        justify-content:space-between;
+    }
+
+    .card-close {
+        display: flex;
+        align-items: center;
+        padding: auto auto;
+        margin: 0;
+    }
+
+    .card-close:hover {
+        border: 1px solid rgba(208,208,208,0.9);
+    }
+
+</style>
+
+<!-- loader -->
+<style>
+    .loader {
+        border: 8px solid #f3f3f3; /* Light grey */
+        border-top: 8px solid rgba(137, 137, 137, 0.9); ; /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+
+<script>
+
+    // for error div
+    function hideError(event) {event.target.parentNode.style.display = 'none';};
+    
+    function setError(message) {
+        let errorDiv = document.getElementById("__error__");
+        errorDiv.innerHTML = message;
+        errorDiv.parentNode.style.display = 'flex';
+    
+    }
+    
+    function showLoader() { 
+        let loader = document.getElementById("__LOADER__");
+        loader.parentNode.style.zIndex = 10;
+        loader.style.display = "block";
+    };
+    
+    function hideLoader() {
+        let loader = document.getElementById("__LOADER__");
+        loader.parentNode.style.zIndex = -1;
+        loader.style.display = "none";
+    };
+    
+    
+    // for info div
+
+    const INFOHIDDEN = new CustomEvent('InfoHidden', {
+        bubbles: true,
+        cancelable: true
+    });
+    
+    function setInfo(header, message) {
+        let infoDiv = document.getElementById("__INFO__");
+        let infoChildren = Array.from(infoDiv.children);
+        infoChildren[1].innerHTML = header;
+        infoChildren[2].innerHTML = message;
+        infoDiv.parentNode.parentNode.style.display = 'block';
+        infoDiv.parentNode.parentNode.style.zIndex = 10;
+    }
+    
+    function hideInfo() {
+        let infoDiv = document.getElementById("__INFO__");
+        infoDiv.parentNode.parentNode.style.display = 'none';
+        infoDiv.parentNode.parentNode.style.zIndex = -1;
+        infoDiv.dispatchEvent(INFOHIDDEN);
+    };
+    
+    
+</script>
+    
+
+<script>
+    // request error handlers
+    
+    // default handle for usermanager backend
+    function defaulthandler(response_json) {
+        const error_code = ("error" in response_json && response_json["error"] && "code" in response_json["error"] && response_json["error"]["code"])? response_json["error"]["code"] : "internal server error";
+        const error_message = ("error" in response_json && response_json["error"] && "message" in response_json["error"] && response_json["error"]["message"])? response_json["error"]["message"] : "something went wrong";
+
+        setError(`${error_code}<br />${error_message}`);
+        
+    }
+
+    // end loader if started
+    function loaderhandler(response_json) { hideLoader(); }
+
+
+    function authenticationhandler(response_json) { setError(`authentication failed<br />please login to continue`); }
+
+
+    
+
+
+</script>
+
+
+<!-- core scripts -->
+<script>
+
+    
+    var ERROR = new Event("error-occured");
+
+
+    class Payload {
+
+        /*
+        config = {
+
+            "key": {
+                "id": someId,
+                "check_with": [
+                    functions
+                ],
+            }
+
+        }
+
+        setError = (key_element, errors) => {}
+
+        */
+        
+        constructor (config, setError=null, onChange=null, ignore_null=false, can_be_empty=false) {
+            this.payload = {};
+            this.ignore_null = ignore_null;
+            this.can_be_empty = can_be_empty;
+
+            // initialize config
+            Object.keys(config).forEach(key => {
+                let key_config = config[key];
+                let key_element = document.getElementById(key_config["id"]);
+                if (!key_element) console.error(`key_element: ${key_element} not found`);
+
+                key_config["element"] = key_element;
+                if (key_element.tagName.toLowerCase() !== "input") console.error(`key_element: ${key_element} tagName should be input (current: ${key_element.tagName})`);
+                
+                if (!(key in this.payload)) this.payload[key] = {};
+                this.payload[key]["value"] = null;
+
+                if (!key_config["nullable"]) this.payload[key]["errors"] = ["not initialized yet"]
+                else this.payload[key]["errors"] = [];
+
+                key_element.addEventListener("change", event => {
+                    
+                    this.payload[key]["value"] = event.target.value;
+                    this.payload[key]["errors"] = [];
+                    
+                    // Coerce here
+                    if (key_config["coerc"]) {
+
+                        key_config["coerc"].forEach(coerc => {
+                            this.payload[key]["value"] = coerc(this.payload[key]["value"]);
+                        });
+
+                    }
+                    
+                    if (key_config["check_with"]) {
+
+                        key_config["check_with"].forEach(check => {
+                            let error_message = check(key, this.payload[key]["value"])
+                            if (error_message) this.payload[key]["errors"].push(error_message);
+                        });
+
+                    }
+
+                    if (setError !== null) setError(key_element, this.payload[key]["errors"]);
+
+                    if (onChange !== null) onChange(this);
+
+                });
+            });
+
+            this.config = config;
+            this.setError = setError;
+            this.onChange = onChange;
+        };
+
+
+        isPayloadValid() {
+            let status = true;
+            Object.keys(this.payload).forEach(key => {
+                if (this.payload[key]['errors'].length > 0) {
+                    status = false;
+                    return;
+                }
+            });
+
+            
+            if (!this.can_be_empty && !Object.keys(this.getPayload()).length) status = false;
+
+            return status;
+
+        }
+
+
+        setErrors() {
+            Object.keys(this.payload).forEach(key => {
+                let errors = this.payload[key]['errors'];
+                if (this.setError !== null) this.setError(this.config[key]['element'], errors);
+            });
+        }
+
+
+        getPayload() {
+            
+            const payload = {}
+
+            Object.keys(this.payload).forEach(key => {
+                if (this.payload[key]['value'] === null && this.ignore_null) {
+                    return;
+                };
+                payload[key] = this.payload[key]['value'];
+            });
+
+            return payload;
+
+        }
+
+
+        clear() {
+            Object.keys(this.config).forEach(key => {
+                this.config[key]['element'].value = null;
+            });
+        }
+
+        
+        static Checks = class {
+
+            static cannotBeNull(check=true) {
+                return (key, value) => {
+                    if (check && value === null) return `cannot be null`;
+                }
+            }
+
+            static cannotBeBlank(check=true) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`cannotBeBlank is to be used on String data type`);
+                    if (check && !value) return `cannot be blank`;
+                }
+            }
+
+            static minLength(length=null) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`minLength is to be used on String data type`);
+                    if (length === null) console.error(`minLength length not set`);
+                    if (length < 0) console.error(`minLength length cannot be negative`);
+                    if (value.length < length) return `min length is ${length}`;
+                }
+            }
+
+            static maxLength(length=null) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`maxLength is to be used on String data type`);
+                    if (length === null) console.error(`maxLength length not set`);
+                    if (length < 0) console.error(`maxLength length cannot be negative`);
+                    if (value.length > length) return `max length is ${length}`;
+                }
+            }
+
+            static emailCheck(check=true) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`emailCheck is to be used on String data type`);
+
+                    let email_pattern = /^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
+                    if (check && !value.toLowerCase().match(email_pattern)) return `invalid email`
+                }
+            }
+
+            static contains(check_with=[], not=false) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`contains is to be used on String data type`);
+                    if (! (check_with instanceof Array)) console.error(`contains check_with should be of Array type`);
+                    if (!check_with) console.error(`contains check_with cannot be empty`);
+                    check_with.forEach(check_str => {
+                        let condition = !(check_str in value);
+                        if (not) condition = !condition;
+                        if (condition) return `should contain: ${check_with.join(", ")}`;
+                    })
+                    
+                }
+            }
+
+            static containsNumerical(check=true) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`contains is to be used on String data type`);
+                    if (!/\d/g.test(value)) return `should contain atleast one number`;        
+                }
+            }
+
+            static containsLowerCaseAlphabet(check=true) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`contains is to be used on String data type`);
+                    if (!/[a-z]/.test(value)) return `should contain atleast one lower case`;
+                }
+            }
+
+            static containsUpperCaseAlphabet(check=true) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`contains is to be used on String data type`);
+                    if (!/[a-z]/.test(value)) return `should contain atleast one upper case`;
+                }
+            }
+        
+
+            static containsAtleastOne(check_with=[]) {
+                return (key, value) => {
+                    if (value == null) return;
+                    if (typeof value !== 'string') console.error(`containsAtleastOne is to be used on String data type`);
+                    if (! (check_with instanceof Array)) console.error(`containsAtleastOne check_with should be of Array type`);
+                    if (!check_with) console.error(`containsAtleastOne check_with cannot be empty`);
+                    
+                    let any_present = false;
+                    check_with.forEach(check_str => {
+                        if (value.includes(check_str)) any_present = true;
+                    })
+
+                    if (!any_present) return `should contain atleast one: ${check_with.join(", ")}`;
+                    
+                }
+            }
+        }
+
+        static Coerc = class {
+
+            static onFalseSetNull(value) {
+                if (!value) return null;
+                return value;
+            }
+
+        }
+
+
+    }
+
+
+    class Timer {
+
+        constructor(minuites=0, seconds=0, ontick=(minuites, seconds)=>{
+            // console.log(minuites, seconds);
+        }) {
+
+            if (typeof minuites != 'number' && minuites < 0 && minuites > 60)
+                console.error("invalid minuites");
+
+            if (typeof seconds != 'number' && seconds < 0 && seconds > 60)
+                console.error("invalid minuites");
+
+            this.seconds = (seconds === 0)? 60: seconds;
+            this.minuites = (minuites != 0 && seconds === 0)? minuites - 1: minuites;
+            this.__minuites__ = this.minuites;
+            this.__seconds__ = this.seconds;
+            this.__timeout__ = null;
+            this.ontick = ontick;
+
+        }
+
+        static from_timestring(time, ontick) {
+
+            if (time) {
+                
+                let splits = time.split(":");
+                if (!splits.length === 2) console.error("invalid timestring");
+                
+                let minuites = parseInt(splits[0]);
+                let seconds = parseInt(splits[1]);
+                
+                return new Timer(minuites, seconds, ontick);
+
+            } else console.error("invalid timestring");
+
+        }
+
+
+        static from_seconds(seconds, ontick, overflow="error") {
+
+            let minuites = Math.floor(seconds / 60);
+            let __seconds__ = seconds % 60;
+
+            if (minuites > 60 && overflow==="error") console.error("minuites timer overflowed");
+
+            minuites = minuites % 60;
+
+            return new Timer(minuites, __seconds__, ontick);
+
+        }
+
+
+        stop() {
+            if (this.__timeout__) clearInterval(this.__timeout__); 
+        }
+
+        
+        count_down() {
+            
+            if (this.__timeout__) {
+
+                if (this.__seconds__ === 0 && this.__minuites__ === 0) this.stop();
+                
+                if (this.__seconds__) {
+    
+                    this.__seconds__ -= 1;
+    
+                    if (this.__seconds__ === 0 && this.__minuites__ != 0 ) {
+                        this.__minuites__ -= 1;
+                        this.__seconds__ = 60;
+                    }
+    
+                }
+
+                this.ontick(this.__minuites__, this.__seconds__);
+
+            }
+
+
+        }
+
+
+        start() {
+            this.__timeout__ = setInterval(() => {
+                this.count_down();
+            }, 1000)
+        }
+
+    }
+
+    // Error handling will be done specifically to this project
+    class Request {
+
+        /*
+            onError = [
+                {
+                    "status": 500, // can be (int status code), ("*" any other status code and not 200)
+                    "callbacks": [],
+                    "not": false // will check for `in` and `not in`
+                },
+                {
+                    "error": "Request Validation Failed", (any string will be checked for equality)
+                    "callbacks": []
+                },
+                {
+                    "check_with": callable_to_check_with(),
+                    "callbacks": []
+                },
+                {
+                    "callbacks": []
+                }
+            ]
+        */
+
+        constructor (url, method, headers={}, payload={}, onResponse=[], onError=[], onRequest=[]) {
+
+            this.url = url;
+            this.method = method;
+            this.headers = headers;
+            this.payload = payload;
+            this.onResponse = onResponse;
+            this.onError = onError;
+            this.onRequest = onRequest;
+
+        }
+
+        async get_response() {
+
+            let response = null;
+            let response_data = null;
+
+            try {
+                
+                this.perform_callbacks(this.onRequest, null);
+                
+                let fetch_parameters = { method: this.method, headers: this.headers, body: this.payload };
+                if (this.method === "GET") delete fetch_parameters["body"];
+
+                response = await fetch(this.url, fetch_parameters);
+                response_data = await response.json();
+
+                return [response, response_data];
+
+            } catch (error) { 
+                console.error(error);
+                return [response, response_data]; 
+            }
+
+        }
+
+        async response() {
+
+            const response_data = await this.get_response();
+            const response = response_data[0];
+            const response_json = response_data[1];
+
+            // Error
+            if ("error" in response_json || response.status !== 200) {
+                this.error_encountered(response, response_json);
+
+            // Success
+            } else {
+                this.response_encountered(response, response_json);
+            }
+
+        }
+
+
+        perform_callbacks(callbacks, value) {
+            callbacks.forEach(callback => { callback(value) })
+        }
+
+
+        error_encountered(response, response_json) {
+
+            let error_handled = false;
+            this.onError.forEach(error_conf => {
+
+                if (error_handled) return;
+
+                if ("status" in error_conf) {
+
+                    if (response.status === error_conf["status"]) {
+                        this.perform_callbacks(error_conf["callbacks"], response_json);
+                        error_handled = true;
+                    }
+
+                } else if ("error" in error_conf) {
+
+                    if ("error" in response_json && response_json["error"] && response_json["error"] === error_conf["error"]) {
+                        this.perform_callbacks(error_conf["callbacks"], response_json);
+                        error_handled = true;
+                    }
+
+                } else if ("check_with" in error_conf) {
+
+                    if (error_conf["check_with"](response, response_json)) {
+                        this.perform_callbacks(error_conf["callbacks"], response_json);
+                        error_handled = true;
+                    }
+
+                } else if ("callbacks" in error_conf) {
+                    this.perform_callbacks(error_conf["callbacks"], response_json);
+                    error_handled = true;
+
+                } else {
+                    console.error(`onError config not understood: ${error_conf}`)
+                    error_handled = true;
+                }
+
+            });
+
+        }
+
+
+        response_encountered(response, response_json) {
+            
+            this.perform_callbacks(this.onResponse, response_json);
+
+        }
+
+
+    }
+
+
+
+    class Token {
+
+        constructor () {
+
+            this.token = (this.exists())? this.get(): null;
+
+        }
+
+        exists() { return (localStorage.getItem("token"))? true: false; }
+
+        get() { return localStorage.getItem("token") }
+
+        update(token) { localStorage.setItem("token", token); }
+
+        discard() { if (this.exists()) localStorage.removeItem("token"); }
+
+        get_token_header(add_to_header=null) {
+            let token_value = `Bearer ${this.token}`;
+            
+            if (add_to_header) {
+                add_to_header["Authorization"] = token_value;
+                return add_to_header;
+            }
+            
+            return {"Authorization": token_value};
+        }
+
+        async get_token_details() {
+
+            // return null;
+
+            let headers = {"Content-Type": "application/json"}
+            headers = this.get_token_header(headers);
+
+            let response_json = null;
+            let set_response_json = (_response_json) => {
+                response_json = _response_json
+            }
+
+            const request = new Request(
+                window.location.origin + "/user/details/",
+                "GET",
+                headers,
+                {},
+                [
+                    (response_json) => {
+                        set_response_json(response_json);
+                    },
+                ],
+                [
+                    { "status": 403, "callbacks": [authenticationhandler] },
+                    { "callbacks": [defaulthandler] }
+                ],
+                
+            );
+
+            await request.response();
+
+            return response_json;
+
+        }
+
+
+    }
+
+
+
+    // Example use case
+    // var token_manager = new Token();
+    // console.log(token_manager.token);
+    // token_manager.is_valid().then(status => {console.log(status)});
+
+
+</script>
+
+
+<body>
+
+    <div style="position:absolute;width:100%;top:0;left:0;margin:auto;">
+        <div class="card card-error" style="margin:5vh auto;display:none;" >
+            <div id="__error__" class="card-text">
+                Some Error
+            </div>
+            <div class="card-text card-close" style="cursor:pointer;" onclick="hideError(event)" >X</div>
+        </div>
+    </div>
+
+    <div style="position:absolute;width:100%;height:100%;left:0;top:0;margin:auto;z-index:-1;">
+        <div id="__LOADER__" style="width:100%;height:100%;background-color:rgba(0,0,0,0.7);display:none;">
+            <div class="loader"></div>
+        </div>
+    </div>
+
+    <div style="position:absolute;width:100%;height:100%;left:0;top:0;margin:auto;z-index:-1;display:none;">
+        <div style="width:100%;height:100%;background-color:rgba(0,0,0,0.7);display:flex;">
+            <div id="__INFO__" class="card" style="background-color: white;">
+                <div style="display:flex;flex-direction:row;justify-content:flex-end;"><div style="padding: 4px 10px;cursor:pointer;border: 1px solid rgba(208,208,208,0.8);" onclick="hideInfo()" >X</div></div>
+                <div class="card-header" style="margin-top: 0;" ></div>
+                <div class="card-text" style="margin-top: 0;margin-bottom:2vh;" ></div>
+            </div>
+        </div>
+    </div>
+        
+    {% block body %}{% endblock body %}
+
+
+</body>
+
+</html>
