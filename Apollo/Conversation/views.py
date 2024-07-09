@@ -93,7 +93,13 @@ class ConversationHistory(APIView):
         return Response({"data": ConvHistorySerializer(instances, many=True).data})
 
 
-def collect_events(event_type,event_description,event_contact,event_date,event_time):
+def collected_health_information_entries(entries):
+    df = pd.DataFrame(entries)
+    df.columns = ["i_parameter_label", "parameter_type", "parameter_value"]
+    return df
+
+
+def collect_events(event_type, event_description, event_contact, event_date, event_time):
     return {"event_type": event_type, "i_event_description": event_description, "event_contact": event_contact, "event_date": event_date, "event_time": event_time}
 
 

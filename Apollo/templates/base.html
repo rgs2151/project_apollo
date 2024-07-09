@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Header -->
+    {% include 'includes/header.html' %}
+    <!-- End Header -->
+
+    <title>{% block page_title %}DEMO v0.2{% endblock %}</title>
+
+    <!-- Page level custom header -->
+    {% block custom_header %}{% endblock %}
+</head>
+
+<!-- Body -->
+{% block body %}{% endblock %}
+<!-- End Body -->
+
+
+<!-- Footer -->
+{% include 'includes/footer.html' %}
+<!-- End Footer -->
+
+<!-- Page level custom scripts -->
+{% block custom_scripts %}{% endblock %}
+
+</html>
