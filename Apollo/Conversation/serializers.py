@@ -34,6 +34,12 @@ class ServiceWithFaissSupportSchemaSerializer(DocumentSerializer):
 
 class EventsDataSerializer(DocumentSerializer):
     class Meta:
-        model = EventsData
+        model = Events
+        fields = '__all__'
+
+
+class GoalsSerializer(DocumentSerializer):
+    class Meta:
+        model = Goals
         fields = '__all__'
 

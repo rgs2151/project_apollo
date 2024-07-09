@@ -612,3 +612,31 @@ class Documents(APIView):
         return Response({"extracted": ret_results})
 
 
+class DoctorsView(APIView):
+
+    @exception_handler()
+    def get(self, request: Request):
+        instances = DoctorsWithFaissSupportSchema.objects.all()
+        return Response({"data": DoctorsWithFaissSupportSchemaSerializer(instances, many=True).data})
+
+
+class GoalsView(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    def get(self, request: Request):
+        instances = Goals.objects(user_id=request.user_details.user.id)
+        return Response({"data": GoalsSerializer(instances, many=True).data})
+    
+
+class EventsView(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    def get(self, request: Request):
+        instances = Events.objects(user_id=request.user_details.user.id)
+        return Response({"data": EventsSerializer(instances, many=True).data})
+
+
