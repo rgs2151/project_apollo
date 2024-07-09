@@ -5,10 +5,6 @@ from turbochat.v1.prompt import GPTMsges, GPTToolPrompt
 from Apollo.settings import GPT_KEY
 
 
-tool = Tool(gpt, TOOL_MESSAGES, TOOL_MODE_SELECTOR, MODE_SELECTOR_CALL, tool_choice="required")
-
-
-
 class Registery():
 
     
@@ -62,7 +58,7 @@ class Registery():
         tool_config = registry.get(name).copy()
 
         gpt_model = tool_config.pop("gpt", {})
-        gpt = GPT(GPT_KEY, **gpt_model)
+        gpt = GPT(GPT_KEY, model="gpt-4o")
 
         tool_definition = tool_config.pop("tool_definition", {}).copy()
         if not tool_definition:

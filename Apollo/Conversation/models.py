@@ -35,7 +35,7 @@ class ConversationState(Document):
     }
 
 
-    def reset_state(self):
+    def reset(self):
         self.reset_state = True
         self.save()
 
@@ -92,7 +92,7 @@ class Goals(Document):
     goal_type = fields.StringField(required=True)
     goal_description = fields.StringField(required=True)
     goal_milestones = fields.StringField(required=True)
-    goal_progress = fields.StringField(required=True)
+    goal_progress = fields.IntField(required=True)
     goal_target_date = fields.StringField(required=True)
 
     meta = {

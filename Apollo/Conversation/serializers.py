@@ -10,7 +10,7 @@ class ConversationHistoryWithFaissSupportSchemaSerializer(DocumentSerializer):
 
 class ConvHistorySerializer(DocumentSerializer):
     class Meta:
-        model = ConvHistory
+        model = ChatHistory
         fields = '__all__'
 
         

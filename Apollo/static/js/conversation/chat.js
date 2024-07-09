@@ -23,7 +23,7 @@ $("#submitResponseButton").click(function () {
         success: function (response) {
             console.log(response);
             $("#assistantResponseDisplay").text(response.message.content);
-            $("convModeDisplay").text(response.conversation_state);
+            $("#convModeDisplay").text(response.conversation_state);
             
             // enable the button
             $("#submitResponseButton").prop('disabled', false);

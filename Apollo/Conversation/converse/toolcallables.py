@@ -20,5 +20,5 @@ def EXTRACT_GOAL_DETAILS_CALL(goal_type, goal_description, goal_milestones, goal
 
 
 def APPOINTMENT_OR_PURCHASE_SERVICE_CALL(event_type, event_description, event_contact, event_date, event_time):
-    return {"event_type": event_type, "i_event_description": event_description, "event_contact": event_contact, "event_date": event_date, "event_time": event_time}
+    return {"event_type": event_type, "event_description": event_description, "event_contact": event_contact, "event_date": event_date, "event_time": event_time}
 

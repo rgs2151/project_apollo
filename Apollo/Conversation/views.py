@@ -292,7 +292,6 @@ class Converse(APIView):
 
         history_messages = self.load_conversation_history(request.user_details.user.id)
 
-
         PM = PromptMaker({
             "user_prompt": {"label": "user prompt"},
             "services": {"label": "Available services"},
@@ -308,7 +307,7 @@ class Converse(APIView):
             conversation_state = ConversationState(user_id=request.user_details.user.id, conversation_state="normal")
 
         conversation_mode = "normal"
-        if conversation_state.conversation_state.reset_state: conversation_state.reset_state()
+        if conversation_state.reset_state: conversation_state.reset()
         else: conversation_mode = conversation_state.conversation_state
 
         if conversation_mode == "normal":
@@ -320,14 +319,15 @@ class Converse(APIView):
         faiss_history = self.get_key_information_store(request.user_details.user.id)
         context = self.get_context(conversation_mode, request.user_details.user.id, user_message, faiss_history)
 
+        
 
-        system_prompt = GPTMsgPrompt({
+        system_prompt = [{
             "role": "system",
             "content": DEFAULT_SYSTEM_PROMPT
-        })
+        }]
 
 
-        gpt = GPT(GPT_KEY, model="gpt-4.o")
+        gpt = GPT(GPT_KEY, model="gpt-4o")
 
         
         reply_entry = self.get_reply(PM, context, system_prompt, history_messages, request.user_details.user.id, req["message"], gpt)
@@ -336,17 +336,17 @@ class Converse(APIView):
         h_res = self.extract_key_points(PM, user_message, faiss_history)
 
 
-        tool_called_successfully, created = self.call_tools(self, request.user_details.user.id, conversation_mode, PM, context, history_messages)
+        tool_called_successfully, created = self.call_tools(request.user_details.user.id, conversation_mode, PM, context, history_messages)
         if tool_called_successfully:
-            conversation_state.reset_state = True    
+            conversation_state.conversation_state = "normal"
+            # conversation_state.reset_state = True
             conversation_state.save()
 
 
         # updating conversation state
         conversation_state.last_updated_at = datetime.datetime.now()
         conversation_state.save()
-
-        return Response({"message": reply_entry, "history": h_res, "created": created, "conversation_state": conversation_state})
+        return Response({"message": reply_entry, "history": h_res, "created": created, "conversation_state": conversation_mode, "context": context})
 
 
 
@@ -373,16 +373,17 @@ class Converse(APIView):
     
 
     def get_event(self, prompt_maker, context, history_messages):
-        messages = GPTMsges(history_messages + [prompt_maker.get(context)])
+        messages = GPTMsges(history_messages + [{ "role":"user", "content": prompt_maker.get(context) }])
         tool = ToolRegistry.get_tool("extract_event", messages)
         response_extract_event, tool_prompt_extract_event, results_extract_event = tool.call()
         status, result = results_extract_event
+        print(results_extract_event)
         if status:
             return result.get('extract_appointment_or_purchase_service_details', [None])[0]
 
 
     def get_goal(self, prompt_maker, context, history_messages):
-        messages = GPTMsges(history_messages + [prompt_maker.get(context)])
+        messages = GPTMsges(history_messages + [{ "role":"user", "content": prompt_maker.get(context) }])
         tool = ToolRegistry.get_tool("extract_goal", messages)
         response_extract_goals, tool_prompt_extract_goals, results_extract_goals = tool.call()
         status, result = results_extract_goals
@@ -396,7 +397,7 @@ class Converse(APIView):
         _, resp_entry, results = tool.call()
         status, result = results
         if status:
-            result = result.get('extract_user_health_information_entry', [pd.DataFrame()])
+            result = result.get('extract_user_health_information_entry', [pd.DataFrame()])[0]
             faiss_history.update(result)
             return result.to_dict("records")
         
@@ -430,7 +431,7 @@ class Converse(APIView):
     def get_context(self, mode, user_id, context, faiss_history):
         
         
-        context = self.default_context(faiss_history, context)
+        context = self.default_context(user_id, context, faiss_history)
         
         if mode == "normal": return context
 
@@ -438,9 +439,9 @@ class Converse(APIView):
             context.update(self.appointment_or_service_purchase_context(context))
 
         elif mode == "goal":
-            context.update(self.goal_context(context))
-
-        else: return context
+            context.update(self.goal_context())
+        
+        return context
 
 
     def goal_context(self):
@@ -571,20 +572,6 @@ class Converse(APIView):
         return history_messages
 
 
-class Events(APIView):
-
-    authentication_classes = [TokenAuthentication]
-
-    @exception_handler()
-    def get(self, request: Request):
-
-        req = request.data
-        instances = EventsData.objects(user_id=request.user_details.user.id)
-        event_data = EventsDataSerializer(instances, many=True).data
-
-        return Response({"data": event_data})
-
-
 class Documents(APIView):
 
 
@@ -643,6 +630,6 @@ class EventsView(APIView):
     @exception_handler()
     def get(self, request: Request):
         instances = Events.objects(user_id=request.user_details.user.id)
-        return Response({"data": EventsSerializer(instances, many=True).data})
+        return Response({"data": EventsDataSerializer(instances, many=True).data})
 
 

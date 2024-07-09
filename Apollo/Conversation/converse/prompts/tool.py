@@ -248,7 +248,7 @@ TOOL_EXTRACT_GOAL_DETAILS = {
                 },
 
                 "goal_milestones": {
-                    "type": "array",
+                    "type": "string",
                     "items": {
                         "type": "string",
                     },
