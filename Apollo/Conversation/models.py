@@ -15,17 +15,6 @@ class ConversationHistoryWithFaissSupportSchema(Document):
     }
 
 
-class ConvHistory(Document):
-    user_id = fields.IntField(required=True, min=0)
-    role = fields.StringField(required=True)
-    content = fields.StringField(required=True)
-    created_at = fields.DateTimeField(default=datetime.datetime.now())
-
-    meta = {
-        'collection': 'Conversation_History',
-    }
-
-
 class ChatHistory(Document):
     user_id = fields.IntField(required=True, min=0)
     prompt = fields.DictField(required=True)
@@ -76,6 +65,7 @@ class ServiceWithFaissSupportSchema(Document):
 
 class EventsData(Document):
     user_id = fields.IntField(required=True, min=0)
+    doctor_id = fields.ObjectIdField(required=True),
     event_type = fields.StringField(required=True)
     i_event_description = fields.StringField(required=True)
     event_contact = fields.StringField(required=True)

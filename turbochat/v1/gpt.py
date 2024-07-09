@@ -131,7 +131,8 @@ class Tool(GPTCallable):
                         collect[tool_name] = [results]
                     else: collect[tool_name].append(results)
 
-            status = True
+                status = True
+
             return status, collect.copy()
 
         

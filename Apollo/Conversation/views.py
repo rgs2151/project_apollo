@@ -15,10 +15,15 @@ from .serializers import *
 from .converse.prompts.user import PromptMaker
 from .converse.prompts.system import DEFAULT as DEFAULT_SYSTEM_PROMPT
 from .converse.toolregistry import Registery as ToolRegistry
+from .converse.documents import DocumentExtract, PDF
+from .converse.prompts.tool import EXTRACT_USER_RELATED_INFO
+from .converse.toolcallables import *
 
 import numpy as np
 import pandas as pd
 import datetime
+import base64
+from io import BytesIO
 
 from utility.views import *
 
@@ -35,6 +40,11 @@ class ConversationValidator(DefaultValidator):
     def _check_with_user_prompt(self, field, value):
         try: GPTMsgPrompt(value)
         except ValueError: self._error(field, "should be valid gpt user_prompt")
+
+    def _check_with_base64_string(self, field, value):
+        try: base64.b64encode(value.encode())
+        except Exception: self._error(field, "should be base64 string")
+
 
 
 class History(APIView):
@@ -81,12 +91,6 @@ class ConversationHistory(APIView):
     def get(self, request):
         instances = ConvHistory.objects(user_id=request.user_details.user.id)
         return Response({"data": ConvHistorySerializer(instances, many=True).data})
-
-
-def collected_health_information_entries(entries):
-    df = pd.DataFrame(entries)
-    df.columns = ["i_parameter_label", "parameter_type", "parameter_value"]
-    return df
 
 
 def collect_events(event_type,event_description,event_contact,event_date,event_time):
@@ -244,7 +248,6 @@ class Converse(APIView):
             h_res = result.to_dict("records")
             faiss_history.update(result)
 
-        print(tool_calls)
 
         # updating events
         # event = {}
@@ -263,7 +266,9 @@ class Converse(APIView):
         # return Response({"response": reply, "events": event, "message": message.make_message().get_entries()})
 
 
-        
+    def get_rag_context(self, context):
+        pass
+
 
 class Events(APIView):
 
@@ -277,5 +282,38 @@ class Events(APIView):
         event_data = EventsDataSerializer(instances, many=True).data
 
         return Response({"data": event_data})
+
+
+class Documents(APIView):
+
+
+    @exception_handler()
+    @request_schema_validation(schema={
+        "file": {"type": "string", "required": True, "empty": False, "check_with": "base64_string"},
+    }, validator=ConversationValidator)
+    def post(self, request: Request):
+
+        req = request.data
+        
+        io_ = BytesIO(req['file'])
+        io_.seek(0)
+        pdf = PDF(io_)
+
+        DE = DocumentExtract(pdf, GPT_KEY, EXTRACT_USER_RELATED_INFO, get_callable_df_with_columns(["i_parameter_label", "parameter_type", "parameter_value"]))
+        results = DE.extract()
+        
+        ret_results = []
+        if isinstance(results, pd.DataFrame) and not results.empty:
+            ret_results = results.to_dict("records")
+
+            faiss_history = MongoHistoryWithFAISS(
+                request.user_details.user.id, 
+                MONGO_INSTANCE,
+                ConversationHistoryWithFaissSupportSchema, 
+                ConversationHistoryWithFaissSupportSchemaSerializer
+            )
+            faiss_history.update(results)
+
+        return Response({"extracted": ret_results})
 
 
