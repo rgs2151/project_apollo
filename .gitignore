@@ -1,3 +1,5 @@
 openai_key
 history
 *.pyc
+gpt-tools/*
+node_modules
