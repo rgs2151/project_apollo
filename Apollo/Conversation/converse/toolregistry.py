@@ -5,6 +5,10 @@ from turbochat.v1.prompt import GPTMsges, GPTToolPrompt
 from Apollo.settings import GPT_KEY
 
 
+tool = Tool(gpt, TOOL_MESSAGES, TOOL_MODE_SELECTOR, MODE_SELECTOR_CALL, tool_choice="required")
+
+
+
 class Registery():
 
     
@@ -14,9 +18,29 @@ class Registery():
                 "tool": EXTRACT_USER_RELATED_INFO,
                 "tool_callable": get_callable_df_with_columns(["i_parameter_label", "parameter_type", "parameter_value"]),
                 "tool_choice": "required",
-            },
-            "gpt": {}
-        }
+            }
+        },
+        "mode_selector": {
+            "tool_definition": {
+                "tool": TOOL_MODE_SELECTOR,
+                "tool_callable": MODE_SELECTOR_CALL,
+                "tool_choice": "required",
+            }
+        },
+        "extract_goal": {
+            "tool_definition": {
+                "tool": TOOL_EXTRACT_GOAL_DETAILS,
+                "tool_callable": EXTRACT_GOAL_DETAILS_CALL,
+                "tool_choice": "auto",
+            }
+        },
+        "extract_event": {
+            "tool_definition": {
+                "tool": TOOL_APPOINTMENT_OR_PURCHASE_SERVICE,
+                "tool_callable": APPOINTMENT_OR_PURCHASE_SERVICE_CALL,
+                "tool_choice": "auto",
+            }
+        },
     }
 
 

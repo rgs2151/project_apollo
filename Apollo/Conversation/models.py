@@ -27,6 +27,7 @@ class ChatHistory(Document):
 class ConversationState(Document):
     user_id = fields.IntField(required=True, min=0)
     conversation_state = fields.StringField(required=False, default="")
+    reset_state = fields.BooleanField(default=False)
     last_updated_at = fields.DateTimeField(default=datetime.datetime.now())
 
     meta = {
@@ -34,6 +35,16 @@ class ConversationState(Document):
     }
 
 
+    def reset_state(self):
+        self.reset_state = True
+        self.save()
+
+
+    def set_mode(self, mode):
+        self.conversation_state = mode
+        self.save()
+
+    
 class DoctorsWithFaissSupportSchema(Document):
     history_id = fields.IntField(required=True, min=0)
     vector_id = fields.IntField(required=True, min=0)
@@ -63,18 +74,27 @@ class ServiceWithFaissSupportSchema(Document):
     }
 
 
-class EventsData(Document):
+class Events(Document):
     user_id = fields.IntField(required=True, min=0)
-    doctor_id = fields.ObjectIdField(required=True),
     event_type = fields.StringField(required=True)
-    i_event_description = fields.StringField(required=True)
+    event_description = fields.StringField(required=True)
     event_contact = fields.StringField(required=True)
     event_date = fields.StringField(required=True)
     event_time = fields.StringField(required=True)
-    
+
     meta = {
         "collection": "Events"
     }
 
 
+class Goals(Document):
+    user_id = fields.IntField(required=True, min=0)
+    goal_type = fields.StringField(required=True)
+    goal_description = fields.StringField(required=True)
+    goal_milestones = fields.StringField(required=True)
+    goal_progress = fields.StringField(required=True)
+    goal_target_date = fields.StringField(required=True)
 
+    meta = {
+        "collection": "Goals"
+    }
