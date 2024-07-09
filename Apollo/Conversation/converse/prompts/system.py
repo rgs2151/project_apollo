@@ -1,5 +1,4 @@
-
-SYSTEM_MESSAGE = """
+DEFAULT = """
 You are role playing as a healthcare ASSISTANT.
 With every prompt from the USER, a relevent context we already know about the USER will be appended to the prompt.
 The context will include user's health history, goals, services and doctors. Use the context if relevent to guide the conversation.
@@ -23,30 +22,3 @@ You strictly follow these rules:
 - Keep the tone of the conversation casual.
 - ALWAYS consider the user's past history while collecting user's information.
 """
-
-
-USER_PROMPT_DEFAULT = """
-Appended Context:
-
-User's related info:
-{history}
-
-Existing related goals:
-{goals}
-
-Available services:
-{services}
-
-Available doctors:
-{doctors}
-
-Assistant special instructions:
-{assistant_instructions}
-
-user prompt:
-{message}
-
-"""
-
-
-

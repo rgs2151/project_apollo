@@ -40,7 +40,6 @@ class PDF:
         return f"data:image/jpeg;base64,{PDF.IOtoBase64(base64data)}"
 
 
-
 class DocumentExtract:
 
 

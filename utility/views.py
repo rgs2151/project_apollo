@@ -66,10 +66,12 @@ class Http404(Http404):
 
 class DefaultValidator(cerberus.Validator):
     
+    
     def _check_with_email(self, field, value):
         pattern = r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
         if not (re.match(pattern, value) is not None): self._error(field, "email pattern invalid")
     
+
     def _check_with_password(self, field, value):
         # Accepted special chars: @, #, $, %, ^, &, +, =, !
         pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$'

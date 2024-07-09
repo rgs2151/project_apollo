@@ -2,17 +2,19 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from Apollo.settings import MONGO_INSTANCE
+from Apollo.settings import MONGO_INSTANCE, GPT_KEY
 
 from UserManager.authentication import TokenAuthentication
 from store.mongoengine import MongoHistoryWithFAISS
 
 from turbochat.gptprompts import *
+from turbochat.v1.prompt import GPTMsgPrompt, GPTMsges
+from turbochat.v1.gpt import GPT, Msg
 
 from .serializers import *
-from .converse.core import Message
-from .converse.prompts import *
-from .converse.tools import *
+from .converse.prompts.user import PromptMaker
+from .converse.prompts.system import DEFAULT as DEFAULT_SYSTEM_PROMPT
+from .converse.toolregistry import Registery as ToolRegistry
 
 import numpy as np
 import pandas as pd
@@ -22,10 +24,17 @@ from utility.views import *
 
 
 APETITE = 30
+
 RELEVANCE = 20
 
-
 SAVE_CONVERSATION_HISTORY = True
+
+
+class ConversationValidator(DefaultValidator):
+
+    def _check_with_user_prompt(self, field, value):
+        try: GPTMsgPrompt(value)
+        except ValueError: self._error(field, "should be valid gpt user_prompt")
 
 
 class History(APIView):
@@ -79,26 +88,26 @@ def collected_health_information_entries(entries):
     df.columns = ["i_parameter_label", "parameter_type", "parameter_value"]
     return df
 
+
 def collect_events(event_type,event_description,event_contact,event_date,event_time):
     return {"event_type": event_type, "i_event_description": event_description, "event_contact": event_contact, "event_date": event_date, "event_time": event_time}
 
 
-TOOL_CONVERSATION = Tools([
-    {
-        "name": "collected_health_information_entries",
-        "function": collected_health_information_entries,
-        "definition": EXTRACT_USER_RELATED_INFO
-    }
-])
+# TOOL_EVENTS = Tools([
+#     {
+#         "name": "collect_events",
+#         "function": collect_events,
+        # "definition": APPOINTMENT_SERVICE_PURCHASE_EVENT
+#     }
+# ])
 
 
-TOOL_EVENTS = Tools([
-    {
-        "name": "collect_events",
-        "function": collect_events,
-        "definition": APPOINTMENT_SERVICE_PURCHASE_EVENT
-    }
-])
+DEFAULT_PROMPT = {
+    "user_prompt": {"label": "user prompt"},
+    "services": {"label": "Available services"},
+    "doctors": {"label": "Available doctors"},
+    "history": {"label": "User related information"},
+}
 
 
 class Converse(APIView):
@@ -107,33 +116,33 @@ class Converse(APIView):
 
     @exception_handler()
     @request_schema_validation(schema={
-        "message": {"type": "string", "required": True, "empty": False},
-    })
+        "message": {"type": "dict", "required": True, "empty": False, "check_with": "user_prompt"},
+    }, validator=ConversationValidator())
     def post(self, request: Request):
         
         req = request.data
 
-        history_instances = ConvHistory.objects.order_by('timestamp').limit(APETITE * 2)
+        # loading chat history for user
+        history_instances = ChatHistory.objects.order_by('timestamp').limit(APETITE * 2)
+            
         history_messages = []
         for instance in history_instances:
-            if instance.role == 'user':
-                history_messages.append(User(instance.content))
-            elif instance.role == 'assistant':
-                history_messages.append(Assistant(instance.content))
-        history_messages = Messages(history_messages)
+            try: prompt = GPTMsgPrompt(instance.prompt)
+            except ValueError: continue
+            history_messages.append(prompt.get_prompt())
 
 
-        # loading history
+        # RAG Key value pairs
         faiss_history = MongoHistoryWithFAISS(
             request.user_details.user.id, 
-            MONGO_INSTANCE, 
+            MONGO_INSTANCE,
             ConversationHistoryWithFaissSupportSchema, 
             ConversationHistoryWithFaissSupportSchemaSerializer
         )
         history_data = faiss_history.get(req["message"], k=RELEVANCE)
 
 
-        # doctors
+        # RAG doctors
         faiss_doctors = MongoHistoryWithFAISS(
             0,
             MONGO_INSTANCE, 
@@ -143,7 +152,7 @@ class Converse(APIView):
         doctors = faiss_doctors.get(req["message"], k=10)
 
 
-        # services
+        # RAG services
         faiss_services = MongoHistoryWithFAISS(
             0,
             MONGO_INSTANCE, 
@@ -153,43 +162,95 @@ class Converse(APIView):
         services = faiss_services.get(req["message"], k=10)
 
 
-        context = {
-            "message": req["message"],
-            "assistant_instructions": "Using the context above if relevant, answer the user's query or ask a follow up question.",
-            "history": json.dumps(history_data.to_dict("records"), indent=2) if not history_data.empty else "",
-            "goals": "",
-            "services": json.dumps(services.to_dict("records"), indent=2) if not services.empty else "",
-            "doctors": json.dumps(doctors.to_dict("records"), indent=2) if not doctors.empty else ""
-        }
-
-
         # conversation state
         conversation_state = ConversationState.objects(user_id=request.user_details.user.id).first()
         if not conversation_state:
             conversation_state = ConversationState(user_id=request.user_details.user.id, conversation_state="DEFAULT")
+
+
+        original_user_prompt = GPTMsgPrompt(req["message"])
+
+
+        system_prompt = GPTMsgPrompt({
+            "role": "system",
+            "content": DEFAULT_SYSTEM_PROMPT
+        })
+
         
+        prompt = PromptMaker(DEFAULT_PROMPT)
 
-        if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user.id, role="user", content=req["message"]).save()
+
+        gpt = GPT(GPT_KEY)
+
+
+        prompt_content_text = prompt.get({
+            "doctors": json.dumps(doctors.to_dict("records"), indent=2) if not doctors.empty else "",
+            "services": json.dumps(services.to_dict("records"), indent=2) if not services.empty else "",
+            "history": json.dumps(history_data.to_dict("records"), indent=2) if not history_data.empty else "",
+            "user_prompt": original_user_prompt.get_text_content(),
+        })
+
         
-        message = Message(USER_PROMPT_DEFAULT, context, SYSTEM_MESSAGE, history=history_messages.to_text(), tools=[(TOOL_CONVERSATION, True), (TOOL_EVENTS, False)])
-        reply, tool_calls = message.get_results()
+        user_prompt_for_chat = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": prompt_content_text
+                }
+            ]
+        }
 
-        if SAVE_CONVERSATION_HISTORY: ConvHistory(user_id=request.user_details.user.id, role="assistant", content=reply).save()
+
+        messages_for_chat = [system_prompt.get_prompt()] + history_messages.copy()
+        messages_for_chat.append(user_prompt_for_chat)
+        messages_for_chat = GPTMsges(messages_for_chat)
+
+        
+        if SAVE_CONVERSATION_HISTORY: ChatHistory(user_id=request.user_details.user.id, prompt=original_user_prompt.get_prompt()).save()
+
+        response, reply_entry, reply = Msg(gpt, messages_for_chat).call()
+
+        if SAVE_CONVERSATION_HISTORY: ChatHistory(user_id=request.user_details.user.id, prompt=reply_entry).save()
 
 
-        # updating index
-        history = []
-        if tool_calls and "collected_health_information_entries" in tool_calls:
-            history = tool_calls["collected_health_information_entries"][0]
-            faiss_history.update(history)
+        tool_results = {}
+
+
+        tool_prompt_content_text = prompt.get({
+            "user_prompt": original_user_prompt.get_text_content()
+        })
+
+        user_prompt_for_tool_call = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": tool_prompt_content_text
+                }
+            ]
+        }
+
+        messages_for_tool_call = [user_prompt_for_tool_call]
+        messages_for_tool_call = GPTMsges(messages_for_tool_call)
+        tool = ToolRegistry.get_tool("extract_user_related_information", messages_for_tool_call)
+        response, response_entry, result = tool.call()
+
+        # updating history
+        h_res = []
+        status, stash = result
+        if status:
+            result = stash["extract_user_health_information_entry"][0]
+            h_res = result.to_dict("records")
+            faiss_history.update(result)
 
 
         # updating events
-        event = {}
-        if tool_calls and "collect_events" in tool_calls:
-            event = tool_calls["collect_events"]
-            event_instance = EventsData(user_id=request.user_details.user.id, **event)
-            event_instance.save()
+        # event = {}
+        # if tool_calls and "collect_events" in tool_calls:
+        #     event = tool_calls["collect_events"]
+        #     event_instance = EventsData(user_id=request.user_details.user.id, **event)
+        #     event_instance.save()
 
 
         # updating conversation state
@@ -197,7 +258,10 @@ class Converse(APIView):
         conversation_state.save()
 
 
-        return Response({"response": reply, "events": event, "message": message.make_message().get_entries()})
+        return Response({"message": reply_entry, "history": h_res})
+        # return Response({"response": reply, "events": event, "message": message.make_message().get_entries()})
+
+
         
 
 class Events(APIView):

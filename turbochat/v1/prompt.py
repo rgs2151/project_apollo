@@ -68,9 +68,25 @@ class GPTMsgPrompt:
 
     def is_user(self): return self.__prompt["role"] == "user"
     
+
     def is_assistant(self): return self.__prompt["role"] == "assistant"
     
+
     def is_system(self): return self.__prompt["role"] == "system"
+
+
+    def get_text_content(self):
+        
+        prompt = self.get_prompt()
+        content = prompt["content"]
+
+        if isinstance(content, str): return content
+
+        if isinstance(content, list):
+            return "\n".join([cont['text'] for cont in content if cont['type'] == "text"])
+        
+        return ""
+
 
 
 class GPTMsges:

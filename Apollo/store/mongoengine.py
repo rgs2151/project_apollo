@@ -207,7 +207,7 @@ class MongoHistoryWithFAISS(MongoHistory):
             embeddings = self.encode([context])
             result = self.store_index.search(embeddings, k=k)
             indexes = [i for i in result[1][0] if i >= 0]
-            instances = self.document.objects(vector_id__in=indexes)
+            instances = self.document.objects(history_id=self.history_id, vector_id__in=indexes)
             return self.serialize_documents(instances)
             
         return self.serialize_documents(None)

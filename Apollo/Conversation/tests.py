@@ -1,3 +1,14 @@
 from django.test import TestCase
 
-# Create your tests here.
+
+
+class TestPromptMaker(TestCase):
+
+
+    def test_promptmaker(self):
+
+        # context = 
+
+
+
+
