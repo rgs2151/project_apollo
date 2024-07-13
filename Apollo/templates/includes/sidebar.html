@@ -8,16 +8,19 @@
     <hr class="sidebar-divider my-0">
 
     <!-- User Specific Sidebar Options -->
-    {% if sidebar_type == "user" %}
-        {% include 'includes/sidebar_includes/sidebar_user.html' %}
-    {% elif sidebar_type == "doctor" %}
-        {% include 'includes/sidebar_includes/sidebar_doctor.html' %}
-    {% elif sidebar_type == "admin" %}
+    {% if sidebar_type == "admin" %}
         {% include 'includes/sidebar_includes/sidebar_admin.html' %}
-    {% elif sidebar_type == "provider" %}
+    {% endif %}
+    {% if sidebar_type == "provider" %}
         {% include 'includes/sidebar_includes/sidebar_provider.html' %}
     {% endif %}
-
+    {% if sidebar_type == "doctor" %}
+        {% include 'includes/sidebar_includes/sidebar_doctor.html' %}
+    {% endif %}
+    {% if sidebar_type == "user" %}
+    {% include 'includes/sidebar_includes/sidebar_user.html' %}
+    {% endif %}
+    
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 
