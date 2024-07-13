@@ -14,6 +14,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-3preg@l(5xp6wi64sa!yw=fmcfk&dj)lb6i6pmo_9r%(c6v_s9'
 
 
+ON403REDIRECT = "/conversation/dashboard/"
+
+
 DEBUG = True
 
 
@@ -37,6 +40,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    "Apollo.middleware.RedirectOn403Middleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -102,7 +106,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 USER_MANAGER_SETTINGS = {
     
-    "TESTING_MODE": False,
+    "TESTING_MODE": True,
     
     "EMAIL": {
         "SEND": False,

@@ -1,6 +1,16 @@
 from django.urls import path
 from django.shortcuts import render
 from .views import *
+from rest_framework.decorators import authentication_classes
+
+
+class Test(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request: Request):
+        return render(request, "test.html")
+
 
 
 urlpatterns = [
@@ -14,4 +24,6 @@ urlpatterns = [
     path("events/", EventsView.as_view(), name="conversation-events"),
     path("doctors/", DoctorsView.as_view(), name="conversation-doctors"),
     path("goal/", GoalsView.as_view(), name="conversation-goal"),
+
+    path("test/", Test.as_view(), name="test")
 ]
