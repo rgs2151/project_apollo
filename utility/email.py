@@ -26,7 +26,8 @@ def check_smtp_credentials(login_username, login_password):
         trace = ''.join(tb.format_exception(None, err, err.__traceback__))
     
     finally:
-        server.quit()
+        # server.quit()
+        pass
 
     return trace
 

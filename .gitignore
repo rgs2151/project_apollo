@@ -4,3 +4,4 @@ history
 gpt-tools/*
 node_modules
 *__pycache__
+*logs

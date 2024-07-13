@@ -1,6 +1,7 @@
 from pathlib import Path
 from mongoengine import connect
 import os
+from logging import Filter
 
 
 with open("openai_key", "r") as f:
@@ -104,7 +105,7 @@ USER_MANAGER_SETTINGS = {
     "TESTING_MODE": False,
     
     "EMAIL": {
-        "SEND": True,
+        "SEND": False,
         "TEMPLATE": "Please click the following link to verify your account: {link}",
         "SUBJECT": "verify your email",
         "FROM": "luckyCasualGuy@gmail.com",
@@ -114,11 +115,73 @@ USER_MANAGER_SETTINGS = {
     
 }
 
+
+class ThreadFilter(Filter):
+    def filter(self, record):
+        record.thread_id = record.thread  # Add thread ID to the log record
+        return True
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {thread_id} {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'thread_filter': { '()': ThreadFilter, },
+    },
+    'handlers': {
+        'django_info_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': BASE_DIR / 'logs/django_info.log',
+            'when': 'midnight',
+            'formatter': 'verbose',
+        },
+        'converse_debug_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': BASE_DIR / 'logs/converse_debug.log',
+            'when': 'midnight',
+            'formatter': 'verbose',
+            'filters': ['thread_filter']
+        },
+        'converse_info_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': BASE_DIR / 'logs/converse_info.log',
+            'when': 'midnight',
+            'formatter': 'verbose',
+            'filters': ['thread_filter']
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['django_info_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'converse': {
+            'handlers': ['converse_debug_file', 'converse_info_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
