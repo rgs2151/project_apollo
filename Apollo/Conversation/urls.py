@@ -17,7 +17,7 @@ urlpatterns = [
     path("goal/", GoalsView.as_view(), name="conversation-goal"),
 
     # For Doctors
-    path("dr_dashboard/", lambda request: render(request, template_name="dr_dashboard.html"), name="conversation-dr-dashboard"),
+    path("dr_dashboard/", dr_dashboad , name="conversation-dr-dashboard"),
     path("dr_calander/", lambda request: render(request, template_name="dr_calander.html"), name="conversation-dr-calander"),
     path("dr_circle/", lambda request: render(request, template_name="dr_circle.html"), name="conversation-dr-chat"),
 ]

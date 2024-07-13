@@ -1,3 +1,5 @@
+from django.shortcuts import render
+
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -497,3 +499,12 @@ class EventsView(APIView):
         return Response({"data": EventsDataSerializer(instances, many=True).data})
 
 
+from rest_framework.decorators import api_view, authentication_classes
+
+
+# Apply the api_view decorator with authentication_classes argument
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+def dr_dashboad(request):
+    print(request.user_details.user.groups)
+    return render(request, template_name="dr_dashboard.html")
