@@ -14,6 +14,7 @@ urlpatterns = [
     path('resend-email-verification/', ResendVerificationMail.as_view(), name='user-resend-email-verification'),
     path('update/', UserUpdate.as_view(), name='user-update'),
     path("update-password/", UserChangePassword.as_view(), name='user-update-password'),
+    path("logout/", LogOut.as_view(), name='user-logout'),
 
     # This view is copy of other
     # path('details/', UserGet.as_view(), name='user-details'),
