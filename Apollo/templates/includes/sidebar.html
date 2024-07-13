@@ -8,7 +8,15 @@
     <hr class="sidebar-divider my-0">
 
     <!-- User Specific Sidebar Options -->
-    {% include 'includes/sidebar_includes/sidebar_user.html' %}
+    {% if sidebar_type == "user" %}
+        {% include 'includes/sidebar_includes/sidebar_user.html' %}
+    {% elif sidebar_type == "doctor" %}
+        {% include 'includes/sidebar_includes/sidebar_doctor.html' %}
+    {% elif sidebar_type == "admin" %}
+        {% include 'includes/sidebar_includes/sidebar_admin.html' %}
+    {% elif sidebar_type == "provider" %}
+        {% include 'includes/sidebar_includes/sidebar_provider.html' %}
+    {% endif %}
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">

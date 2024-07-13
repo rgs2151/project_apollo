@@ -494,7 +494,7 @@ class Converse(APIView):
             ServiceWithFaissSupportSchema,
             ServiceWithFaissSupportSchemaSerializer
         )
-        return faiss_services.get(context, k=5)
+        return faiss_services.get(context, k=10)
 
 
     def get_doctors(self, context):
@@ -505,7 +505,7 @@ class Converse(APIView):
             DoctorsWithFaissSupportSchema,
             DoctorsWithFaissSupportSchemaSerializer
         )
-        return faiss_doctors.get(context, k=5)
+        return faiss_doctors.get(context, k=10)
         
 
     def default_context(self, user_id, context, faiss_history):

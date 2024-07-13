@@ -18,7 +18,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "testserver",
-    "127.0.0.1"
+    "127.0.0.1",
+    "f50e-2603-7000-9600-680a-7d51-3778-ab37-320d.ngrok-free.app",
 ]
 
 
