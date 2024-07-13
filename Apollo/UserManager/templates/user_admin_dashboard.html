@@ -3,6 +3,7 @@
 
 {% block title %}Admin Dashboard{% endblock title %}
 
+
 {% block body %}
 
 <style>
@@ -107,7 +108,27 @@
             User Details
         </div>
 
-        <div id="user-details-table" style="padding: 0 2vw" >
+        <div style="display: flex;flex-direction: column;border: 2px solid rgba(208,208,208,0.8);padding: 0 2vw">
+            
+            <div id="user-details-table" >
+            </div>
+            
+            <div id="user-details-table-pagination" style="display: flex;align-items: center; font-size: smaller;justify-content: flex-end;" >
+
+                <div style="margin: 0 0.5vw;" >
+                    <button style="margin:0;padding:0;" class="card-button"><</button>
+                </div>
+                <div style="margin: 0 0.5vw;" >
+                    <div class="card-input" style="display: flex;flex-direction: row;align-items: center;" >
+                        <div style="margin:0 5px;padding:0;" >1 / 10</div>
+                        <div style="margin:0 5px;padding:0;" > <input min="1" style="margin:0;padding:0;width:4vw;max-width:6vw;" class="card-input-in" type="number" > </div>
+                    </div>
+                </div>
+                <div style="margin: 0 0.5vw;" >
+                    <button style="margin:0;padding:0;" class="card-button">></button>
+                </div>
+
+            </div>
         </div>
 
     
@@ -404,6 +425,58 @@
 <script>
 
     var token_manager = new Token();
+
+
+    function setUpPagination(response) {
+
+        if (response.page) {
+
+            let count = (response.page.count)? parseInt(response.page.count): undefined;
+            let current = (response.page.current)? parseInt(response.page.current): undefined;
+            if (count && current) {
+
+                let paginationDiv = document.getElementById("user-details-table-pagination");
+                let paginationDivChildren = Array.from(paginationDiv.children);
+                
+                let btnPrev = paginationDivChildren[0].getElementsByTagName("button")[0];
+                let btnNext = paginationDivChildren[2].getElementsByTagName("button")[0];
+                
+                let paginationDetails = Array.from(Array.from(paginationDivChildren[1].children)[0].children);
+                paginationDetails[0].innerText = `${current} / ${count}`;
+
+                let input = paginationDetails[1].getElementsByTagName("input")[0];
+                input.value = current;
+                input.max = count;
+
+
+                btnPrev.onclick = ev => {
+                    if (current > 1) {
+                        current -= 1;
+                        loadUserDetails(current);
+                    }
+                };
+
+                btnNext.onclick = ev => {
+                    if (current < count) {
+                        current += 1;
+                        loadUserDetails(current);
+                    }
+                };
+
+                input.onchange = ev => {
+                    currentVal = ev.target.value;
+                    if (currentVal < 1) currentVal = 1;
+                    if (currentVal > count) currentVal = count;
+                    if (currentVal !== current) loadUserDetails(currentVal);
+
+                }
+
+
+            }
+
+        }
+
+    }
     
 
     function getKeyValueCardTable(tableConf) {
@@ -508,21 +581,21 @@
     }
 
 
-    async function loadUserDetails() {
+    async function loadUserDetails(page=1) {
 
         let headers = {"Content-Type": "application/json"};
         headers = token_manager.get_token_header(headers);
         
         const request = new Request(
-            window.location.origin + "/user/admin-users/",
+            window.location.origin + `/user/admin-users/?page=${page}`,
             "GET",
             headers,
             JSON.stringify({}),
             [
                 (response_json) => {
-                    
                     setTimeout(() => {
                         onUserDetails(response_json);
+                        setUpPagination(response_json);
                         hideLoader();
                     }, 1000);
                 }
@@ -619,8 +692,6 @@
 
         let headers = {"Content-Type": "application/json"};
         headers = token_manager.get_token_header(headers);
-
-        console.log(JSON.stringify(payload));
 
         const request = new Request(
             window.location.origin + "/user/admin-user-groups-manager/",

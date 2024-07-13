@@ -34,6 +34,7 @@ therefore no need to @override_settings
 "python manage.py test UserManager.tests.TestUserDetails.test_issue_password_change"
 "python manage.py test UserManager.tests.TestUserDetails.test_change_password"
 "python manage.py test UserManager.tests.TestUserDetails.test_say"
+"python manage.py test UserManager.tests.TestUserDetails.test_user_login_with_cookies"
 class TestUserDetails(TestCase):
     
     serialized_rollback = True
@@ -92,7 +93,7 @@ class TestUserDetails(TestCase):
             "first_name": "manan",
             "last_name": "lad",
             "email": "mananlad38@gmail.com",
-            "password": "somerandompassword",
+            "password": "1Password!",
         }, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         
@@ -121,7 +122,7 @@ class TestUserDetails(TestCase):
             "first_name": "manan",
             "last_name": "lad",
             "email": "mananlad38@gmail.com",
-            "password": "somerandompassword",
+            "password": "1Password!",
         }
         response = self.client.post(reverse('user-register'), register_payload, content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -129,7 +130,7 @@ class TestUserDetails(TestCase):
         # user signin
         login_payload = {
             "email": "mananlad38@gmail.com",
-            "password": "somerandompassword",
+            "password": "1Password!",
         }
         response = self.client.post(reverse('user-login'), login_payload, content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -147,6 +148,28 @@ class TestUserDetails(TestCase):
         self.assertIn("code", response['error'])
         self.assertEqual(response['error']['code'], "InvalidPassword")
 
+
+    def test_user_login_with_cookies(self):
+        # register user
+        register_payload = {
+            "first_name": "manan",
+            "last_name": "lad",
+            "email": "mananlad38@gmail.com",
+            "password": "1Password!",
+        }
+        response = self.client.post(reverse('user-register'), register_payload, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.cookies['Authorization'].value)
+        
+        # user signin
+        login_payload = {
+            "email": "mananlad38@gmail.com",
+            "password": "1Password!",
+        }
+        response = self.client.post(reverse('user-login'), login_payload, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.cookies['Authorization'].value)
+        
 
     def test_user_details_get(self):
         user_details_instance, response = self.register_user(self.client)
@@ -235,7 +258,7 @@ class TestUserDetails(TestCase):
         password_change_link, email_sent = user_details_instance.issue_password_change(request)
         
         password_change_secret = password_change_link.split('/')[-1]
-        old_password = "somerandompassword"
+        old_password = "1Password!"
         new_password = "someotherrandompassword"
         status, user_details_instance_after_change_passoword = UserDetails.change_password(password_change_secret, old_password, new_password)
         
@@ -296,6 +319,7 @@ class TestTokenAuthMiddleware(TestCase):
 
 
 "python manage.py test UserManager.tests.TestTokenAuthentication.test_authenticator"
+"python manage.py test UserManager.tests.TestTokenAuthentication.test_authenticator_cookie_based"
 class TestTokenAuthentication(TestCase):
     
     def setUp(self):
@@ -313,6 +337,16 @@ class TestTokenAuthentication(TestCase):
         self.assertIsInstance(request.user, User)
         self.assertEqual(self.user_details_instance, request.user_details)
 
+
+
+    def test_authenticator_cookie_based(self):
+        auth_token = self.user_details_instance.issue_token()
+        request = self.factory.get('/some-url-that-does-not-exist')
+        request.COOKIES["Authorization"] = f'Bearer {auth_token}'
+        self.authentication.authenticate(request)
+        self.assertIsInstance(request.user_details, UserDetails)
+        self.assertIsInstance(request.user, User)
+        self.assertEqual(self.user_details_instance, request.user_details)
 
 
 from django.contrib.auth.models import Group

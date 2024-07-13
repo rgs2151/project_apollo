@@ -111,7 +111,9 @@ USER_MANAGER_SETTINGS = {
         "FROM": "luckyCasualGuy@gmail.com",
         "SMTP_USERNAME": "luckyCasualGuy@gmail.com",
         "SMTP_PASSWORD": "eojc yrxi bsjp ksql"
-    }
+    },
+
+    "ENABLE_COOKIES": True
     
 }
 
