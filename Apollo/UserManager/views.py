@@ -7,6 +7,7 @@ from rest_framework.exceptions import NotFound
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.contrib.auth.models import Group
+from .settings import USER_MANAGER_SETTINGS
 # from django.http import Http404
 
 from utility.views import *
@@ -59,7 +60,15 @@ class UserRegister(APIView):
         if USER_MANAGER_SETTINGS.get("TESTING_MODE", False):
             response['email_verification_link'] = email_verification_link
         
-        return Response(response)
+
+        response = Response(response)
+
+        if USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
+            expiery = USER_MANAGER_SETTINGS["TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
+            response.set_cookie("Authorization", f"Bearer {token}", expires=expiery)
+
+
+        return response
     
 
 class UserLogin(APIView):
@@ -84,7 +93,13 @@ class UserLogin(APIView):
         
         token = user_details_instance.issue_token(request)
         
-        return Response({"auth_token": token})
+        response = Response({"auth_token": token})
+
+        if USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
+            expiery = USER_MANAGER_SETTINGS["TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
+            response.set_cookie("Authorization", f"Bearer {token}", expires=expiery)
+
+        return response
 
 
 class UserDetailsView(APIView):

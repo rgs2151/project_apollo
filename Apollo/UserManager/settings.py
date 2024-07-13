@@ -3,7 +3,9 @@ from datetime import timedelta
 
 USER_MANAGER_SETTINGS = {
     
-    "TESTING_MODE": False,
+    "ENABLE_COOKIES": False,
+
+    "TESTING_MODE": True,
     
     "COOLDOWN": {
         "EMAIL_SECRET": timedelta(minutes=5),
@@ -35,7 +37,7 @@ USER_MANAGER_SETTINGS = {
         # update the key on app init through enviornment variables
         "ENCRYPTION_KEY": "O8tY4J4XX9Rdvs2VZMAm8uw5QDXg9rsR0s97VACT_ak=",
         "TOKEN_EXPIERY_TIME": timedelta(days=7),
-        "TOKEN_LIMIT": 3
+        "TOKEN_LIMIT": 3,
     }
 
     

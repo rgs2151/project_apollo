@@ -1,6 +1,7 @@
 from pathlib import Path
 from mongoengine import connect
 import os
+from logging import Filter
 
 
 with open("openai_key", "r") as f:
@@ -105,21 +106,92 @@ USER_MANAGER_SETTINGS = {
     "TESTING_MODE": False,
     
     "EMAIL": {
-        "SEND": True,
+        "SEND": False,
         "TEMPLATE": "Please click the following link to verify your account: {link}",
         "SUBJECT": "verify your email",
         "FROM": "luckyCasualGuy@gmail.com",
         "SMTP_USERNAME": "luckyCasualGuy@gmail.com",
         "SMTP_PASSWORD": "eojc yrxi bsjp ksql"
-    }
+    },
+
+    "ENABLE_COOKIES": True
     
 }
 
+
+class ThreadFilter(Filter):
+    def filter(self, record):
+        record.thread_id = record.thread  # Add thread ID to the log record
+        return True
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {thread_id} {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'thread_filter': { '()': ThreadFilter, },
+    },
+    'handlers': {
+        'django_info_file': {
+            'level': 'INFO',
+            # 'class': 'logging.handlers.TimedRotatingFileHandler',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'filename': BASE_DIR / 'logs/django_info.log',
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 7,  # Keep the last 7 logs
+            'formatter': 'verbose',
+            'filters': ['thread_filter']
+        },
+        'converse_debug_file': {
+            'level': 'DEBUG',
+            # 'class': 'logging.handlers.TimedRotatingFileHandler',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'filename': BASE_DIR / 'logs/converse_debug.log',
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 7,  # Keep the last 7 logs
+            'formatter': 'verbose',
+            'filters': ['thread_filter']
+        },
+        'converse_info_file': {
+            'level': 'INFO',
+            # 'class': 'logging.handlers.TimedRotatingFileHandler',
+            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'filename': BASE_DIR / 'logs/converse_info.log',
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 7,  # Keep the last 7 logs
+            'formatter': 'verbose',
+            'filters': ['thread_filter']
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['django_info_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'converse': {
+            'handlers': ['converse_debug_file', 'converse_info_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 

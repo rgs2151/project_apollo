@@ -32,7 +32,7 @@ class ServiceWithFaissSupportSchemaSerializer(DocumentSerializer):
         fields = '__all__'
 
 
-class EventsDataSerializer(DocumentSerializer):
+class EventsSerializer(DocumentSerializer):
     class Meta:
         model = Events
         fields = '__all__'

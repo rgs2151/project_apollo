@@ -17,15 +17,15 @@ class UsermanagerConfig(AppConfig):
         
         for k, v in settings_defined.items():
             USER_MANAGER_SETTINGS.update({k: v})
+
+        # for k, v in USER_MANAGER_SETTINGS.items():
+        #     settings_defined.update({k: v})
         
         stash = self.validate_app_settings()
         for msg in stash: print(msg)
+
     
 
-    # @staticmethod
-    # def set_project_404_error():
-    #     get_resolver()
-    
     @staticmethod
     def validate_app_settings():
         stash = []
@@ -46,7 +46,7 @@ class UsermanagerConfig(AppConfig):
             USER_MANAGER_SETTINGS["EMAIL"]["SEND"] = False
             return email_stash
 
-        
+
         email_settings = USER_MANAGER_SETTINGS.get('EMAIL', {})
         email_setting_valid = True
         
@@ -87,7 +87,7 @@ class UsermanagerConfig(AppConfig):
             
             # email checks
             if not check_email(email_settings["SMTP_USERNAME"]):
-                email_stash.append(f"\033[93mWARNING: UserManager.settings.EMAIL SMTP USER LOGIN FAILED\n{error}\033[0m")  
+                email_stash.append(f"\033[93mWARNING: UserManager.settings.EMAIL SMTP USER LOGIN FAILED\033[0m")  
             
             email_user = email_settings["SMTP_USERNAME"]
             email_user_password = email_settings["SMTP_PASSWORD"]
@@ -152,8 +152,8 @@ class UsermanagerConfig(AppConfig):
             USER_MANAGER_SETTINGS['PASSWORD']['EMAIL']["SEND"] = password_email_setting_valid
 
         return password_stash
-        
-    
+
+
     @staticmethod
     def validate_redirect():
         
