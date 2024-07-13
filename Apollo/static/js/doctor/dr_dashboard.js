@@ -80,8 +80,17 @@ let appointment_requests = [
     },
 ];
 
+// For every row in the appointment_requests array, add 2 key-value pairs called 'Accept' and 'Reject'
+function add_buttons(data) {
+    return data.forEach(function(row) {
+        row['Accept'] = '<button class="btn btn-success btn-circle btn-sm accept-button"><i class="fas fa-check"></i></button>';
+        row['Reject'] = '<button class="btn btn-danger btn-circle btn-sm reject-button"><i class="fas fa-trash"></i></button>';
+    });
+};
+
 $(document).ready(function() {
     // Make the DataTable
+    let data = add_buttons(appointment_requests)
     $('#appointmentRequests').DataTable(
         {
             data: appointment_requests,
@@ -89,5 +98,16 @@ $(document).ready(function() {
         }
     );
 
-    $('#healthIndicators').DataTable().columns([0,1]).visible(false);
+    // $('#appointmentRequests').DataTable().columns([0,1]).visible(false);
+    
+    $('#appointmentRequests').DataTable().on('click', '.accept-button', function() {
+        let data = $('#appointmentRequests').DataTable().row($(this).parents('tr')).data();
+        console.log(data);
+    });
+
+    $('#appointmentRequests').DataTable().on('click', '.reject-button', function() {
+        let data = $('#appointmentRequests').DataTable().row($(this).parents('tr')).data();
+        console.log(data);
+    });
+    
 });
