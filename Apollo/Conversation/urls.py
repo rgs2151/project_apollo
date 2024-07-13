@@ -1,10 +1,21 @@
 from django.urls import path
 from django.shortcuts import render
 from .views import *
+from rest_framework.decorators import authentication_classes
+
+
+class Test(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request: Request):
+        return render(request, "test.html")
+
 
 
 urlpatterns = [
     # Post APIs
+
     path("history/", History.as_view(), name="conversation-history"),
     path("converse/", Converse.as_view(), name="conversation-converse"),
     path("converse-history/", ConversationHistory.as_view(), name="conversation-converse-history"),
@@ -14,7 +25,7 @@ urlpatterns = [
     path("goal/", GoalsView.as_view(), name="conversation-goal"),
 
     # Get and Template APIs
-
+    
     # For Users
     path("dashboard/", lambda request: render(request, template_name="dashboard.html"), name="conversation-dashboard"),
     path("chat/", lambda request: render(request, template_name="chat.html"), name="conversation-chat"),
@@ -24,4 +35,6 @@ urlpatterns = [
     path("dr_dashboard/", dr_dashboad , name="conversation-dr-dashboard"),
     path("dr_calander/", lambda request: render(request, template_name="dr_calander.html"), name="conversation-dr-calander"),
     path("dr_circle/", lambda request: render(request, template_name="dr_circle.html"), name="conversation-dr-chat"),
+
+    path("test/", Test.as_view(), name="test")
 ]
