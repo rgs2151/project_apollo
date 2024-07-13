@@ -266,6 +266,21 @@ class UserChangePassword(APIView):
         return Response({"status": "success"})
 
 
+class LogOut(APIView):
+
+    authentication_classes=[TokenAuthentication]
+
+    @exception_handler()
+    def post(self, request: Request):
+        
+        response = Response({"status": False})
+        if request.COOKIES and request.COOKIES.get("Authorization", False):
+            response = Response({"status": True})
+            response.delete_cookie("Authorization")
+        
+        return response
+
+
 # Admin Routes for Dashboard
 
 class UserDashboard(FilteredListView):
