@@ -531,10 +531,13 @@ class _ModelManagerView:
         pass
 
 
-class ModelManagerView(UtilityViewMixin, _ModelManagerView, APIView): pass
+class ModelManagerView(_ModelManagerView, UtilityViewMixin, APIView):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
 
-class MongoModelManagerView(UtilityMongoViewMixin, _ModelManagerView, APIView):
+class MongoModelManagerView(_ModelManagerView, UtilityMongoViewMixin, APIView):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

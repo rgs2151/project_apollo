@@ -21,9 +21,10 @@ urlpatterns = [
     path("converse/", Converse.as_view(), name="conversation-converse"),
     path("chathistory/", ChatHistoryView.as_view(), name="conversation-converse-history"),
     path("documents/", Documents.as_view(), name="conversation-documents"),
+    path("doctor-events-dashboard/", DoctorEventDashboardView.as_view(), name="conversation-doctor-events-dashboard"),
     path("doctor-events/", DoctorEventView.as_view(), name="conversation-doctor-events"),
     path("doctors/", DoctorView.as_view(), name="conversation-doctors"),
-    path("goal/", GoalsView.as_view(), name="conversation-goal"),
+    path("goals/", GoalsView.as_view(), name="conversation-goals"),
 
     # Get and Template APIs
     
@@ -33,7 +34,7 @@ urlpatterns = [
     path("connect/", lambda request: render(request, template_name="connect.html"), name="conversation-connect"),
     
     # For Doctors
-    path("dr_dashboard/", dr_dashboad , name="conversation-dr-dashboard"),
+    # path("dr_dashboard/", dr_dashboad , name="conversation-dr-dashboard"),
     path("dr_calander/", lambda request: render(request, template_name="dr_calander.html"), name="conversation-dr-calander"),
     path("dr_circle/", lambda request: render(request, template_name="dr_circle.html"), name="conversation-dr-chat"),
 

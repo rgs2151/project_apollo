@@ -55,6 +55,7 @@ class DoctorsWithFaissSupportSchema(Document):
     dr_days = fields.StringField(required=False, default="")
     dr_time_start = fields.StringField(required=False, default="")
     dr_time_end = fields.StringField(required=False, default="")
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
     
     meta = {
         "collection": "Doctors"
@@ -69,6 +70,7 @@ class ServiceWithFaissSupportSchema(Document):
     i_service_description = fields.StringField(required=False, default="")
     service_cost = fields.StringField(required=False, default="")
     service_duration = fields.StringField(required=False, default="")
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
     
     meta = {
         "collection": "Service"
@@ -84,6 +86,7 @@ class Events(Document):
     event_date = fields.StringField(required=True)
     event_time = fields.StringField(required=True)
     event_status = fields.BooleanField(required=False, default=False)
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
 
     meta = {
         "collection": "Events"
@@ -97,6 +100,7 @@ class Goals(Document):
     goal_milestones = fields.StringField(required=True)
     goal_progress = fields.IntField(required=True)
     goal_target_date = fields.StringField(required=True)
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
 
     meta = {
         "collection": "Goals"

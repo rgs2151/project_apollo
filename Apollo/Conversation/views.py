@@ -525,7 +525,7 @@ class GoalsView(APIView):
 
 
 # confirmed
-class DoctorEventView(MongoFilteredListView, UserManagerUtilityMixin):
+class DoctorEventDashboardView(MongoFilteredListView, UserManagerUtilityMixin):
 
     authentication_classes = [TokenAuthentication]
 
@@ -537,7 +537,7 @@ class DoctorEventView(MongoFilteredListView, UserManagerUtilityMixin):
 
     static_filters = {
         "event_type": "appointment",
-        "event_contact_id": lambda request: request.doctor_id
+        "event_contact_id": lambda request: f"{request.doctor_id}"
     }
     
     def get(self, request: Request, *args, **kwargs):
@@ -545,7 +545,7 @@ class DoctorEventView(MongoFilteredListView, UserManagerUtilityMixin):
         doctor_id = None
         if DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).count():
             instance = DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).first()
-            doctor_id = instance.id 
+            doctor_id = instance.id
 
         request.doctor_id = doctor_id
 
@@ -553,75 +553,53 @@ class DoctorEventView(MongoFilteredListView, UserManagerUtilityMixin):
 
 
 
-# class DoctorEventsView(APIView):
-    
-#     authentication_classes = [TokenAuthentication]
+class DoctorEventView(MongoModelManagerView, UserManagerUtilityMixin):
 
-#     permission_classes = [UserGroupPermissions("Doctor")]
+    authentication_classes = [TokenAuthentication]
 
-#     allow_methods = ["GET", "PUT"]
+    permission_classes = [UserGroupPermissions("Doctor")]
 
-#     model = Events
+    allow_methods = ["PUT"]
 
-#     serializer = EventsSerializer
+    model = Events
 
-#     unique_primaries = ["id"]
+    serializer = EventsSerializer
 
-#     GET_inject = {
-#         "event_type": "appointment",
-#         "event_contact_id": lambda request: request.doctor_id
-#     }
+    unique_primaries = ["id"]
 
-#     PUT_filter = {}
+    PUT_filter = {
+        "id": {"required": True, "type": "string", "empty": False},
+        "event_status": {"required": True, "type": "boolean"}
+    }
 
-#     PUT_inject = {
-#         "id": UserManagerUtilityMixin.get_user_id,
-#         "event_type": "appointment",
-#         "event_contact_id": lambda request: request.doctor_id
-#     }
+    PUT_inject = {
+        "event_type": "appointment",
+        "event_contact_id": lambda request: f"{request.doctor_id}"
+    }
 
 
-#     def get(self, request: Request, *args, **kwargs):
+    def put(self, request: Request, *args, **kwargs):
         
-#         doctor_id = None
-#         if DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).count():
-#             instance = DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).first()
-#             doctor_id = instance.id 
+        doctor_id = None
+        if DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).count():
+            instance = DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).first()
+            doctor_id = instance.id 
 
-#         request.doctor_id = doctor_id
+        request.doctor_id = doctor_id
 
-#         return super().get(request, *args, **kwargs)
-
-
-
-# class TestAPI(MongoModelManagerView):
+        return super().put(request, *args, **kwargs)
 
 
-#     allow_methods = ["GET", "POST", "PUT"]
+# confirmed
+class GoalsView(MongoFilteredListView, UserManagerUtilityMixin):
 
-#     model = ChatHistory
+    authentication_classes = [TokenAuthentication]
 
-#     serializer = ConvHistorySerializer
+    model = Goals
+    serializer = GoalsSerializer
+    pagination = DefaultPagination()
 
-#     GET_filter = {
-#         "user_id": {"coerce": int, "required": True, "type": "integer", "min": 0}
-#     }
-
-#     POST_filter = {
-#         "user_id": {"required": True, "type": "integer", "min": 0},
-#         "prompt": {"type": "dict", "required": True, "empty": False, "check_with": "user_prompt"},
-#         # "created_at": {"type": "string", "required": True, "empty": False, "check_with": "user_prompt"},
-#     }
-
-
-#     PUT_filter = {
-#         "user_id": {"required": True, "type": "integer", "min": 0},
-#         "prompt": {"type": "dict", "required": True, "empty": False, "check_with": "user_prompt"},
-#     }
-
-#     unique_primaries = ["id", "user_id"]
-
-#     _request_validator_params = {
-#         "validator": ConversationValidator()
-#     }
+    static_filters = {
+        "user_id": UserManagerUtilityMixin.get_user_id 
+    }
 
