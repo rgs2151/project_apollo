@@ -590,6 +590,21 @@ class DoctorEventView(MongoModelManagerView, UserManagerUtilityMixin):
         return super().put(request, *args, **kwargs)
 
 
+
+class UserEventDashboardView(MongoFilteredListView, UserManagerUtilityMixin):
+
+    authentication_classes = [TokenAuthentication]
+
+    model = Events
+    serializer = EventsSerializer
+    pagination = DefaultPagination()
+
+    static_filters = {
+        "event_type": "appointment",
+        "user_id": UserManagerUtilityMixin.get_user_id
+    }
+
+
 # confirmed
 class GoalsView(MongoFilteredListView, UserManagerUtilityMixin):
 
