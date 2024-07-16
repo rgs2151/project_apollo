@@ -20,8 +20,6 @@ class TokenAuthentication(BaseAuthentication):
         
         auth_header = request.headers.get('Authorization', None)
         auth_cookie = request.COOKIES.get('Authorization', None)
-        print(auth_header)
-        print(auth_cookie)
         
         if auth_header and auth_header.startswith('Bearer '):
             auth_token = auth_header.split(' ')[1]

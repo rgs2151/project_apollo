@@ -1,0 +1,12 @@
+[
+    {
+        "user_id": 7,
+        "event_type": "appointment",
+        "event_description": "some discription",
+        "event_contact": "name of doctor",
+        "event_contact_id": "667f01f8dd0c10d33f854a88",
+        "event_date": "10-09-1999",
+        "event_time": "9:00 AM",
+        "event_status": false
+    }
+]

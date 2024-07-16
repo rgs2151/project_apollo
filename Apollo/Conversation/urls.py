@@ -15,12 +15,15 @@ urlpatterns = [
     # Post APIs
 
     path("history/", History.as_view(), name="conversation-history"),
+    path("keyinformation/", ConversationHistoryWithFaissSupportView.as_view(), name="conversation-keyinformation"),
     path("converse/", Converse.as_view(), name="conversation-converse"),
-    path("converse-history/", ConversationHistory.as_view(), name="conversation-converse-history"),
+    path("chathistory/", ChatHistoryView.as_view(), name="conversation-converse-history"),
     path("documents/", Documents.as_view(), name="conversation-documents"),
-    path("events/", EventsView.as_view(), name="conversation-events"),
-    path("doctors/", DoctorsView.as_view(), name="conversation-doctors"),
-    path("goal/", GoalsView.as_view(), name="conversation-goal"),
+    path("doctor-events-dashboard/", DoctorEventDashboardView.as_view(), name="conversation-doctor-events-dashboard"),
+    path("doctor-events/", DoctorEventView.as_view(), name="conversation-doctor-events"),
+    path("doctors/", DoctorView.as_view(), name="conversation-doctors"),
+    path("user-goals/", GoalsView.as_view(), name="conversation-user-goals"),
+    path("user-events-dashboard", UserEventDashboardView.as_view(), name="conversation-user-events-dashboard"),
 
     # Get and Template APIs
     

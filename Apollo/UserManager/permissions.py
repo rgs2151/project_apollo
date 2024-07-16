@@ -123,6 +123,8 @@ class UserGroupPermissions(UserPermissions):
 
         return True
     
+    def __call__(self) -> Any: return self
+    
 
     def has_object_permission(self, request, view, obj):
 

@@ -48,12 +48,14 @@ class ConversationState(Document):
 class DoctorsWithFaissSupportSchema(Document):
     history_id = fields.IntField(required=True, min=0)
     vector_id = fields.IntField(required=True, min=0)
+    user_id = fields.IntField(required=True, min=0)
     dr_name = fields.StringField(required=False, default="")
     dr_specialist = fields.StringField(required=False, default="")
     i_dr_description = fields.StringField(required=False, default="")
     dr_days = fields.StringField(required=False, default="")
     dr_time_start = fields.StringField(required=False, default="")
     dr_time_end = fields.StringField(required=False, default="")
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
     
     meta = {
         "collection": "Doctors"
@@ -68,6 +70,7 @@ class ServiceWithFaissSupportSchema(Document):
     i_service_description = fields.StringField(required=False, default="")
     service_cost = fields.StringField(required=False, default="")
     service_duration = fields.StringField(required=False, default="")
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
     
     meta = {
         "collection": "Service"
@@ -79,8 +82,11 @@ class Events(Document):
     event_type = fields.StringField(required=True)
     event_description = fields.StringField(required=True)
     event_contact = fields.StringField(required=True)
+    event_contact_id = fields.StringField(required=True)
     event_date = fields.StringField(required=True)
     event_time = fields.StringField(required=True)
+    event_status = fields.BooleanField(required=False, default=False)
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
 
     meta = {
         "collection": "Events"
@@ -94,7 +100,11 @@ class Goals(Document):
     goal_milestones = fields.StringField(required=True)
     goal_progress = fields.IntField(required=True)
     goal_target_date = fields.StringField(required=True)
+    created_at = fields.DateTimeField(default=datetime.datetime.now())
 
     meta = {
         "collection": "Goals"
     }
+
+
+

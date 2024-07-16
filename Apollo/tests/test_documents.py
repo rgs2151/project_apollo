@@ -8,8 +8,7 @@ print("ADDING TO PATH:", str(__PATH__), " exists: ", Path(__PATH__).exists())
 sys.path.append(str(__PATH__))
 
 
-from Conversation.converse.documents import PDF, DocumentExtract
-from Conversation.converse.tools import  EXTRACT_USER_RELATED_INFO, extract_user_health_information_entry
+from Conversation.converse.documents import PDF
 from io import BytesIO
 
 
