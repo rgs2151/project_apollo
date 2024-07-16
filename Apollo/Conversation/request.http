@@ -1,6 +1,6 @@
 
 
-### history
+### history @depricated
 POST http://127.0.0.1:8000/conversation/history/
 Content-Type: application/json
 # Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
@@ -11,8 +11,15 @@ Authorization: Bearer gAAAAABmjONSxBO61gYwsTpCeG7nsqe3YUZgMEERUC5C_7sVILi1UIxCR7
 }
 
 
+### key information
+GET http://127.0.0.1:8000/conversation/keyinformation/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+
+
+
 ### converse-history
-GET http://127.0.0.1:8000/conversation/converse-history/
+GET http://127.0.0.1:8000/conversation/chathistory/?page_size=2
 Content-Type: application/json
 Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
 
@@ -36,9 +43,33 @@ Authorization: Bearer gAAAAABmjONSxBO61gYwsTpCeG7nsqe3YUZgMEERUC5C_7sVILi1UIxCR7
 }
 
 
-### events
-GET http://127.0.0.1:8000/conversation/events/
+
+### doctors GET
+GET http://127.0.0.1:8000/conversation/doctors/
 Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+
+
+### doctors PUT
+PUT http://127.0.0.1:8000/conversation/doctors/
+Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
+Content-Type: application/json
+
+{
+    "dr_days": "Monday, Wednesday, Friday"
+}
+
+
+
+### events
+GET http://127.0.0.1:8000/conversation/doctor-events/
+Authorization: Bearer gAAAAABmlrlzDiAQxu02fjnJ_lFK5sNvtxZwg-Z5WY6zzZhhUcZmilP2iYrrKcgy3XW3TyXf1OCj1L24tRI2Rc-XFCRnYew5FA1rYiz8S1tOipoMJMmDGcjquU8AEDQDZV1G63cdAMjI68Dgrxqk-bKHMkj1Grmkh1CFLINPtE7_zqTnPiPXjoLGdNsNxoMgYmH-Hu8RkvzXT8pL8dZdeJUka09rzV3DY5hyPGQifOAouXzAZhsbrf3oNe7QgEQpZ62FbO5Ibn0Qu41tFj_GnTSbubitpawAIg==
+
+
+###
+GET http://127.0.0.1:8000/conversation/test-view/?user_id=0
+
+###
+GET http://127.0.0.1:8000/conversation/test-view1/?user_id=0
 
 
 

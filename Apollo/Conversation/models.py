@@ -48,6 +48,7 @@ class ConversationState(Document):
 class DoctorsWithFaissSupportSchema(Document):
     history_id = fields.IntField(required=True, min=0)
     vector_id = fields.IntField(required=True, min=0)
+    user_id = fields.IntField(required=True, min=0)
     dr_name = fields.StringField(required=False, default="")
     dr_specialist = fields.StringField(required=False, default="")
     i_dr_description = fields.StringField(required=False, default="")
@@ -79,8 +80,10 @@ class Events(Document):
     event_type = fields.StringField(required=True)
     event_description = fields.StringField(required=True)
     event_contact = fields.StringField(required=True)
+    event_contact_id = fields.StringField(required=True)
     event_date = fields.StringField(required=True)
     event_time = fields.StringField(required=True)
+    event_status = fields.BooleanField(required=False, default=False)
 
     meta = {
         "collection": "Events"
@@ -98,3 +101,6 @@ class Goals(Document):
     meta = {
         "collection": "Goals"
     }
+
+
+

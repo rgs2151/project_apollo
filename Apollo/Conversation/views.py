@@ -5,19 +5,24 @@ from rest_framework.response import Response
 from Apollo.settings import MONGO_INSTANCE, GPT_KEY
 
 from UserManager.authentication import TokenAuthentication
+from UserManager.permissions import UserGroupPermissions
 from store.mongoengine import MongoHistoryWithFAISS
 
 from turbochat.gptprompts import *
 from turbochat.v1.prompt import GPTMsgPrompt, GPTMsges
 from turbochat.v1.gpt import GPT, Msg
 
+from utility.views import ModelManagerView, DefaultPagination
+
 from .serializers import *
 from .converse.prompts.user import PromptMaker
 from .converse.prompts.system import DEFAULT as DEFAULT_SYSTEM_PROMPT
 from .converse.toolregistry import Registery as ToolRegistry
-from .converse.documents import DocumentExtract, PDF
+from .converse.documents import PDFDocumentExtract, PDF, ImageDocumentExtract
 from .converse.prompts.tool import EXTRACT_USER_RELATED_INFO
 from .converse.toolcallables import *
+
+from .view_utility import UserManagerUtilityMixin
 
 import numpy as np
 import pandas as pd
@@ -48,7 +53,7 @@ class ConversationValidator(DefaultValidator):
         except Exception: self._error(field, "should be base64 string")
 
 
-
+# depricated
 class History(APIView):
 
     authentication_classes = [TokenAuthentication]
@@ -86,32 +91,32 @@ class History(APIView):
         return Response({"data": data.to_dict("records"), "data_columns": data.columns.tolist()})
 
 
-class ConversationHistory(APIView):
+class ConversationHistoryWithFaissSupportView(MongoFilteredListView, UserManagerUtilityMixin):
 
     authentication_classes = [TokenAuthentication]
 
-    def get(self, request):
-        instances = ConvHistory.objects(user_id=request.user_details.user.id)
-        return Response({"data": ConvHistorySerializer(instances, many=True).data})
+    model = ConversationHistoryWithFaissSupportSchema
+    serializer = ConversationHistoryWithFaissSupportSchemaSerializer
+    pagination = DefaultPagination()
+
+    static_filters = {
+        "history_id": UserManagerUtilityMixin.get_user_id 
+    }
 
 
-def collected_health_information_entries(entries):
-    df = pd.DataFrame(entries)
-    df.columns = ["i_parameter_label", "parameter_type", "parameter_value"]
-    return df
+# confirmed
+class ChatHistoryView(MongoFilteredListView, UserManagerUtilityMixin):
 
+    authentication_classes = [TokenAuthentication]
 
-def collect_events(event_type, event_description, event_contact, event_date, event_time):
-    return {"event_type": event_type, "i_event_description": event_description, "event_contact": event_contact, "event_date": event_date, "event_time": event_time}
+    model = ChatHistory
+    serializer = ConvHistorySerializer
+    pagination = DefaultPagination()
 
+    static_filters = {
+        "user_id": UserManagerUtilityMixin.get_user_id 
+    }
 
-# TOOL_EVENTS = Tools([
-#     {
-#         "name": "collect_events",
-#         "function": collect_events,
-        # "definition": APPOINTMENT_SERVICE_PURCHASE_EVENT
-#     }
-# ])
 
 
 DEFAULT_PROMPT = {
@@ -120,7 +125,6 @@ DEFAULT_PROMPT = {
     "doctors": {"label": "Available doctors"},
     "history": {"label": "User related information"},
 }
-
 
 
 class Converse(APIView):
@@ -436,24 +440,33 @@ class Converse(APIView):
         return history_messages
 
 
+# updated with image support
 class Documents(APIView):
 
 
     @exception_handler()
     @request_schema_validation(schema={
         "file": {"type": "string", "required": True, "empty": False, "check_with": "base64_string"},
+        "file_type": {"type": "string", "required": False, "empty": False, "allowed": ["pdf", "image"], "default": "pdf"}
     }, validator=ConversationValidator)
     def post(self, request: Request):
 
-        req = request.data
+        req = request.N_Payload
         
         io_ = BytesIO(req['file'])
         io_.seek(0)
-        pdf = PDF(io_)
 
-        DE = DocumentExtract(pdf, GPT_KEY, EXTRACT_USER_RELATED_INFO, get_callable_df_with_columns(["i_parameter_label", "parameter_type", "parameter_value"]))
-        results = DE.extract()
-        
+        if req["file_type"] == "pdf":
+            pdf = PDF(io_)
+            DE = PDFDocumentExtract(pdf, GPT_KEY, EXTRACT_USER_RELATED_INFO, get_callable_df_with_columns(["i_parameter_label", "parameter_type", "parameter_value"]))
+            results = DE.extract()
+
+        elif req["file_type"] == "image":
+            IMG = ImageDocumentExtract(io_, GPT_KEY, EXTRACT_USER_RELATED_INFO, get_callable_df_with_columns(["i_parameter_label", "parameter_type", "parameter_value"]))
+            result = DE.extract()
+            results = [result]
+
+            
         ret_results = []
         if isinstance(results, pd.DataFrame) and not results.empty:
             ret_results = results.to_dict("records")
@@ -469,12 +482,33 @@ class Documents(APIView):
         return Response({"extracted": ret_results})
 
 
-class DoctorsView(APIView):
+class DoctorView(MongoModelManagerView, UserManagerUtilityMixin):
+    
+    authentication_classes = [TokenAuthentication]
 
-    @exception_handler()
-    def get(self, request: Request):
-        instances = DoctorsWithFaissSupportSchema.objects.all()
-        return Response({"data": DoctorsWithFaissSupportSchemaSerializer(instances, many=True).data})
+    allow_methods = ["GET", "PUT"]
+
+    model = DoctorsWithFaissSupportSchema
+
+    serializer = DoctorsWithFaissSupportSchemaSerializer
+
+    unique_primaries = ["id", "user_id"]
+
+    GET_inject = {
+        "user_id": UserManagerUtilityMixin.get_user_id 
+    }
+
+    PUT_filter = {
+        "dr_name": {"required": False, "type": "string", "empty": False},
+        "dr_specialist": {"required": False, "type": "string", "empty": False},
+        "dr_days": {"required": False, "type": "string", "empty": False},
+        "dr_time_start": {"required": False, "type": "string", "empty": False},
+        "dr_time_end": {"required": False, "type": "string", "empty": False},
+    }
+
+    PUT_inject = {
+        "user_id": UserManagerUtilityMixin.get_user_id,
+    }
 
 
 class GoalsView(APIView):
@@ -485,15 +519,107 @@ class GoalsView(APIView):
     def get(self, request: Request):
         instances = Goals.objects(user_id=request.user_details.user.id)
         return Response({"data": GoalsSerializer(instances, many=True).data})
-    
 
-class EventsView(APIView):
+
+
+# confirmed
+class DoctorEventView(MongoFilteredListView, UserManagerUtilityMixin):
 
     authentication_classes = [TokenAuthentication]
 
-    @exception_handler()
-    def get(self, request: Request):
-        instances = Events.objects(user_id=request.user_details.user.id)
-        return Response({"data": EventsDataSerializer(instances, many=True).data})
+    permission_classes = [UserGroupPermissions("Doctor")]
 
+    model = Events
+    serializer = EventsSerializer
+    pagination = DefaultPagination()
+
+    static_filters = {
+        "event_type": "appointment",
+        "event_contact_id": lambda request: request.doctor_id
+    }
+    
+    def get(self, request: Request, *args, **kwargs):
+
+        doctor_id = None
+        if DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).count():
+            instance = DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).first()
+            doctor_id = instance.id 
+
+        request.doctor_id = doctor_id
+
+        return super().get(request, *args, **kwargs)
+
+
+
+# class DoctorEventsView(APIView):
+    
+#     authentication_classes = [TokenAuthentication]
+
+#     permission_classes = [UserGroupPermissions("Doctor")]
+
+#     allow_methods = ["GET", "PUT"]
+
+#     model = Events
+
+#     serializer = EventsSerializer
+
+#     unique_primaries = ["id"]
+
+#     GET_inject = {
+#         "event_type": "appointment",
+#         "event_contact_id": lambda request: request.doctor_id
+#     }
+
+#     PUT_filter = {}
+
+#     PUT_inject = {
+#         "id": UserManagerUtilityMixin.get_user_id,
+#         "event_type": "appointment",
+#         "event_contact_id": lambda request: request.doctor_id
+#     }
+
+
+#     def get(self, request: Request, *args, **kwargs):
+        
+#         doctor_id = None
+#         if DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).count():
+#             instance = DoctorsWithFaissSupportSchema.objects(user_id=request.user_details.user.id).first()
+#             doctor_id = instance.id 
+
+#         request.doctor_id = doctor_id
+
+#         return super().get(request, *args, **kwargs)
+
+
+
+# class TestAPI(MongoModelManagerView):
+
+
+#     allow_methods = ["GET", "POST", "PUT"]
+
+#     model = ChatHistory
+
+#     serializer = ConvHistorySerializer
+
+#     GET_filter = {
+#         "user_id": {"coerce": int, "required": True, "type": "integer", "min": 0}
+#     }
+
+#     POST_filter = {
+#         "user_id": {"required": True, "type": "integer", "min": 0},
+#         "prompt": {"type": "dict", "required": True, "empty": False, "check_with": "user_prompt"},
+#         # "created_at": {"type": "string", "required": True, "empty": False, "check_with": "user_prompt"},
+#     }
+
+
+#     PUT_filter = {
+#         "user_id": {"required": True, "type": "integer", "min": 0},
+#         "prompt": {"type": "dict", "required": True, "empty": False, "check_with": "user_prompt"},
+#     }
+
+#     unique_primaries = ["id", "user_id"]
+
+#     _request_validator_params = {
+#         "validator": ConversationValidator()
+#     }
 
