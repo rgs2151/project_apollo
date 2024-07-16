@@ -4,7 +4,6 @@
 {% block page_title %}{% endblock %}
 {% block custom_header %}{% endblock %}
 
-
 <!-- Body block -->
 {% block body %}
 
@@ -14,7 +13,7 @@
     <div id="wrapper">
 
         <!-- Sidebar -->
-        {% include 'includes/sidebar.html' with sidebar_type="doctor" %}
+        {% include 'includes/sidebar.html' %}
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
@@ -46,10 +45,13 @@
     </div>
     <!-- End of Page Wrapper -->
 
+    <!-- scripts for all logged pages -->
 </body>
 
 {% endblock %}
 
-{% block custom_scripts %}
+{% block logged_pages_scripts %}
 <script src="{% static 'js/logged_global.js' %}"></script>
 {% endblock %}
+
+{% block custom_scripts %}{% endblock %}

@@ -12,7 +12,8 @@ $("#submitResponseButton").click(function () {
 
     $.ajax({
         url: window.location.origin + '/conversation/converse/',
-        headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`, 'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json'},
+        xhrFields: { withCredentials: true },
         type: 'post',
         data: JSON.stringify({ 
             'message': {

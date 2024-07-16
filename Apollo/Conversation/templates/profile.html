@@ -1,0 +1,55 @@
+{% extends 'logged_body.html' %}
+{% load static %}
+
+{% block page_title %}Profile{% endblock %}
+{% block custom_header %}{% endblock %}
+
+{% block page_content_fluid %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+    </div>
+
+    <!-- Content Gamify Row -->
+    <div class="row">
+
+        <div class="col-xl-4">
+            <!-- Profile picture card-->
+            <div class="card mb-4 mb-xl-0">
+                <div class="card-header">Profile Picture</div>
+                <div class="card-body text-center">
+                    <!-- Profile picture image-->
+                    <img class="img-account-profile rounded-circle mb-2" src="{% static 'img/undraw_profile.svg'%}" alt="">
+                    <!-- Profile picture help block-->
+                    <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
+                    <!-- Profile picture upload button-->
+                    <button class="btn btn-primary" type="button">Upload new image</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8">
+
+            {% if 'user' in user_groups %}
+                <!-- Account details card-->
+                {% include 'profile_includes/user_profile.html' %}
+            {% endif %}
+            {% if 'doctor' in user_groups %}
+                <!-- Doctors timing card -->
+                {% include 'profile_includes/doctor_profile.html' %}
+            {% endif %}
+            {% if 'provider' in user_groups %}
+            {% endif %}
+            {% if 'admin' in user_groups %}
+            {% endif %}
+    </div>
+
+{% endblock %}
+
+{% block custom_scripts %}
+
+<!-- <script src="{% static 'js/conversation/dashboard.js' %}"></script> -->
+
+{% endblock %}
