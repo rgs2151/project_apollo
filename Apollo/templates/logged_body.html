@@ -14,7 +14,7 @@
     <div id="wrapper">
 
         <!-- Sidebar -->
-        {% include 'includes/sidebar.html' %}
+        {% include 'includes/sidebar.html' with sidebar_type="doctor" %}
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
@@ -48,4 +48,8 @@
 
 </body>
 
+{% endblock %}
+
+{% block custom_scripts %}
+<script src="{% static 'js/logged_global.js' %}"></script>
 {% endblock %}

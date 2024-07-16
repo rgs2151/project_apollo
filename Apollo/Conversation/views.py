@@ -1,3 +1,5 @@
+from django.shortcuts import render
+
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -362,7 +364,7 @@ class Converse(APIView):
             ServiceWithFaissSupportSchema,
             ServiceWithFaissSupportSchemaSerializer
         )
-        return faiss_services.get(context, k=5)
+        return faiss_services.get(context, k=10)
 
 
     def get_doctors(self, context):
@@ -373,7 +375,7 @@ class Converse(APIView):
             DoctorsWithFaissSupportSchema,
             DoctorsWithFaissSupportSchemaSerializer
         )
-        return faiss_doctors.get(context, k=5)
+        return faiss_doctors.get(context, k=10)
         
 
     def default_context(self, user_id, context, faiss_history):

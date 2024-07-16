@@ -1,0 +1,71 @@
+{% extends 'logged_body.html' %}
+{% load static %}
+
+{% block page_title %}Connect{% endblock %}
+
+{% block custom_header %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@event-calendar/build@3.1.0/event-calendar.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@event-calendar/build@3.1.0/event-calendar.min.js"></script>
+{% endblock %}
+
+{% block page_content_fluid %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Calander</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+    </div>
+
+    <!-- Content Data Row -->
+    <div class="row">
+        <!-- Calander -->
+        <div class="col-xl-12 col-lg-7">
+            <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div
+                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Appointments</h6>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <div id="calendarHolder"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block custom_scripts %}
+    <script>
+        $(document).ready(function () {
+
+            let calendar = new EventCalendar(document.getElementById('calendarHolder'), {
+                view: 'timeGridWeek',
+                events: [
+                    {
+                        title: 'Event 1',
+                        date: '2021-09-01',
+                        description: 'Description 1',
+                        color: '#ff0000'
+                    },
+                    {
+                        title: 'Event 2',
+                        date: '2021-09-02',
+                        description: 'Description 2',
+                        color: '#00ff00'
+                    },
+                    {
+                        title: 'Event 3',
+                        date: '2021-09-03',
+                        description: 'Description 3',
+                        color: '#0000ff'
+                    }
+                ]
+            });
+
+        });
+    </script>
+{% endblock %}

@@ -13,8 +13,10 @@ $('#loginButton').click(function() {
             password: password,
         },
         success: function(data) {
-            localStorage.setItem('token', data.auth_token);
             window.location.href = '/conversation/dashboard/';
+        },
+        error: function(data) {
+            alert('Invalid Credentials');
         }
     });
 });
