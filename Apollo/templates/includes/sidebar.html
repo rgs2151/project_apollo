@@ -7,18 +7,17 @@
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
-    <!-- User Specific Sidebar Options -->
-    {% if sidebar_type == "admin" %}
+    {% if 'admin' in user_groups %}
         {% include 'includes/sidebar_includes/sidebar_admin.html' %}
     {% endif %}
-    {% if sidebar_type == "provider" %}
+    {% if 'provider' in user_groups %}
         {% include 'includes/sidebar_includes/sidebar_provider.html' %}
     {% endif %}
-    {% if sidebar_type == "doctor" %}
+    {% if 'doctor' in user_groups %}
         {% include 'includes/sidebar_includes/sidebar_doctor.html' %}
     {% endif %}
-    {% if sidebar_type == "user" %}
-    {% include 'includes/sidebar_includes/sidebar_user.html' %}
+    {% if 'user' in user_groups %}
+        {% include 'includes/sidebar_includes/sidebar_user.html' %}
     {% endif %}
     
     <!-- Divider -->

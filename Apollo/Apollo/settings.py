@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-3preg@l(5xp6wi64sa!yw=fmcfk&dj)lb6i6pmo_9r%(c6v_s9'
 
 
-ON403REDIRECT = "/conversation/dashboard/"
+ON403REDIRECT = "/user/signin/"
 
 
 DEBUG = True

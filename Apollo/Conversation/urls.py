@@ -1,7 +1,5 @@
 from django.urls import path
-from django.shortcuts import render
-from .views import *
-from rest_framework.decorators import authentication_classes
+from .views_templates import *
 
 
 class Test(APIView):
@@ -31,14 +29,16 @@ urlpatterns = [
     # Get and Template APIs
     
     # For Users
-    path("dashboard/", lambda request: render(request, template_name="dashboard.html"), name="conversation-dashboard"),
-    path("chat/", lambda request: render(request, template_name="chat.html"), name="conversation-chat"),
-    path("connect/", lambda request: render(request, template_name="connect.html"), name="conversation-connect"),
+    path("profile/", UserProfile.as_view(), name="conversation-profile"),
+
+    path("dashboard/", Dashboard.as_view(), name="conversation-dashboard"),
+    path("chat/", Chat.as_view(), name="conversation-chat"),
+    path("connect/", Connect.as_view(), name="conversation-connect"),
     
     # For Doctors
-    # path("dr_dashboard/", dr_dashboad , name="conversation-dr-dashboard"),
-    path("dr_calander/", lambda request: render(request, template_name="dr_calander.html"), name="conversation-dr-calander"),
-    path("dr_circle/", lambda request: render(request, template_name="dr_circle.html"), name="conversation-dr-chat"),
+    path("dr_dashboard/", DrDashboad.as_view(), name="conversation-dr-dashboard"),
+    path("dr_calander/", DrCalander.as_view(), name="conversation-dr-calander"),
+    path("dr_circle/", DrCircle.as_view(), name="conversation-dr-chat"),
 
     path("test/", Test.as_view(), name="test")
 ]

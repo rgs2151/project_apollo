@@ -12,10 +12,8 @@ function make_columns(data) {
 $(document).ready(function() {
     $.ajax({
         url: window.location.origin + '/conversation/history/',
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`, 
-            'content-type': 'application/json'
-        },
+        headers: {'content-type': 'application/json'},
+        xhrFields: { withCredentials: true },
         type: 'post',
         data: JSON.stringify({ 'type': 'history'}),
         success: function (response) {
@@ -44,10 +42,8 @@ $(document).ready(function() {
 
     $.ajax({
         url: window.location.origin + '/conversation/events/',
-        headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
-            'content-type': 'application/json'
-        },
+        headers: {'content-type': 'application/json'},
+        xhrFields: { withCredentials: true },
         type: 'get',
         success: function (response) {
             console.log(response);

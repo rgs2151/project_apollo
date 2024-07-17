@@ -3,6 +3,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, authentication_classes
 
 from Apollo.settings import MONGO_INSTANCE, GPT_KEY
 
@@ -705,13 +706,15 @@ class Converse(APIView):
     
     def appointment_or_service_purchase_context(self, context):
         special_instructions_event = """
-        Ask the user each of the following questions to get the required information about the appointment or service purchase.
+        Keep asking these questions natruallly in the conversation until you have all these required information about the appointment or service purchase:
+
         - confirm the exact doctor or service package
         - confirm the appointment/purchase date and appointment/purchase time
-        - lastly confirm the appointment/service purchase
+        - ensure that the appointment/service request matches the doctor/service provider's availability.
+        - confirm the appointment/purchase details with the user.
 
         You have the ability to use tools. 
-        Once all the information described above is collected,
+        Once you have collected all the information described above and the user has confirmed the appointment/purchase details,
         Use Extract_appointment_or_purchase_service_details tool to set the appointment/purchase and confirm to the user that you have set it.
         """
 
