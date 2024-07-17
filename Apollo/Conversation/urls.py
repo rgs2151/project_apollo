@@ -24,7 +24,7 @@ urlpatterns = [
     path("doctor-events/", DoctorEventView.as_view(), name="conversation-doctor-events"),
     path("doctors/", DoctorView.as_view(), name="conversation-doctors"),
     path("user-goals/", GoalsView.as_view(), name="conversation-user-goals"),
-    path("user-events-dashboard", UserEventDashboardView.as_view(), name="conversation-user-events-dashboard"),
+    path("user-events-dashboard/", UserEventDashboardView.as_view(), name="conversation-user-events-dashboard"),
 
     # Get and Template APIs
     

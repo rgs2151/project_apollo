@@ -41,7 +41,7 @@ $(document).ready(function() {
     });
 
     $.ajax({
-        url: window.location.origin + '/conversation/events/',
+        url: window.location.origin + '/conversation/user-events-dashboard/',
         headers: {'content-type': 'application/json'},
         xhrFields: { withCredentials: true },
         type: 'get',
