@@ -59,57 +59,6 @@ EXTRACT_USER_RELATED_INFO = {
     },
 }
 
-
-APPOINTMENT_SERVICE_PURCHASE_EVENT = {
-    "type": "function",
-    "function": {
-        "name": "trigger_if_user_wants_to_set_an_appointment_or_service_purchase",
-        "description": """
-            By looking at the entire conversation history, if over the course of the conversation, the user has requested to set an appointment with the doctor or has requested to purchase a service package, this tool will trigger.
-            Trigger if user has requested to set an appointment with the doctor or has requsted to purchase a service package. 
-        """,
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "event_type": {
-                    "type": "string",
-                    "enum": ["appointment", "service_purchase"],
-                    "description": "Type of event requested by the user",
-                },
-
-                "event_description": {
-                    "type": "string",
-                    "description": "description of the event. For example, 'Requested diabeties appointment checkup' or 'Requested to purchase a XYZ package' etc",
-                },
-
-                "event_contact": {
-                    "type": "string",
-                    "description": "Name of the Doctor or service provider company",
-                },
-
-                "event_date": {
-                    "type": "string",
-                    "description": "Date of the event. in Python datetime Format: %Y-%m-%d",
-                },
-
-                "event_time": {
-                    "type": "string",
-                    "description": "Time of the event. in Python datetime Format: %H:%M:%S",
-                },
-
-            },
-            "required": [
-                "event_type",
-                "event_description",
-                "event_contact",
-                "event_date",
-                "event_time",
-            ],
-        },
-    },
-}
-
-
 TOOL_MODE_SELECTOR = {
     "type": "function",
     "function": {
@@ -155,15 +104,21 @@ TOOL_MODE_SELECTOR = {
     }
 }
 
-
 TOOL_APPOINTMENT_OR_PURCHASE_SERVICE = {
     "type": "function",
     "function": {
-        "name": "extract_appointment_or_purchase_service_details",
+        "name": "Extract_appointment_or_purchase_service_details",
         "description": """
-            Use this funtion only if the user has requested to set an appointment with a specific doctor or has requsted to purchase a service package. 
-            By looking at the recent conversation history, if the user has requested to set an appointment with the doctor 
-            or has requested to purchase a service package, this tool will trigger.
+            This tool sets the doctor appointment or service purchase request from the user's recent conversation history.
+            By looking at only the user's recent conversation and context, it extracts important key value pairs:
+
+            - event_type: Type of event requested by the user
+            - event_description: description of the event
+            - event_contact: Name of the Doctor or service provider company
+            - event_contact_id: ID of the Doctor or service provider company from your context
+            - event_date: Scheduled date of the event
+            - event_time: Scheduled time of the event
+
         """,
         "parameters": {
             "type": "object",
@@ -207,13 +162,13 @@ TOOL_APPOINTMENT_OR_PURCHASE_SERVICE = {
                 "event_type",
                 "event_description",
                 "event_contact",
+                "event_contact_id",
                 "event_date",
                 "event_time",
             ],
         },
     }
 }
-
 
 TOOL_EXTRACT_GOAL_DETAILS = {
     "type": "function",
