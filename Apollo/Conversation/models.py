@@ -1,6 +1,7 @@
 from django.db import models
 from mongoengine import Document, fields
 import datetime
+from bson import ObjectId
 
 
 class ConversationHistoryWithFaissSupportSchema(Document):
@@ -18,6 +19,8 @@ class ConversationHistoryWithFaissSupportSchema(Document):
 class ChatHistory(Document):
     user_id = fields.IntField(required=True, min=0)
     prompt = fields.DictField(required=True)
+    user_session_id = fields.ObjectIdField(required=True)
+    user_session_type = fields.StringField(required=True)
     created_at = fields.DateTimeField(default=datetime.datetime.now())
     meta = {
         'collection': 'Chat_History',
@@ -26,23 +29,19 @@ class ChatHistory(Document):
 
 class ConversationState(Document):
     user_id = fields.IntField(required=True, min=0)
-    conversation_state = fields.StringField(required=False, default="")
-    reset_state = fields.BooleanField(default=False)
+    conversation_state = fields.StringField(required=True, default="")
+    user_session_id = user_session_id = fields.ObjectIdField(default=ObjectId())
     last_updated_at = fields.DateTimeField(default=datetime.datetime.now())
 
     meta = {
         "collection": "Conversation_State"
     }
 
-
-    def reset(self):
-        self.reset_state = True
-        self.save()
-
-
     def set_mode(self, mode):
         self.conversation_state = mode
+        self.user_session_id = ObjectId()
         self.save()
+
 
     
 class DoctorsWithFaissSupportSchema(Document):
