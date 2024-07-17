@@ -212,3 +212,18 @@ class MongoHistoryWithFAISS(MongoHistory):
             
         return self.serialize_documents(None)
 
+
+    def reset(self):
+        
+        history = self.retrieve()
+        
+        if not isinstance(history, pd.DataFrame) and history.empty:
+            
+            if self.store_index_document:
+                self.store_index_document.delete()
+                self.store_index_document = None
+
+            self.store_index = None
+
+        else: self.update(history[[col for col in history.columns if col not in ["vector_id", "history_id"]]])
+

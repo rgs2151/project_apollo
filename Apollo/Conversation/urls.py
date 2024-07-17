@@ -40,5 +40,10 @@ urlpatterns = [
     path("dr_calander/", DrCalander.as_view(), name="conversation-dr-calander"),
     path("dr_circle/", DrCircle.as_view(), name="conversation-dr-chat"),
 
-    path("test/", Test.as_view(), name="test")
+    path("test/", Test.as_view(), name="test"),
+
+
+    # admin apis
+    path("admin-reset-fiass-store-key-information-store/", AdminResetKeyInformationFiassStore.as_view(), name="admin-reset-fiass-store-key-information-store"),
+
 ]
