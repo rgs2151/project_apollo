@@ -20,6 +20,7 @@ from utility.views import ModelManagerView, DefaultPagination
 from .serializers import *
 from .converse.prompts.user import PromptMaker
 from .converse.prompts.system import DEFAULT as DEFAULT_SYSTEM_PROMPT
+from .converse.prompts.system import GOAL_SPECIAL_PROMPT, APPOINTMENT_OR_SERVICE_PROMPT
 from .converse.toolregistry import Registery as ToolRegistry
 from .converse.documents import PDFDocumentExtract, PDF, ImageDocumentExtract
 from .converse.prompts.tool import EXTRACT_USER_RELATED_INFO
@@ -39,7 +40,7 @@ logger = logging.getLogger("converse")
 from utility.views import *
 
 
-APETITE = 30
+APETITE = 20
 
 RELEVANCE = 20
 
@@ -279,23 +280,23 @@ class Conversation:
             logger.info(f"service store loaded in: {tock} sec")
 
             doctors = self.doctor_store.get(context=self.user_prompt.get_text_content(), k=10)
-            req_doctor_cols = ["user_id","dr_name","dr_specialist","i_dr_description","dr_days","dr_time_start","dr_time_end"]
+            req_doctor_cols = ["id","dr_name","dr_specialist","i_dr_description","dr_days","dr_time_start","dr_time_end"]
             logger.debug(f"doctor store entries loaded: {doctors.shape[0]}")
             self.context["doctors"] = json.dumps(doctors[req_doctor_cols].to_dict("records"), indent=2) if not doctors.empty else ""
             logger.debug(f"context[doctors] set")
 
             services = self.service_store.get(context=self.user_prompt.get_text_content(), k=10)
-            req_service_cols = ["service_name","service_provider","i_service_description","service_cost","service_duration"]
+            req_service_cols = ["id", "service_name","service_provider","i_service_description","service_cost","service_duration"]
             logger.debug(f"service store entries loaded: {services.shape[0]}")
             self.context["services"] = json.dumps(services[req_service_cols].to_dict("records"), indent=2) if not services.empty else ""
             logger.debug(f"context[services] set")
 
-            self.context["instructions"] = "Ask the user each of the following questions to get the required information about the appointment or service purchase.\n- confirm the exact doctor or service package\n- confirm the appointment/purchase date and appointment/purchase time\n- lastly confirm the appointment/service purchase\n\nYou have the ability to use tools.\nOnce all the information described above is collected,\nUse Extract_appointment_or_purchase_service_details tool to set the appointment/purchase and confirm to the user that you have set it.\n"
+            self.context["instructions"] = APPOINTMENT_OR_SERVICE_PROMPT
             logger.debug(f"context[instructions] set")
 
         if self.user_conversation_state.conversation_state == "goal":
 
-            self.context["instructions"] = "Keep asking these questions natruallly in the conversation until you have all these required information about the goal:\n\n- confirm the goal description\n- confirm the goal milestones\n- Has there been some goal progress already?\n- confirm the goal target date\n\nYou have the ability to use tools.\nOnce you have collected all the information described above and the user has confirmed the goal details,\nUse Extract_goal_details tool to set the goal and confirm to the user that you have set it.\n"
+            self.context["instructions"] = GOAL_SPECIAL_PROMPT
             logger.debug(f"context[instructions] set")
 
         
