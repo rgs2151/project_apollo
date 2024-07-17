@@ -203,7 +203,7 @@ class Conversation:
                 logger.debug(f"event created: {event_instance.id}")
                 return { "event": [event] }
             
-        if self.user_conversation_state.conversation_state == 'appointment_or_service_purchase':
+        if self.user_conversation_state.conversation_state == 'goal':
             goal = self.get_goal()
             if goal:
                 goal_instance = Goals(user_id=self.user_id, **goal)
@@ -424,6 +424,7 @@ class Conversation:
             self.user_conversation_state.conversation_state = "normal"
             self.user_conversation_state.save()
 
+        self.next_mode = None
         if self.user_conversation_state.conversation_state == "normal":
             self.next_mode = self.get_user_next_mode()
             if self.user_conversation_state.conversation_state != self.next_mode:
