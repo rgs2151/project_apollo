@@ -424,11 +424,11 @@ class Conversation:
             self.user_conversation_state.conversation_state = "normal"
             self.user_conversation_state.save()
 
-
-        self.next_mode = self.get_user_next_mode()
-        if self.user_conversation_state.conversation_state != self.next_mode:
-            logger.debug(f"next mode ({self.next_mode}) not equal to set mode ({self.user_conversation_state.conversation_state}) updating conversation state")
-            self.user_conversation_state.set_mode(self.next_mode)
+        if self.user_conversation_state.conversation_state == "normal":
+            self.next_mode = self.get_user_next_mode()
+            if self.user_conversation_state.conversation_state != self.next_mode:
+                logger.debug(f"next mode ({self.next_mode}) not equal to set mode ({self.user_conversation_state.conversation_state}) updating conversation state")
+                self.user_conversation_state.set_mode(self.next_mode)
 
 
         tick = time.time()
