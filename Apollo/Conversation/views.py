@@ -179,8 +179,9 @@ class Conversation:
 
 
     def get_goal(self):
-        
         messages = self.get_message(list(self.context.keys()), self.user_message_history)
+        
+        logger.info(json.dumps(messages.get_prompts(), indent=2))
         
         tool = ToolRegistry.get_tool("extract_goal", messages)
         response_extract_goals, tool_prompt_extract_goals, results_extract_goals = tool.call()
