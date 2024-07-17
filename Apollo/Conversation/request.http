@@ -80,6 +80,7 @@ GET http://127.0.0.1:8000/conversation/user-goals/
 Authorization: Bearer gAAAAABmlrlzDiAQxu02fjnJ_lFK5sNvtxZwg-Z5WY6zzZhhUcZmilP2iYrrKcgy3XW3TyXf1OCj1L24tRI2Rc-XFCRnYew5FA1rYiz8S1tOipoMJMmDGcjquU8AEDQDZV1G63cdAMjI68Dgrxqk-bKHMkj1Grmkh1CFLINPtE7_zqTnPiPXjoLGdNsNxoMgYmH-Hu8RkvzXT8pL8dZdeJUka09rzV3DY5hyPGQifOAouXzAZhsbrf3oNe7QgEQpZ62FbO5Ibn0Qu41tFj_GnTSbubitpawAIg==
 
 
-
-
+### admin-reset-fiass-store-key-information-store
+POST http://127.0.0.1:8000/conversation/admin-reset-fiass-store-key-information-store/
+Authorization: Bearer gAAAAABmlrlzDiAQxu02fjnJ_lFK5sNvtxZwg-Z5WY6zzZhhUcZmilP2iYrrKcgy3XW3TyXf1OCj1L24tRI2Rc-XFCRnYew5FA1rYiz8S1tOipoMJMmDGcjquU8AEDQDZV1G63cdAMjI68Dgrxqk-bKHMkj1Grmkh1CFLINPtE7_zqTnPiPXjoLGdNsNxoMgYmH-Hu8RkvzXT8pL8dZdeJUka09rzV3DY5hyPGQifOAouXzAZhsbrf3oNe7QgEQpZ62FbO5Ibn0Qu41tFj_GnTSbubitpawAIg==
 

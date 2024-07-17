@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view, authentication_classes
 from Apollo.settings import MONGO_INSTANCE, GPT_KEY
 
 from UserManager.authentication import TokenAuthentication
-from UserManager.permissions import UserGroupPermissions
+from UserManager.permissions import UserGroupPermissions, UserAdminPermissions
 from store.mongoengine import MongoHistoryWithFAISS
 
 from turbochat.gptprompts import *
@@ -122,22 +122,15 @@ class ChatHistoryView(MongoFilteredListView, UserManagerUtilityMixin):
     }
 
 
-DEFAULT_PROMPT = {
-    "user_prompt": {"label": "user prompt"},
-    "services": {"label": "Available services"},
-    "doctors": {"label": "Available doctors"},
-    "history": {"label": "User related information"},
-}
-
-
 class Conversation:
 
 
     __PROMPT_MAKER_CONFIG = {
-        "user_prompt": {"label": "user prompt"},
         "services": {"label": "Available services"},
         "doctors": {"label": "Available doctors"},
         "history": {"label": "User related information"},
+        "instructions": {"label": "Assistant special instructions"},
+        "user_prompt": {"label": "user prompt"},
     }
 
 
@@ -178,7 +171,6 @@ class Conversation:
 
 
     def get_goal(self):
-        
         messages = self.get_message(list(self.context.keys()), self.user_message_history)
         
         tool = ToolRegistry.get_tool("extract_goal", messages)
@@ -410,6 +402,10 @@ class Conversation:
         return history_messages
 
 
+    def get_key_information_entries(self):
+        pass
+
+
     def set_user_id(self, user_id):
         
         if not isinstance(user_id, int):
@@ -449,6 +445,8 @@ class Conversation:
         logger.debug(f"key information store entries loaded: {key_informations.shape[0]}")
         self.context["history"] = json.dumps(key_informations[req_key_information_cols].to_dict("records"), indent=2) if not key_informations.empty else ""
         logger.debug(f"context[history] set")
+
+        
 
 
         logger.debug("user_id set")
@@ -690,4 +688,31 @@ class GoalsView(MongoFilteredListView, UserManagerUtilityMixin):
     static_filters = {
         "user_id": UserManagerUtilityMixin.get_user_id 
     }
+
+
+
+# admin apis
+
+
+class AdminResetKeyInformationFiassStore(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [UserAdminPermissions]
+
+    @exception_handler()
+    def post(self, request: Request):
+
+        tick = time.time()
+        store = MongoHistoryWithFAISS(
+            request.user_details.user.id,
+            MONGO_INSTANCE,
+            ConversationHistoryWithFaissSupportSchema, 
+            ConversationHistoryWithFaissSupportSchemaSerializer   
+        )
+        tock = time.time() - tick
+
+        store.reset()
+
+        return Response({"status": True, "time": tock})
+
 
