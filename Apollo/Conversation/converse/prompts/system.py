@@ -25,7 +25,7 @@ You strictly follow these rules:
 '''
 
 # State specific special prompts
-GOAL_SPECIAL_PROMPT = '''
+APPOINTMENT_OR_SERVICE_PROMPT= '''
 DONT ASSUME ANYTHING. ASK QUESTIONS TO GET THE REQUIRED INFORMATION. LOOK ONLY IN RECENT CONVERSATION.
 Keep asking these questions natruallly in the conversation until you have all these required information about the appointment or service purchase:
 
@@ -39,7 +39,7 @@ Once you have collected all the information described above and the user has con
 Use Extract_appointment_or_purchase_service_details tool to set the appointment/purchase and confirm to the user that you have set it.
 '''
 
-APPOINTMENT_OR_SERVICE_PROMPT = '''
+GOAL_SPECIAL_PROMPT = '''
 DONT ASSUME ANYTHING. ASK QUESTIONS TO GET THE REQUIRED INFORMATION. LOOK ONLY IN RECENT CONVERSATION.
 Keep asking these questions natruallly in the conversation until you have all these required information about the goal:
 
