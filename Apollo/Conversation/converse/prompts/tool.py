@@ -59,6 +59,7 @@ EXTRACT_USER_RELATED_INFO = {
     },
 }
 
+
 TOOL_MODE_SELECTOR = {
     "type": "function",
     "function": {
@@ -103,6 +104,7 @@ TOOL_MODE_SELECTOR = {
         }
     }
 }
+
 
 TOOL_APPOINTMENT_OR_PURCHASE_SERVICE = {
     "type": "function",
@@ -169,6 +171,7 @@ TOOL_APPOINTMENT_OR_PURCHASE_SERVICE = {
         },
     }
 }
+
 
 TOOL_EXTRACT_GOAL_DETAILS = {
     "type": "function",

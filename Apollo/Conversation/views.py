@@ -404,7 +404,18 @@ class Conversation:
 
 
     def get_key_information_entries(self):
-        pass
+        messages = self.get_message(["user_prompt"])
+        
+        tool = ToolRegistry.get_tool("extract_user_related_information", messages)
+        response_extract_goals, tool_prompt_extract_goals, results_extract_goals = tool.call()
+
+        logger.info("too called registry -> extract_user_related_information")
+
+        status, result = results_extract_goals
+        if status:
+            keydf = result.get('extract_user_health_information_entry', [None])[0]
+            logger.debug(f"tool extracted key information: Dataframe[{keydf.shape}]")
+            return keydf
 
 
     def set_user_id(self, user_id):
@@ -447,8 +458,10 @@ class Conversation:
         self.context["history"] = json.dumps(key_informations[req_key_information_cols].to_dict("records"), indent=2) if not key_informations.empty else ""
         logger.debug(f"context[history] set")
 
-        
-
+        keydf = self.get_key_information_entries()
+        if isinstance(keydf, pd.DataFrame) and not keydf.empty:
+            logger.debug(f"key information store updated with entries: {keydf.shape[0]}")
+            self.key_information_store.update(keydf)
 
         logger.debug("user_id set")
 
