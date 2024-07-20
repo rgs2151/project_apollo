@@ -59,8 +59,9 @@ Content-Type: application/json
 
 
 ### doctor event dashboard
-GET http://127.0.0.1:8000/conversation/doctor-events-dashboard/
-Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi6gSPg2SP9KuoUd3TWGuEAVbm8Ih0D0dwCr-uxafKi69pf9mj3H6PMeu9GXLbFhz4Fg-53vmEEDyyH__n2B7M26MiD5irjfNgNWj4Ruwuif_j_7YZXhFIkKq0tuCT_im5H_9m1PGPRl39psbVKpRdDdOlx6oBEJ1MNjUHW3s_8t4kofpQozOTWY1AfQ0EEZOrN1In0GG1hPvZX62oVrYJP4yCVcXerNYqPGhe54Gw==
+# GET http://127.0.0.1:8000/conversation/doctor-events-dashboard/
+GET http://127.0.0.1:8000/conversation/doctor-events-dashboard/?event_status=false
+Authorization: Bearer gAAAAABmm7GN8sJenHbxyq0HT3_7Qw60MHhwVEa1OC2i_8CkRn5Opg6lUV3S04b8p5MLp9hum6Gg0u8J3AEVsvFfUgcpqm6aU8iy4pJOv1LD0Xq7iCZ_D2TtRgOm7DWj00pS4I30rkEKiNrt62nRfYPZT4TI8-TtI7B2UHaQc1aHXgocbGFKsO0tqrTTRgr2QJedo03NL-HuMUawjt92yrSzmbz8xVK8k6Rdn5VJYjvUa8UkK8qtC3p2dF6lmGqNV0bQoEvlIgD1O5WEhjbjLi0nN4Qkyh6q-g==
 
 
 ### doctor event manager

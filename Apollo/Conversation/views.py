@@ -622,6 +622,10 @@ class DoctorEventDashboardView(MongoFilteredListView, UserManagerUtilityMixin):
     serializer = EventsSerializer
     pagination = DefaultPagination()
 
+    allow_filters = {
+        "event_status": {"coerce": lambda x: x.strip().lower() == "true", "required": False, "type": "boolean"}
+    }
+
     static_filters = {
         "event_type": "appointment",
         "event_contact_id": lambda request: f"{request.doctor_id}"
