@@ -7,9 +7,18 @@ function make_columns(data) {
     });
 }
 
-
+function make_goal_entry(goal) {
+    return `
+        <h4 class="small font-weight-bold">${goal.goal_description} <span class="float-right">${goal.goal_progress}%</span></h4>
+        <div class="progress mb-4">
+            <div class="progress-bar bg-danger" role="progressbar" style="width: ${goal.goal_progress}%" aria-valuenow="${goal.goal_progress}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    `;
+}
 
 $(document).ready(function() {
+
+    // Populate the health indicators table
     $.ajax({
         url: window.location.origin + '/conversation/history/',
         headers: {'content-type': 'application/json'},
@@ -32,7 +41,7 @@ $(document).ready(function() {
                 }
             );
 
-            $('#healthIndicators').DataTable().columns([0,1]).visible(false);
+            $('#healthIndicators').DataTable().columns([0,1,5]).visible(false);
 
         },
         error: function (response) {
@@ -40,6 +49,7 @@ $(document).ready(function() {
         }
     });
 
+    // Populate the upcoming events table
     $.ajax({
         url: window.location.origin + '/conversation/user-events-dashboard/',
         headers: {'content-type': 'application/json'},
@@ -65,5 +75,29 @@ $(document).ready(function() {
             $('#upcomingEvents').DataTable().columns([0,1,2,6]).visible(false);
 
         },
+    });
+
+    // Populate the goals and milestones section
+    $.ajax({
+        url: window.location.origin + '/conversation/user-goals/',
+        headers: {'content-type': 'application/json'},
+        xhrFields: { withCredentials: true },
+        type: 'get',
+        success: function (response) {
+            console.log(response.data);
+
+            if (response.data.length === 0) {
+                $('#goalHolder').text("No goals found");
+                return;
+            }
+
+            response.data.forEach(goal => {
+                $('#goalHolder').append(make_goal_entry(goal));
+            });
+
+        },
+        error: function (response) {
+            console.log(response);
+        }
     });
 });

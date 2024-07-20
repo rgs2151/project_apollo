@@ -36,6 +36,12 @@ class Connect(APIView):
     def get(self, request: Request): 
         return render(request, template_name="connect.html", context=template_get_context(request))
 
+class Goals(APIView):
+    authentication_classes = [TokenAuthentication]
+    @exception_handler()
+    def get(self, request: Request): 
+        return render(request, template_name="goals.html", context=template_get_context(request))
+
 
 
 class DrDashboad(APIView):
@@ -55,6 +61,12 @@ class DrCircle(APIView):
     @exception_handler()
     def get(self, request: Request): 
         return render(request, template_name="dr_circle.html", context=template_get_context(request))
+
+class DrEvents(APIView):
+    authentication_classes = [TokenAuthentication]
+    @exception_handler()
+    def get(self, request: Request): 
+        return render(request, template_name="dr_events.html", context=template_get_context(request))
 
 
 

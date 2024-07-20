@@ -109,7 +109,7 @@ TOOL_MODE_SELECTOR = {
 TOOL_APPOINTMENT_OR_PURCHASE_SERVICE = {
     "type": "function",
     "function": {
-        "name": "Extract_appointment_or_purchase_service_details",
+        "name": "extract_request_details",
         "description": """
             This tool sets the doctor appointment or service purchase request from the user's recent conversation history.
             By looking at only the user's recent conversation and context, it extracts important key value pairs:

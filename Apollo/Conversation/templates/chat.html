@@ -3,13 +3,18 @@
 
 {% block page_title %}Chat{% endblock %}
 
+{% block custom_header %}
+    <style>
+        pre {
+            white-space: pre-wrap;
+            word-break: keep-all;
+            font-family: 'Nunito'; 
+            font-size: 1rem;
+        }
+    </style>
+{% endblock %}
+
 {% block page_content_fluid %}
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Conversation</h1>
-        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
-    </div>
 
     <!-- Content Row -->
     <!-- A card that takes up the entire remaining space -->
@@ -26,6 +31,7 @@
                         <span>Mode: </span>
                         <a class="dropdown-toggle" href="#" role="button"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="convModeDisplay">
+                            startup
                         </a>
                     </div>
                 </div>
@@ -33,9 +39,8 @@
                 <!-- Card Body -->
                 <div class="card-body">
                     <div class="chat_bot_container">
-
-                        <div class="col-12 chat_bot_messages" style="height: 380px;" markdown="1" id = "assistantResponseDisplay">
-                            Hi, I am your health assistant. How are you doing today?
+                        <div class="col-12" style="height: 55vh;" markdown="1">
+                            <pre id="assistantResponseDisplay">Hi, I am your health assistant. How are you doing today?</pre>
                         </div>
 
                         
@@ -43,20 +48,24 @@
                             <div class="input-group">
 
                                 <input type="text" class="form-control bg-light border-0 small" placeholder="Your message..."
-                                    aria-label="Search" aria-describedby="basic-addon2" id="responseInput">
-
+                                aria-label="Search" aria-describedby="basic-addon2" id="responseInput">
+                                
                                 <div class="input-group-append">
+                                    
                                     <button class="btn btn-primary" type="button" id="submitResponseButton">
                                         <i class="fas fa-paper-plane fa-sm"></i>
                                     </button>
+                                    
                                     <button class="btn btn-primary" type="button" id="microphoneButton">
                                         <i class="fas fa-microphone fa-sm"></i>
                                     </button>
+
+                                    <input type="file" accept=".pdf" id="fileInput" style="display: none;" />
                                     <button class="btn btn-primary" type="file" id="uploadDocumentButton">
                                         <i class="fas fa-paperclip fa-sm"></i>
                                     </button>
                                 </div>
-
+                                
                             </div>
                         </div>
 
@@ -67,5 +76,6 @@
 {% endblock %}
 
 {% block custom_scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
     <script src="{% static 'js/conversation/chat.js' %}"></script>
 {% endblock %}

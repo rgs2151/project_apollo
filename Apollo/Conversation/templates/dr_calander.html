@@ -39,33 +39,5 @@
 {% endblock %}
 
 {% block custom_scripts %}
-    <script>
-        $(document).ready(function () {
-
-            let calendar = new EventCalendar(document.getElementById('calendarHolder'), {
-                view: 'timeGridWeek',
-                events: [
-                    {
-                        title: 'Event 1',
-                        date: '2021-09-01',
-                        description: 'Description 1',
-                        color: '#ff0000'
-                    },
-                    {
-                        title: 'Event 2',
-                        date: '2021-09-02',
-                        description: 'Description 2',
-                        color: '#00ff00'
-                    },
-                    {
-                        title: 'Event 3',
-                        date: '2021-09-03',
-                        description: 'Description 3',
-                        color: '#0000ff'
-                    }
-                ]
-            });
-
-        });
-    </script>
+    <script src="{% static 'js/doctor/dr_calander.js' %}"></script>
 {% endblock %}

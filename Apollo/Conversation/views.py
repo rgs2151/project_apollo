@@ -159,14 +159,19 @@ class Conversation:
         
         messages = self.get_message(list(self.context.keys()), self.user_message_history, include_system_prompt=True)
         
+        # logger.info(json.dumps(messages.get_prompts(), indent=2))
+
         tool = ToolRegistry.get_tool("extract_event", messages)
         response_extract_event, tool_prompt_extract_event, results_extract_event = tool.call()
 
         logger.info("too called registry -> extract_event")
 
         status, result = results_extract_event
+
+        logger.debug(f"tool status: {status}, result: {result}")
+        
         if status:
-            event = result.get('extract_appointment_or_purchase_service_details', [None])[0]
+            event = result.get('extract_request_details', [None])[0]
             logger.debug(f"tool detected event: {event}")
             return event
 
@@ -174,7 +179,7 @@ class Conversation:
     def get_goal(self):
         messages = self.get_message(list(self.context.keys()), self.user_message_history, include_system_prompt=True)
         
-        logger.info(json.dumps(messages.get_prompts(), indent=2))
+        # logger.info(json.dumps(messages.get_prompts(), indent=2))
         
         tool = ToolRegistry.get_tool("extract_goal", messages)
         response_extract_goals, tool_prompt_extract_goals, results_extract_goals = tool.call()
@@ -212,6 +217,8 @@ class Conversation:
         messages = self.get_message(list(self.context.keys()), include_history=self.user_message_history, include_system_prompt=True)
 
         logger.info("gpt called for reply")
+
+        logger.info(json.dumps(messages.get_prompts(), indent=2))
 
         response, reply_entry, reply = Msg(self.gpt, messages).call()
 
@@ -454,7 +461,7 @@ class Conversation:
         tock = time.time() - tick
         logger.info(f"key information store loaded in: {tock} sec")
         
-        key_informations = self.key_information_store.get(self.user_prompt.get_text_content(), k=20)
+        key_informations = self.key_information_store.get(self.user_prompt.get_text_content(), k=5)
         req_key_information_cols = ["i_parameter_label","parameter_type","parameter_value"]
         logger.debug(f"key information store entries loaded: {key_informations.shape[0]}")
         self.context["history"] = json.dumps(key_informations[req_key_information_cols].to_dict("records"), indent=2) if not key_informations.empty else ""

@@ -9,8 +9,6 @@ class Test(APIView):
     def get(self, request: Request):
         return render(request, "test.html")
 
-
-
 urlpatterns = [
     # Post APIs
 
@@ -34,11 +32,13 @@ urlpatterns = [
     path("dashboard/", Dashboard.as_view(), name="conversation-dashboard"),
     path("chat/", Chat.as_view(), name="conversation-chat"),
     path("connect/", Connect.as_view(), name="conversation-connect"),
+    path("goals/", Goals.as_view(), name="conversation-goals"),
     
     # For Doctors
     path("dr_dashboard/", DrDashboad.as_view(), name="conversation-dr-dashboard"),
     path("dr_calander/", DrCalander.as_view(), name="conversation-dr-calander"),
     path("dr_circle/", DrCircle.as_view(), name="conversation-dr-chat"),
+    path("dr_events/", DrEvents.as_view(), name="conversation-dr-chat"),
 
     path("test/", Test.as_view(), name="test"),
 

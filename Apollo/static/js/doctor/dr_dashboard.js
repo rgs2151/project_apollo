@@ -5,81 +5,6 @@ function make_columns(data) {
     });
 }
 
-let appointment_requests = [
-    {
-        "id": 1,
-        "patient": "John Doe",
-        "date": "2020-12-12",
-        "time": "12:00",
-        "reason": "Headache",
-        "status": "Pending",
-    },
-    {
-        "id": 2,
-        "patient": "Jane Doe",
-        "date": "2020-12-13",
-        "time": "13:00",
-        "reason": "Fever",
-        "status": "Pending",
-    },
-    {
-        "id": 3,
-        "patient": "John Smith",
-        "date": "2020-12-14",
-        "time": "14:00",
-        "reason": "Cough",
-        "status": "Pending",
-    },
-    {
-        "id": 4,
-        "patient": "Jane Smith",
-        "date": "2020-12-15",
-        "time": "15:00",
-        "reason": "Sore Throat",
-        "status": "Pending",
-    },
-    {
-        "id": 5,
-        "patient": "John Doe",
-        "date": "2020-12-16",
-        "time": "16:00",
-        "reason": "Headache",
-        "status": "Pending",
-    },
-    {
-        "id": 6,
-        "patient": "Jane Doe",
-        "date": "2020-12-17",
-        "time": "17:00",
-        "reason": "Fever",
-        "status": "Pending",
-    },
-    {
-        "id": 7,
-        "patient": "John Smith",
-        "date": "2020-12-18",
-        "time": "18:00",
-        "reason": "Cough",
-        "status": "Pending",
-    },
-    {
-        "id": 8,
-        "patient": "Jane Smith",
-        "date": "2020-12-19",
-        "time": "19:00",
-        "reason": "Sore Throat",
-        "status": "Pending",
-    },
-    {
-        "id": 9,
-        "patient": "John Doe",
-        "date": "2020-12-20",
-        "time": "20:00",
-        "reason": "Headache",
-        "status": "Pending",
-    },
-];
-
 // For every row in the appointment_requests array, add 2 key-value pairs called 'Accept' and 'Reject'
 function add_buttons(data) {
     return data.forEach(function(row) {
@@ -88,26 +13,53 @@ function add_buttons(data) {
     });
 };
 
+function accept_and_reject_events(context, state) {
+    let data = $('#appointmentRequests').DataTable().row($(context).parents('tr')).data();
+    $.ajax({
+        url: window.location.origin + '/conversation/doctor-events/',
+        headers: {'Content-Type': 'application/json'},
+        xhrFields: { withCredentials: true },
+        type: 'put',
+        data: JSON.stringify({ 'id': data.id, 'event_status': state}),
+    });
+    $('#appointmentRequests').DataTable().row($(context).parents('tr')).remove().draw();
+}
+
 $(document).ready(function() {
-    // Make the DataTable
-    let data = add_buttons(appointment_requests)
-    $('#appointmentRequests').DataTable(
-        {
-            data: appointment_requests,
-            columns: make_columns(appointment_requests),
-        }
-    );
+    // Fetch the appointment requests
+    $.ajax({
+        url: window.location.origin + '/conversation/doctor-events-dashboard/',
+        headers: {'Content-Type': 'application/json'},
+        xhrFields: { withCredentials: true },
+        type: 'get',
+        success: function(response) {
+            console.log(response);
+            
+            if (response.data.length === 0) {
+                $('#appointmentRequests').text('No appointment requests found');
+            }
 
-    // $('#appointmentRequests').DataTable().columns([0,1]).visible(false);
-    
-    $('#appointmentRequests').DataTable().on('click', '.accept-button', function() {
-        let data = $('#appointmentRequests').DataTable().row($(this).parents('tr')).data();
-        console.log(data);
-    });
+            let table_data = response.data;
+            
+            add_buttons(table_data);
 
-    $('#appointmentRequests').DataTable().on('click', '.reject-button', function() {
-        let data = $('#appointmentRequests').DataTable().row($(this).parents('tr')).data();
-        console.log(data);
-    });
+            // Make the DataTable
+            $('#appointmentRequests').DataTable(
+                {
+                    data: table_data,
+                    columns: make_columns(table_data),
+                }
+            );
+
+            // Hide some columns
+            $('#appointmentRequests').DataTable().columns([0,4,5]).visible(false);
     
+            $('#appointmentRequests').DataTable().on('click', '.accept-button', function() {accept_and_reject_events(this, true);});
+        
+            $('#appointmentRequests').DataTable().on('click', '.reject-button', function() {accept_and_reject_events(this, false);});
+        },
+        error: function(error) {
+            console.log(error);
+        }   
+    });
 });
