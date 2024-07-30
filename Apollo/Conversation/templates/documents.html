@@ -1,0 +1,132 @@
+{% extends 'logged_body.html' %}
+{% load static %}
+
+{% block page_title %}Connect{% endblock %}
+
+{% block custom_header %}
+    <style>
+
+        /* upload */
+
+        #upload-section {
+            border: 2px dashed #ddd;
+            height: 250px;
+            padding: 20px;
+        }
+    
+        #upload-section.drag-over {
+            border-color: #000;
+        }
+
+        .upload_text_wrapper {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .fa-file-alt {
+            font-size: 3rem;
+            color: #ddd;
+        }
+
+        .fa-cloud-upload-alt {
+            font-size: 3rem;
+            color: #dddddd75;
+        }
+    </style>
+
+    <style>
+        /* shelf */
+
+        .shelf_container {
+            height: 400px;
+            overflow-y: scroll;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+        }
+
+        .shelf_container::-webkit-scrollbar {
+            display: none;
+        }
+
+        #file-items {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .file-item {
+            min-width: 150px;
+            flex: 1 1 auto;
+            /* max-width: calc(100% - 20px); */
+            max-width: 200px;
+        }
+
+        .card-img-top {
+            height: 150px; /* Adjust height as needed */
+            object-fit: cover;
+        }
+
+        .toggle-share {
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+        }
+    </style>
+
+    <style>
+        #google-fit-widgets .card {
+            background-color: #f8f9fa;
+        }
+
+        #google-fit-widgets .card-body {
+            text-align: center;
+        }
+
+        #google-fit-widgets .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #google-fit-widgets .card-text {
+            font-size: 1rem;
+        }
+
+        #google-fit-widgets img {
+            max-width: 200px;
+        }
+
+        .logo_holder {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            filter: grayscale(90%);
+        }
+
+        .logo_holder:hover {
+            filter: grayscale(0%);
+        }
+
+    </style>
+{% endblock %}
+
+{% block page_content_fluid %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Your Data</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+    </div>
+
+    {% include 'document_includes/upload_section.html' %}
+    {% include 'document_includes/shelf_section.html' %}
+    {% include 'document_includes/google_section.html' %}
+
+{% endblock %}
+
+{% block custom_scripts %}
+    <script src="{% static 'js/conversation/documents.js' %}"></script>
+{% endblock %}

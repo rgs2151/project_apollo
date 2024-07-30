@@ -29,6 +29,7 @@ $(document).ready(function() {
     // Fetch the appointment requests
     $.ajax({
         url: window.location.origin + '/conversation/doctor-events-dashboard/',
+        // url: window.location.origin + '/conversation/doctor-events-dashboard/?event_status=false',
         headers: {'Content-Type': 'application/json'},
         xhrFields: { withCredentials: true },
         type: 'get',

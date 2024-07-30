@@ -292,13 +292,26 @@ class Conversation:
             self.context["services"] = json.dumps(services[req_service_cols].to_dict("records"), indent=2) if not services.empty else ""
             logger.debug(f"context[services] set")
 
-            self.context["instructions"] = APPOINTMENT_OR_SERVICE_PROMPT
+            # get today's data and day. YYYY-MM-DD and day name
+            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            day = datetime.datetime.now().strftime("%A")
+
+            today_context_string = f"\nFor context, today is {today} and it is {day}. Use this information while extracting the appointment date and day."
+
+            self.context["instructions"] = APPOINTMENT_OR_SERVICE_PROMPT + today_context_string
             logger.debug(f"context[instructions] set")
 
 
         if self.user_conversation_state.conversation_state == "goal":
 
-            self.context["instructions"] = GOAL_SPECIAL_PROMPT
+            # get today's data and day. YYYY-MM-DD and day name
+            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            day = datetime.datetime.now().strftime("%A")
+
+            today_context_string = f"\nFor context, today is {today} and it is {day}. Use this information while extracting the appointment date and day."
+
+
+            self.context["instructions"] = GOAL_SPECIAL_PROMPT + today_context_string
             logger.debug(f"context[instructions] set")
 
         
@@ -461,7 +474,7 @@ class Conversation:
         tock = time.time() - tick
         logger.info(f"key information store loaded in: {tock} sec")
         
-        key_informations = self.key_information_store.get(self.user_prompt.get_text_content(), k=5)
+        key_informations = self.key_information_store.get(self.user_prompt.get_text_content(), k=10)
         req_key_information_cols = ["i_parameter_label","parameter_type","parameter_value"]
         logger.debug(f"key information store entries loaded: {key_informations.shape[0]}")
         self.context["history"] = json.dumps(key_informations[req_key_information_cols].to_dict("records"), indent=2) if not key_informations.empty else ""

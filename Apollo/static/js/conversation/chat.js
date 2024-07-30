@@ -89,6 +89,38 @@ $("#microphoneButton").click(function () {
 
 // Upload the document!
 
+// $('#fileInput').change(function(event) {
+//     var file = event.target.files[0];
+//     if (file) {
+
+//         $("#uploadDocumentButton").prop('disabled', true);
+
+//         // Process the file here
+//         console.log('File selected:', file.name);
+//         var formData = new FormData();
+//         formData.append('file', file);
+//         formData.append('file_type', "pdf");
+        
+//         $.ajax({
+//             url: window.location.origin + '/conversation/documents/',
+//             headers: {'Content-Type': 'application/json'},
+//             xhrFields: { withCredentials: true },
+//             type: 'post',
+//             data: formData,
+//             processData: false,
+//             contentType: false,
+//             success: function (response) {
+//                 console.log(response);
+//                 $("#uploadDocumentButton").prop('disabled', false);
+//             },
+//             error: function (response) {
+//                 console.log(response);
+//                 $("#uploadDocumentButton").prop('disabled', false);
+//             }
+//         });
+//     }
+// });
+
 $('#fileInput').change(function(event) {
     var file = event.target.files[0];
     if (file) {
@@ -97,26 +129,33 @@ $('#fileInput').change(function(event) {
 
         // Process the file here
         console.log('File selected:', file.name);
-        var formData = new FormData();
-        formData.append('file', file);
-        formData.append('file_type', "pdf");
-        
-        $.ajax({
-            url: window.location.origin + '/conversation/documents/',
-            headers: {'Content-Type': 'application/json'},
-            xhrFields: { withCredentials: true },
-            type: 'post',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                console.log(response);
-                $("#uploadDocumentButton").prop('disabled', false);
-            },
-            error: function (response) {
-                console.log(response);
-                $("#uploadDocumentButton").prop('disabled', false);
-            }
-        });
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            var base64String = e.target.result.split(',')[1];
+            console.log(typeof base64String);
+            var data = {
+                file: base64String,
+                file_type: "pdf"
+            };
+
+            $.ajax({
+                url: window.location.origin + '/conversation/documents/',
+                headers: {'Content-Type': 'application/json'},
+                xhrFields: { withCredentials: true },
+                type: 'post',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    console.log(response);
+                    $("#uploadDocumentButton").prop('disabled', false);
+                },
+                error: function (response) {
+                    console.log(response);
+                    $("#uploadDocumentButton").prop('disabled', false);
+                }
+            });
+        };
+
+        reader.readAsDataURL(file);
     }
 });

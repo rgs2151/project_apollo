@@ -72,8 +72,7 @@ $(document).ready(function() {
                 }
             );
 
-            $('#upcomingEvents').DataTable().columns([0,1,2,6]).visible(false);
-
+            $('#upcomingEvents').DataTable().columns([0,1,2,5,-1]).visible(false);
         },
     });
 

@@ -42,7 +42,11 @@ class Goals(APIView):
     def get(self, request: Request): 
         return render(request, template_name="goals.html", context=template_get_context(request))
 
-
+class UserDocuments(APIView):
+    authentication_classes = [TokenAuthentication]
+    @exception_handler()
+    def get(self, request: Request): 
+        return render(request, template_name="documents.html", context=template_get_context(request))
 
 class DrDashboad(APIView):
     authentication_classes = [TokenAuthentication]

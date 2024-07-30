@@ -1,0 +1,27 @@
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-body" id="upload-section">
+                <!-- Initial Upload Area -->
+                <div id="initial-upload" class="upload_text_wrapper">
+                    <div class="text-center">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your file here or</p>
+                        <button class="btn btn-primary" id="upload-button">Upload</button>
+                    </div>
+                </div>
+                <!-- File Uploaded Area -->
+                <div id="file-uploaded" class="upload_text_wrapper d-none"> 
+                    <div class="text-center">
+                        <i class="far fa-file-alt"></i>
+                        <p id="file-name"></p>
+                        <button class="btn btn-success mt-3" id="submit-button">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Add this inside your card body for file input -->
+    <input type="file" id="file-input" class="d-none" />
+</div>

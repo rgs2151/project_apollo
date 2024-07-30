@@ -24,6 +24,8 @@ ALLOWED_HOSTS = [
     "testserver",
     "127.0.0.1",
     "f50e-2603-7000-9600-680a-7d51-3778-ab37-320d.ngrok-free.app",
+    "a49b-2603-7000-9600-6808-bd-d1b2-9f0b-5958.ngrok-free.app",
+    "27e2-67-243-138-41.ngrok-free.app",
 ]
 
 

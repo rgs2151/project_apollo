@@ -32,6 +32,7 @@ urlpatterns = [
     path("dashboard/", Dashboard.as_view(), name="conversation-dashboard"),
     path("chat/", Chat.as_view(), name="conversation-chat"),
     path("connect/", Connect.as_view(), name="conversation-connect"),
+    path("document-record/", UserDocuments.as_view(), name="conversation-documents"),
     path("goals/", Goals.as_view(), name="conversation-goals"),
     
     # For Doctors
