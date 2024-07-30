@@ -28,14 +28,14 @@ function accept_and_reject_events(context, state) {
 $(document).ready(function() {
     // Fetch the appointment requests
     $.ajax({
-        url: window.location.origin + '/conversation/doctor-events-dashboard/',
-        // url: window.location.origin + '/conversation/doctor-events-dashboard/?event_status=false',
+        // url: window.location.origin + '/conversation/doctor-events-dashboard/',
+        url: window.location.origin + '/conversation/doctor-events-dashboard/?event_status=false',
         headers: {'Content-Type': 'application/json'},
         xhrFields: { withCredentials: true },
         type: 'get',
         success: function(response) {
             console.log(response);
-            
+
             if (response.data.length === 0) {
                 $('#appointmentRequests').text('No appointment requests found');
             }

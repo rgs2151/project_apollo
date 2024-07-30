@@ -1,0 +1,155 @@
+{% extends 'unlogged_body.html' %}
+{% load static %}
+
+{% block page_title %}Event{% endblock %}
+
+{% block custom_header %}
+<style>
+.card-body .card-title, 
+.card-body .card-text {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-body .card-title i, 
+.card-body .card-text i {
+    margin-right: 8px;
+}
+</style>
+
+
+<style>
+/* shelf */
+.shelf_container {
+    height: 400px;
+    overflow-y: scroll;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.shelf_container::-webkit-scrollbar {
+    display: none;
+}
+
+#file-items {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.file-item {
+    min-width: 150px;
+    flex: 1 1 auto;
+    /* max-width: calc(100% - 20px); */
+    max-width: 200px;
+}
+
+.card-img-top {
+    height: 150px; /* Adjust height as needed */
+    object-fit: cover;
+}
+</style>
+
+{% endblock %}
+
+{% block page_content %}
+
+<!-- Outer Row -->
+<div class="row justify-content-center">
+
+    <div class="col-xl-12 col-lg-12 col-md-9">
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                <h5 class="m-0 text-center font-weight-bold text-primary">Upcoming Appointment</h5>
+            </div>
+            
+            <div class="card-body p-0">
+
+
+                <!-- First Row: User and Event Details -->
+                <div class="row p-4">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card shadow">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Details</h6>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <i class="fas fa-user"></i> 
+                                        <strong>Patient:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        John Doe
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <i class="fas fa-user-md"></i> 
+                                        <strong>Doctor:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        Dr. Smith
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <i class="fas fa-clock"></i> 
+                                        <strong>Time:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        10:00 AM
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <i class="fas fa-calendar"></i> 
+                                        <strong>Date:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        2024-08-01
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-3">
+                                        <i class="fas fa-sticky-note"></i> 
+                                        <strong>Note:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        Follow-up appointment
+                                    </div>
+                                </div>
+                            </div>
+                        
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-4 text-center">
+                        <div class="card shadow h-100 d-flex flex-column justify-content-center">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Venue</h6>
+                            </div>
+                            <div class="card-body d-flex justify-content-center align-items-center">
+                                <a href="https://meet.google.com/" target="_blank" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-video" style="font-size: 4rem;"></i> 
+                                    <div>Join Meeting</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Second Row: Shared Documents Shelf -->
+                {% include 'document_includes/shelf_section.html' with shelf_title="Shared Documents"%}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block custom_scripts %}
+<script src="{% static 'js/confirmed_events.js' %}"></script>
+{% endblock %}

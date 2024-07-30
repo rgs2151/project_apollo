@@ -5,7 +5,20 @@
     {% include 'includes/sidebar_includes/sidebar_branding.html' %}
 
     <!-- Divider -->
-    <hr class="sidebar-divider my-0">
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Panels
+    </div>
+
+    <!-- Nav Item - Chat -->
+    <li class="nav-item">
+        <a class="nav-link" href="/conversation/dashboard/">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span></a>
+    </li>
+
 
     {% if 'admin' in user_groups %}
         {% include 'includes/sidebar_includes/sidebar_admin.html' %}

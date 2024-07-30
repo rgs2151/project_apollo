@@ -4,113 +4,111 @@
 {% block page_title %}Connect{% endblock %}
 
 {% block custom_header %}
-    <style>
+<style>
+/* upload */
+#upload-section {
+    border: 2px dashed #ddd;
+    height: 250px;
+    padding: 20px;
+}
 
-        /* upload */
+#upload-section.drag-over {
+    border-color: #000;
+}
 
-        #upload-section {
-            border: 2px dashed #ddd;
-            height: 250px;
-            padding: 20px;
-        }
-    
-        #upload-section.drag-over {
-            border-color: #000;
-        }
+.upload_text_wrapper {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.fa-file-alt {
+    font-size: 3rem;
+    color: #ddd;
+}
 
-        .upload_text_wrapper {
-            height: 100%;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .fa-file-alt {
-            font-size: 3rem;
-            color: #ddd;
-        }
+.fa-cloud-upload-alt {
+    font-size: 3rem;
+    color: #dddddd75;
+}
+</style>
 
-        .fa-cloud-upload-alt {
-            font-size: 3rem;
-            color: #dddddd75;
-        }
-    </style>
+<style>
+/* shelf */
 
-    <style>
-        /* shelf */
+.shelf_container {
+    height: 400px;
+    overflow-y: scroll;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
 
-        .shelf_container {
-            height: 400px;
-            overflow-y: scroll;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
-        }
+.shelf_container::-webkit-scrollbar {
+    display: none;
+}
 
-        .shelf_container::-webkit-scrollbar {
-            display: none;
-        }
+#file-items {
+    display: flex;
+    flex-wrap: wrap;
+}
 
-        #file-items {
-            display: flex;
-            flex-wrap: wrap;
-        }
+.file-item {
+    min-width: 150px;
+    flex: 1 1 auto;
+    /* max-width: calc(100% - 20px); */
+    max-width: 200px;
+}
 
-        .file-item {
-            min-width: 150px;
-            flex: 1 1 auto;
-            /* max-width: calc(100% - 20px); */
-            max-width: 200px;
-        }
+.card-img-top {
+    height: 150px; /* Adjust height as needed */
+    object-fit: cover;
+}
 
-        .card-img-top {
-            height: 150px; /* Adjust height as needed */
-            object-fit: cover;
-        }
+.toggle-share {
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+</style>
 
-        .toggle-share {
-            top: 10px;
-            right: 10px;
-            z-index: 10;
-        }
-    </style>
+<style>
+#google-fit-widgets .card {
+    background-color: #f8f9fa;
+}
 
-    <style>
-        #google-fit-widgets .card {
-            background-color: #f8f9fa;
-        }
+#google-fit-widgets .card-body {
+    text-align: center;
+}
 
-        #google-fit-widgets .card-body {
-            text-align: center;
-        }
+#google-fit-widgets .card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
 
-        #google-fit-widgets .card-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
+#google-fit-widgets .card-text {
+    font-size: 1rem;
+}
 
-        #google-fit-widgets .card-text {
-            font-size: 1rem;
-        }
+#google-fit-widgets img {
+    max-width: 200px;
+}
 
-        #google-fit-widgets img {
-            max-width: 200px;
-        }
+.logo_holder {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    filter: grayscale(90%);
+}
 
-        .logo_holder {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            filter: grayscale(90%);
-        }
+.logo_holder:hover {
+    filter: grayscale(0%);
+}
 
-        .logo_holder:hover {
-            filter: grayscale(0%);
-        }
-
-    </style>
+</style>
 {% endblock %}
 
 {% block page_content_fluid %}
@@ -122,7 +120,7 @@
     </div>
 
     {% include 'document_includes/upload_section.html' %}
-    {% include 'document_includes/shelf_section.html' %}
+    {% include 'document_includes/shelf_section.html' with shelf_title="Analyzed Documents" %}
     {% include 'document_includes/google_section.html' %}
 
 {% endblock %}

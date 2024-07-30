@@ -73,5 +73,9 @@ class DrEvents(APIView):
         return render(request, template_name="dr_events.html", context=template_get_context(request))
 
 
-
+class ConfirmedEventsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    @exception_handler()
+    def get(self, request: Request, event):
+        return render(request, template_name="confirmed_events.html", context=template_get_context(request))
 

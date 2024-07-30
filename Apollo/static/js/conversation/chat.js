@@ -1,3 +1,16 @@
+// ================================= //
+// Setups//
+// ================================= //
+
+// Document upload button connected to input:
+$('#uploadImageButton').click(function() {
+    $('#fileInput').click();
+});
+
+// ================================= //
+// Voice Recognition Section//
+// ================================= //
+
 // As the document loads, setup things
 $(document).ready(function () {
     // Setup the voice recognition
@@ -15,53 +28,6 @@ $(document).ready(function () {
     } else {
         console.log('Annyang not available');
     }
-
-    // Document upload button connected to input:
-    $('#uploadDocumentButton').click(function() {
-        $('#fileInput').click();
-    });
-});
-
-
-// Submit the user's response to the assistant
-$("#submitResponseButton").click(function () {
-    var prompt = $("#responseInput").val();
-    
-    console.log(prompt);
-
-    // disable the button
-    $("#submitResponseButton").prop('disabled', true);
-
-
-    $.ajax({
-        url: window.location.origin + '/conversation/converse/',
-        headers: {'Content-Type': 'application/json'},
-        xhrFields: { withCredentials: true },
-        type: 'post',
-        data: JSON.stringify({ 
-            'message': {
-                "role": "user",
-                "content": prompt
-            }, 
-        }),
-        success: function (response) {
-            console.log(response);
-            $("#assistantResponseDisplay").text(response.message.content);
-            $("#convModeDisplay").text(response.conversation_state);
-            
-            // enable the button
-            $("#submitResponseButton").prop('disabled', false);
-        },
-        error: function (response) {
-            console.log(response);
-            $("#assistantResponseDisplay").text("error in response");
-
-            // enable the button
-            $("#submitResponseButton").prop('disabled', false);
-        }
-    });
-
-    $("#responseInput").val('');
 });
 
 // Use the microphone
@@ -87,45 +53,63 @@ $("#microphoneButton").click(function () {
     }
 });
 
+// ================================= //
+// Cat Section//
+// ================================= //
+
+// helper functions
+
+
+
+function make_assistant_response(response_text, state) {
+    // <div class="message-wrapper">
+    //     <div class="message-assistant message-normal">Hi, I am your health assistant. How are you doing today?</div>
+    // </div> 
+    // make that div with jquery and append it to the chat_history_area div
+    var message_wrapper = $('<div class="message-wrapper"></div>');
+    var message = $('<div class="message-assistant message-'+ state +'"></div>');
+    message.text(response_text);
+    message_wrapper.append(message);
+
+    $("#chat_history_area").prepend(message_wrapper);
+}
+
+function make_user_response(response_text, state, image_url = null) {
+    // <div class="message-wrapper">
+    //     <img src="https://images.template.net/wp-content/uploads/2017/06/Medical-Emergency-Incident-Report.jpg">
+    //     <div class="message-user message-normal">Yes here is an image</div>
+    // </div>
+    var message_wrapper = $('<div class="message-wrapper"></div>');
+    if (image_url) {
+        var image = $('<img src="'+ image_url +'">');
+        message_wrapper.append(image);
+    }
+    var message = $('<div class="message-user message-'+ state +'"></div>');
+    message.text(response_text);
+    message_wrapper.append(message);
+
+    $("#chat_history_area").prepend(message_wrapper);
+}
+
+function make_divider(state) {
+    // <div class="divider divider-normal">
+    //     <span>normal</span>
+    // </div>
+    var divider = $('<div class="divider divider-'+ state +'"></div>');
+    var span = $('<span>'+ state +'</span>');
+    divider.append(span);
+    
+    $("#chat_history_area").prepend(divider);
+}
+
+let temp_image_holder = null;
+
 // Upload the document!
-
-// $('#fileInput').change(function(event) {
-//     var file = event.target.files[0];
-//     if (file) {
-
-//         $("#uploadDocumentButton").prop('disabled', true);
-
-//         // Process the file here
-//         console.log('File selected:', file.name);
-//         var formData = new FormData();
-//         formData.append('file', file);
-//         formData.append('file_type', "pdf");
-        
-//         $.ajax({
-//             url: window.location.origin + '/conversation/documents/',
-//             headers: {'Content-Type': 'application/json'},
-//             xhrFields: { withCredentials: true },
-//             type: 'post',
-//             data: formData,
-//             processData: false,
-//             contentType: false,
-//             success: function (response) {
-//                 console.log(response);
-//                 $("#uploadDocumentButton").prop('disabled', false);
-//             },
-//             error: function (response) {
-//                 console.log(response);
-//                 $("#uploadDocumentButton").prop('disabled', false);
-//             }
-//         });
-//     }
-// });
-
 $('#fileInput').change(function(event) {
     var file = event.target.files[0];
     if (file) {
 
-        $("#uploadDocumentButton").prop('disabled', true);
+        $("#uploadImageButton").prop('disabled', true);
 
         // Process the file here
         console.log('File selected:', file.name);
@@ -133,29 +117,72 @@ $('#fileInput').change(function(event) {
 
         reader.onload = function(e) {
             var base64String = e.target.result.split(',')[1];
-            console.log(typeof base64String);
-            var data = {
-                file: base64String,
-                file_type: "pdf"
-            };
-
-            $.ajax({
-                url: window.location.origin + '/conversation/documents/',
-                headers: {'Content-Type': 'application/json'},
-                xhrFields: { withCredentials: true },
-                type: 'post',
-                data: JSON.stringify(data),
-                success: function (response) {
-                    console.log(response);
-                    $("#uploadDocumentButton").prop('disabled', false);
-                },
-                error: function (response) {
-                    console.log(response);
-                    $("#uploadDocumentButton").prop('disabled', false);
-                }
-            });
+            temp_image_holder = "data:image/jpeg;base64,"+base64String;
         };
 
         reader.readAsDataURL(file);
     }
 });
+
+// Submit the user's response to the assistant
+$("#submitResponseButton").click(function () {
+    var prompt = $("#responseInput").val();
+
+    // disable the button
+    $("#submitResponseButton").prop('disabled', true);
+    
+    make_user_response(prompt, "normal", temp_image_holder);
+
+    // make data to send to user
+    if (temp_image_holder) {
+        to_model = JSON.stringify({ 
+            'message': {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": temp_image_holder}}
+                ],
+            }, 
+        })
+    } else {
+        to_model = JSON.stringify({ 
+            'message': {
+                "role": "user",
+                "content": prompt
+            }, 
+        })
+    }
+    
+    $.ajax({
+        url: window.location.origin + '/conversation/converse/',
+        headers: {'Content-Type': 'application/json'},
+        xhrFields: { withCredentials: true },
+        type: 'post',
+        data: to_model,
+        success: function (response) {
+            console.log(response);
+            console.log(response.conversation_state);
+
+            make_assistant_response(
+                response.message.content, 
+                "normal"
+            );
+            
+            // enable the button
+            $("#submitResponseButton").prop('disabled', false);
+            $("#uploadImageButton").prop('disabled', false);
+            temp_image_holder = null;
+        },
+        error: function (response) {
+            console.log(response);
+
+            // enable the button
+            $("#submitResponseButton").prop('disabled', false);
+            $("#uploadImageButton").prop('disabled', false);
+            temp_image_holder = null;
+        }
+    });
+
+    $("#responseInput").val('');
+});
+

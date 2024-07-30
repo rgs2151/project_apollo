@@ -25,6 +25,7 @@ urlpatterns = [
     path("user-events-dashboard/", UserEventDashboardView.as_view(), name="conversation-user-events-dashboard"),
 
     # Get and Template APIs
+    path("confirmed-events/<event>", ConfirmedEventsView.as_view(), name="conversation-confirmed-events"),
     
     # For Users
     path("profile/", UserProfile.as_view(), name="conversation-profile"),
