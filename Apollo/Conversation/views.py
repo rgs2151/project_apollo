@@ -186,6 +186,7 @@ class ResetChatSession(APIView):
 
         return Response(response)
 
+
 class Documents(APIView):
 
     authentication_classes = [TokenAuthentication]
@@ -437,8 +438,14 @@ class GoalsView(MongoFilteredListView, UserManagerUtilityMixin):
     serializer = GoalsSerializer
     pagination = DefaultPagination()
 
+    @staticmethod
+    def get_user_sessions(request: Request):
+        session_state = SessionState.objects(name="goal").first()
+        session_type = SessionType.objects(name="chat", session_state=session_state).first()
+        return Session.objects(user_id=request.user_details.user.id, session_type=session_type).all()
+
     static_filters = {
-        "user_id": UserManagerUtilityMixin.get_user_id 
+        "session__in": get_user_sessions 
     }
 
 
