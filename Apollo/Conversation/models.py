@@ -248,7 +248,7 @@ class GPTCall(Document):
     def get_gpt(self, gpt_key) -> GPT: return GPT(gpt_key, model=self.gpt)
 
 
-    def get_gpt_call(self, gpt_key: str, messages, context_call_lookup_obj: object, tool_call_lookup_obj: object, summary=False):
+    def get_gpt_call(self, gpt_key: str, messages, context_call_lookup_obj: object, tool_call_lookup_obj: object, summary=False, add_to_user_content=[]):
 
         if summary: summary={"name": self.name}
 
@@ -270,7 +270,10 @@ class GPTCall(Document):
 
         if context_call_lookup_obj:
             context_content = Context.make_context_content(self, context_call_lookup_obj)
-            context_prompt = { "role": "user", "content": context_content }
+            content = [{"type": "text", "text": context_content}]
+            if add_to_user_content:
+                content = add_to_user_content + content
+            context_prompt = { "role": "user", "content": content }
             messages += [context_prompt]
         
             if summary: summary["messages"]["user_prompt"] = context_prompt

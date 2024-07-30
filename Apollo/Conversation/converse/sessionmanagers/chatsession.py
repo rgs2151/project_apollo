@@ -235,7 +235,14 @@ class ChatSession:
             chat_messages = self.get_chat_messages()
             
             self.context_call_lookup.set_user_prompt(user_prompt)
-            reply_gpt_call, summary = reply_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup, summary=True)
+            
+            user_prompt_ = GPTMsgPrompt(user_prompt)
+            
+            add_to_user_content = []
+            if user_prompt_.has_image():
+                add_to_user_content.extend(user_prompt_.get_image_content())
+
+            reply_gpt_call, summary = reply_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup, summary=True, add_to_user_content=add_to_user_content)
             
             ChatHistory(session=self.session, prompt=user_prompt).save()
             response, response_entry, result = reply_gpt_call.call()
@@ -264,7 +271,14 @@ class ChatSession:
             chat_messages = self.get_chat_messages()
             
             self.context_call_lookup.set_user_prompt(user_prompt)
-            key_information_tool_gpt_call: Msg = key_information_tool_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup)
+
+            user_prompt_ = GPTMsgPrompt(user_prompt)
+            
+            add_to_user_content = []
+            if user_prompt_.has_image():
+                add_to_user_content.extend(user_prompt_.get_image_content())
+
+            key_information_tool_gpt_call: Msg = key_information_tool_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup, add_to_user_content=add_to_user_content)
             
             response, response_entry, result = key_information_tool_gpt_call.call()
             self.log_gpt_call(key_information_tool_call, response)
@@ -304,7 +318,14 @@ class ChatSession:
             chat_messages = []
             
             self.context_call_lookup.set_user_prompt(user_prompt)
-            mode_tool_gpt_call, summary = mode_tool_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup, summary=True)
+
+            user_prompt_ = GPTMsgPrompt(user_prompt)
+            
+            add_to_user_content = []
+            if user_prompt_.has_image():
+                add_to_user_content.extend(user_prompt_.get_image_content())
+
+            mode_tool_gpt_call, summary = mode_tool_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup, summary=True, add_to_user_content=add_to_user_content)
             
             response, response_entry, result = mode_tool_gpt_call.call()
             summary["results"] = response_entry
@@ -374,7 +395,14 @@ class ChatSession:
                 tool_call: GPTCall
                         
                 self.context_call_lookup.set_user_prompt(user_prompt)
-                tool_gpt_call, summary = tool_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup, summary=True)
+
+                user_prompt_ = GPTMsgPrompt(user_prompt)
+            
+                add_to_user_content = []
+                if user_prompt_.has_image():
+                    add_to_user_content.extend(user_prompt_.get_image_content())
+
+                tool_gpt_call, summary = tool_call.get_gpt_call(self.gpt_key, chat_messages, self.context_call_lookup, self.tool_call_lookup, summary=True, add_to_user_content=add_to_user_content)
                 
                 response, response_entry, result = tool_gpt_call.call()
                 summary["results"] = response_entry
