@@ -45,7 +45,27 @@ class PDF(Document):
             pages.append(_io)
 
         return pages
+    
+    def __len__(self): return self.pdf.__len__()
 
+    
+    def get_page_image(self, page_no=None):
+        
+        if (page_no < 0) or (page_no > self.__len__() - 1):
+            raise ValueError(f"page_no[{page_no}] out of bounds or invalid")
+
+        page = self.pdf[page_no]
+        pix_map = page.get_pixmap()
+        img = Image.frombytes("RGB", [pix_map.width, pix_map.height], pix_map.samples)
+
+        _io = BytesIO()
+        img.save(_io, format='PNG')
+        _io.seek(0)
+
+        return _io
+    
+    def get_document_base64_string(self):
+        return base64.b64encode(self.pdf.tobytes()).decode()
 
 
 class DocumentExtract:
@@ -75,7 +95,6 @@ class DocumentExtract:
         ])
 
 
-
 class PDFDocumentExtract(DocumentExtract):
 
 
@@ -83,6 +102,7 @@ class PDFDocumentExtract(DocumentExtract):
         super().__init__(gpt_key, tool_definition, tool_callable)
         self.pdf = pdf
         
+
     def extract(self):
 
         results = []

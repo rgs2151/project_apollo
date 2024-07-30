@@ -9,28 +9,23 @@ from Apollo.settings import MONGO_INSTANCE, GPT_KEY
 
 from UserManager.authentication import TokenAuthentication
 from UserManager.permissions import UserGroupPermissions, UserAdminPermissions
-from store.mongoengine import MongoHistoryWithFAISS
+from store.mongoengine import MongoHistoryWithFAISS, IndexDocumentSchema
 
-from turbochat.gptprompts import *
-from turbochat.v1.prompt import GPTMsgPrompt, GPTMsges
-from turbochat.v1.gpt import GPT, Msg
+# from turbochat.gptprompts import *
+from turbochat.v1.prompt import GPTMsgPrompt
 
 from utility.views import ModelManagerView, DefaultPagination
 
 from .serializers import *
-from .converse.prompts.user import PromptMaker
-from .converse.prompts.system import DEFAULT as DEFAULT_SYSTEM_PROMPT
-from .converse.prompts.system import GOAL_SPECIAL_PROMPT, APPOINTMENT_OR_SERVICE_PROMPT
-from .converse.toolregistry import Registery as ToolRegistry
-from .converse.documents import PDFDocumentExtract, PDF, ImageDocumentExtract
-from .converse.prompts.tool import EXTRACT_USER_RELATED_INFO
-from .converse.toolcallables import *
+from .converse.sessionmanagers.chatsession import ChatSession
+from .converse.sessionmanagers.documentuploadsession import DocumentUploadSession
+
+from Conversation.converse.documents import PDF
 
 from .view_utility import UserManagerUtilityMixin
 
 import numpy as np
 import pandas as pd
-import datetime
 import base64
 import time
 from io import BytesIO
@@ -118,390 +113,15 @@ class ChatHistoryView(MongoFilteredListView, UserManagerUtilityMixin):
     serializer = ConvHistorySerializer
     pagination = DefaultPagination()
 
+
+    @staticmethod
+    def get_user_sessions(request: Request):
+        session_types = SessionType.objects(name="chat").all()
+        return Session.objects(user_id=request.user_details.user.id, session_type__in=session_types).all()
+
     static_filters = {
-        "user_id": UserManagerUtilityMixin.get_user_id 
+        "session__in": get_user_sessions
     }
-
-
-class Conversation:
-
-
-    __PROMPT_MAKER_CONFIG = {
-        "services": {"label": "Available services"},
-        "doctors": {"label": "Available doctors"},
-        "history": {"label": "User related information"},
-        "instructions": {"label": "Assistant special instructions"},
-        "user_prompt": {"label": "user prompt"},
-    }
-
-
-    __PROMPT_MAKER = PromptMaker(__PROMPT_MAKER_CONFIG)
-
-
-    __VALID_MODES = ["normal", "goal", "appointment_or_service_purchase"]
-
-    
-    def __init__(self, user_prompt: GPTMsgPrompt, user_id: int):
-        
-        self.context = {}
-        logger.debug(f"context was initialized")
-        
-        self.set_user_prompt(user_prompt)
-        
-        self.set_user_id(user_id)
-
-        self.update_context_for_conversation_state()
-
-        self.set_gpt()
-
-
-    def get_event(self):
-        
-        messages = self.get_message(list(self.context.keys()), self.user_message_history, include_system_prompt=True)
-        
-        # logger.info(json.dumps(messages.get_prompts(), indent=2))
-
-        tool = ToolRegistry.get_tool("extract_event", messages)
-        response_extract_event, tool_prompt_extract_event, results_extract_event = tool.call()
-
-        logger.info("too called registry -> extract_event")
-
-        status, result = results_extract_event
-
-        logger.debug(f"tool status: {status}, result: {result}")
-        
-        if status:
-            event = result.get('extract_request_details', [None])[0]
-            logger.debug(f"tool detected event: {event}")
-            return event
-
-
-    def get_goal(self):
-        messages = self.get_message(list(self.context.keys()), self.user_message_history, include_system_prompt=True)
-        
-        # logger.info(json.dumps(messages.get_prompts(), indent=2))
-        
-        tool = ToolRegistry.get_tool("extract_goal", messages)
-        response_extract_goals, tool_prompt_extract_goals, results_extract_goals = tool.call()
-
-        logger.info("too called registry -> extract_goal")
-
-        status, result = results_extract_goals
-        if status:
-            goal = result.get('extract_goal_details', [None])[0]
-            logger.debug(f"tool detected goal: {goal}")
-            return goal
-
-
-    def call_tools(self):
-        
-        if self.user_conversation_state.conversation_state == 'appointment_or_service_purchase':
-            event = self.get_event()
-            if event:
-                event_instance = Events(user_id=self.user_id, **event)
-                event_instance.save()
-                logger.debug(f"event created: {event_instance.id}")
-                return { "event": [event] }
-            
-        if self.user_conversation_state.conversation_state == 'goal':
-            goal = self.get_goal()
-            if goal:
-                goal_instance = Goals(user_id=self.user_id, **goal)
-                goal_instance.save()
-                logger.debug(f"goal created: {goal_instance.id}")
-                return { "goal": [goal] }
-
-
-    def get_reply(self):
-        
-        messages = self.get_message(list(self.context.keys()), include_history=self.user_message_history, include_system_prompt=True)
-
-        logger.info("gpt called for reply")
-
-        logger.info(json.dumps(messages.get_prompts(), indent=2))
-
-        response, reply_entry, reply = Msg(self.gpt, messages).call()
-
-        gpt_reply_text_length = len(GPTMsgPrompt(reply_entry).get_text_content())
-        logger.info(f"reply generated length: {gpt_reply_text_length}")
-
-        return reply_entry
-
-
-    def set_gpt(self):
-        model="gpt-4o"
-        self.gpt = GPT(GPT_KEY, model=model)
-        logger.info(f"using gpt: {model}")
-
-
-    def get_system_prompt(self):
-        return GPTMsgPrompt({
-            "role": "system",
-            "content": DEFAULT_SYSTEM_PROMPT
-        }).get_prompt()
-
-
-    @staticmethod
-    def load_fiass_store_services(history_id=0):
-        return MongoHistoryWithFAISS(
-            history_id,
-            MONGO_INSTANCE, 
-            ServiceWithFaissSupportSchema,
-            ServiceWithFaissSupportSchemaSerializer
-        )
-        
-
-    @staticmethod
-    def load_fiass_store_doctors(history_id=0):
-        return MongoHistoryWithFAISS(
-            history_id,
-            MONGO_INSTANCE, 
-            DoctorsWithFaissSupportSchema,
-            DoctorsWithFaissSupportSchemaSerializer
-        )
-
-
-    def update_context_for_conversation_state(self):
-
-        self.doctor_store = None
-
-        self.service_store = None
-        
-
-        if self.user_conversation_state.conversation_state == "appointment_or_service_purchase":
-            
-            tick = time.time()
-            self.doctor_store = self.load_fiass_store_doctors()
-            tock = time.time() - tick
-            logger.info(f"doctor store loaded in: {tock} sec")
-
-            tick = time.time()
-            self.service_store = self.load_fiass_store_services()
-            tock = time.time() - tick
-            logger.info(f"service store loaded in: {tock} sec")
-
-            doctors = self.doctor_store.get(context=self.user_prompt.get_text_content(), k=10)
-            req_doctor_cols = ["id","dr_name","dr_specialist","i_dr_description","dr_days","dr_time_start","dr_time_end"]
-            logger.debug(f"doctor store entries loaded: {doctors.shape[0]}")
-            self.context["doctors"] = json.dumps(doctors[req_doctor_cols].to_dict("records"), indent=2) if not doctors.empty else ""
-            logger.debug(f"context[doctors] set")
-
-            services = self.service_store.get(context=self.user_prompt.get_text_content(), k=10)
-            req_service_cols = ["id", "service_name","service_provider","i_service_description","service_cost","service_duration"]
-            logger.debug(f"service store entries loaded: {services.shape[0]}")
-            self.context["services"] = json.dumps(services[req_service_cols].to_dict("records"), indent=2) if not services.empty else ""
-            logger.debug(f"context[services] set")
-
-            # get today's data and day. YYYY-MM-DD and day name
-            today = datetime.datetime.now().strftime("%Y-%m-%d")
-            day = datetime.datetime.now().strftime("%A")
-
-            today_context_string = f"\nFor context, today is {today} and it is {day}. Use this information while extracting the appointment date and day."
-
-            self.context["instructions"] = APPOINTMENT_OR_SERVICE_PROMPT + today_context_string
-            logger.debug(f"context[instructions] set")
-
-
-        if self.user_conversation_state.conversation_state == "goal":
-
-            # get today's data and day. YYYY-MM-DD and day name
-            today = datetime.datetime.now().strftime("%Y-%m-%d")
-            day = datetime.datetime.now().strftime("%A")
-
-            today_context_string = f"\nFor context, today is {today} and it is {day}. Use this information while extracting the appointment date and day."
-
-
-            self.context["instructions"] = GOAL_SPECIAL_PROMPT + today_context_string
-            logger.debug(f"context[instructions] set")
-
-        
-        if not self.doctor_store: logger.debug(f"doctor_store not set")
-
-
-        if not self.service_store: logger.debug(f"service_store not set")
-
-
-    def get_message(self, prompt_keys: list, include_history=[], role="user", include_system_prompt=False):
-
-        if not all(key in self.context for key in prompt_keys):
-            logger.debug(f"not all required prompt_keys present: provided {prompt_keys}")
-            raise ValueError(f"context requires following keys: {[key for key in prompt_keys if key not in self.context]}")
-    
-        logger.debug(f"context required: {prompt_keys}, included history length: {len(include_history)}, role: {role}")
-        context = {k: v for k, v in self.context.items() if k in prompt_keys}
-        message = {
-            "role": role, "content": [
-                {
-                    "type": "text",
-                    "text": self.__PROMPT_MAKER.get(context)
-                }
-            ]
-        }
-        messages = include_history + [message]
-
-        if include_system_prompt:
-            logger.debug("system prompt added to messages")
-            messages = [self.get_system_prompt()] + messages
-
-        message_text_count = len(GPTMsgPrompt(message).get_text_content())
-        logger.info(f"message text length: {message_text_count}")
-
-        return GPTMsges(messages)
-
-
-    def get_user_next_mode(self):
-
-        tool_messages = self.get_message(["user_prompt"])
-        tool = ToolRegistry.get_tool("mode_selector", tool_messages)
-        _, resp_entry, results = tool.call()
-        status, result = results
-        
-        logger.info("too called registry -> mode_selector")
-
-        if status:
-            next_mode = result.get('detect_conversation_intent_mode', ["normal"])[0]
-            logger.debug(f"tool detected next mode: {next_mode}")
-
-            if next_mode == "advice":
-                logger.debug("next mode detected was advice setting the next mode to normal")
-                next_mode = "normal"
-
-            return next_mode
-        
-        logger.debug(f"tool was not called next mode: normal")
-        
-        return "normal"
-
-
-    @staticmethod
-    def load_fiass_store_key_information_history(user_id):
-        return MongoHistoryWithFAISS(
-            user_id,
-            MONGO_INSTANCE,
-            ConversationHistoryWithFaissSupportSchema, 
-            ConversationHistoryWithFaissSupportSchemaSerializer
-        )
-
-
-    @staticmethod
-    def load_conversation_state(user_id):
-        
-        logger.debug(f"loading conversation state: filter [user_id={user_id}]")
-        conversation_state = ConversationState.objects(user_id=user_id).first()
-        logger.debug(f"conversation state exists: {conversation_state}")
-
-        if not conversation_state:
-            logger.info(f"initializing conversationState for user")
-            conversation_state = ConversationState(user_id=user_id, conversation_state="normal")
-            conversation_state.save()
-
-        _ = f"conversation state mode loaded: {conversation_state.conversation_state}"
-        logger.info(_)
-        logger.debug(_)
-
-        return conversation_state
-
-
-    @staticmethod
-    def load_conversation_history_for_user_id(user_id, user_session_id):
-        # loading chat history for user
-        # will ignore all instances not in gpt accepted prompt format
-        logger.debug(f"loading chat history: filter [user_id={user_id} & user_session_id={user_session_id}] ordered [timestamp] limit [{APETITE * 2}]")
-        history_instances = ChatHistory.objects(user_id=user_id, user_session_id=user_session_id).order_by('timestamp').limit(APETITE * 2)
-        
-        history_messages = []
-        for instance in history_instances:
-            try: prompt = GPTMsgPrompt(instance.prompt)
-            except ValueError: 
-                logger.debug(f"skipped! chat instance was not in GPTMsgPrompt accepted format: {instance.prompt} type {type(instance.prompt)}")
-                continue
-            history_messages.append(prompt.get_prompt())
-
-        logger.debug(f"message history loaded: {len(history_messages)}")
-        
-        total_loaded_history_text_length = len("".join(GPTMsgPrompt(x).get_text_content() for x in history_messages))
-        logger.info(f"total history string length: {total_loaded_history_text_length}")
-
-        return history_messages
-
-
-    def get_key_information_entries(self):
-        messages = self.get_message(["user_prompt"])
-        
-        tool = ToolRegistry.get_tool("extract_user_related_information", messages)
-        response_extract_goals, tool_prompt_extract_goals, results_extract_goals = tool.call()
-
-        logger.info("too called registry -> extract_user_related_information")
-
-        status, result = results_extract_goals
-        if status:
-            keydf = result.get('extract_user_health_information_entry', [None])[0]
-            logger.debug(f"tool extracted key information: Dataframe[{keydf.shape}]")
-            return keydf
-
-
-    def set_user_id(self, user_id):
-        
-        if not isinstance(user_id, int):
-            logger.debug(f"invalid user_id[{user_id}] type {type(user_id)}")
-            raise TypeError("user_id should be of type int")
-        
-        self.user_id = user_id
-        logger.debug(f"user id set: {self.user_id}")
-
-        self.user_conversation_state = self.load_conversation_state(self.user_id)
-        logger.debug(f"user session id: {self.user_conversation_state.user_session_id}")
-
-        self.user_message_history = self.load_conversation_history_for_user_id(self.user_id, self.user_conversation_state.user_session_id)
-
-        # if conversation mode is something other than allowed modes will update it to normal
-        if not self.user_conversation_state.conversation_state.lower().strip() in self.__VALID_MODES:
-            logger.info("user conversation state is invalid and therefore updating to normal")
-            logger.debug(f"user conversation state is invalid: {self.user_conversation_state.conversation_state}, allowed modes: {self.__VALID_MODES}")
-            self.user_conversation_state.conversation_state = "normal"
-            self.user_conversation_state.save()
-
-        self.next_mode = None
-        if self.user_conversation_state.conversation_state == "normal":
-            self.next_mode = self.get_user_next_mode()
-            if self.user_conversation_state.conversation_state != self.next_mode:
-                logger.debug(f"next mode ({self.next_mode}) not equal to set mode ({self.user_conversation_state.conversation_state}) updating conversation state")
-                self.user_conversation_state.set_mode(self.next_mode)
-
-
-        tick = time.time()
-        self.key_information_store = self.load_fiass_store_key_information_history(self.user_id)
-        tock = time.time() - tick
-        logger.info(f"key information store loaded in: {tock} sec")
-        
-        key_informations = self.key_information_store.get(self.user_prompt.get_text_content(), k=10)
-        req_key_information_cols = ["i_parameter_label","parameter_type","parameter_value"]
-        logger.debug(f"key information store entries loaded: {key_informations.shape[0]}")
-        self.context["history"] = json.dumps(key_informations[req_key_information_cols].to_dict("records"), indent=2) if not key_informations.empty else ""
-        logger.debug(f"context[history] set")
-
-        keydf = self.get_key_information_entries()
-        if isinstance(keydf, pd.DataFrame) and not keydf.empty:
-            logger.debug(f"key information store updated with entries: {keydf.shape[0]}")
-            self.key_information_store.update(keydf)
-
-        logger.debug("user_id set")
-
-
-    def set_user_prompt(self, prompt):
-        
-        if not isinstance(prompt, GPTMsgPrompt):
-            logger.debug(f"invalid prompt[{prompt}] type {type(prompt)}")
-            raise TypeError("user_prompt should be of type GPTMsgPrompt")
-        
-        self.user_prompt = prompt
-        self.context["user_prompt"] = self.user_prompt.get_text_content()
-        logger.debug(f"context[user_prompt] set")
-
-        current_prompt_text_length = len(self.context["user_prompt"])
-        logger.info(f"current prompt text length: {current_prompt_text_length}")
-
-        logger.debug(f"user_prompt set")
 
 
 class ChatView(APIView):
@@ -516,80 +136,151 @@ class ChatView(APIView):
         
         req = request.N_Payload
 
-        conversation = Conversation(user_prompt=GPTMsgPrompt(req["message"]), user_id=request.user_details.user.id)
+        sessions = Session.objects(user_id=request.user_details.user.id, archived=False).all()
+        chat_sessions = [session for session in sessions if session.session_type.name == "chat"]
+        
+        if chat_sessions:
+            user_session = chat_sessions[0]
 
-        response = {}
+            # just in case any non archived chat states found archive them
+            if len(chat_sessions) > 1:
+                for session in chat_sessions[1:]:
+                    session: Session
+                    session.archive()
+        
+        else: user_session = ChatSession.get_session(request.user_details.user.id)
 
-        if SAVE_CONVERSATION_HISTORY:
-            logger.debug("saving original user prompt")
-            ChatHistory(
-                user_id=conversation.user_id, prompt=conversation.user_prompt.get_prompt(), 
-                user_session_id=conversation.user_conversation_state.user_session_id,
-                user_session_type=conversation.user_conversation_state.conversation_state
-            ).save()
+        chat_session = ChatSession.get_chatsession(MONGO_INSTANCE, GPT_KEY, user_session, req["message"])
+        reply, goal_extracted, event_extracted = chat_session.execute_session_procedures(req["message"])
 
-        response["message"] = conversation.get_reply()
+        if goal_extracted or event_extracted: chat_session.session.archive()
 
-        if SAVE_CONVERSATION_HISTORY:
-            logger.debug("saving reply prompt")
-            ChatHistory(
-                user_id=conversation.user_id, prompt=response["message"],
-                user_session_id=conversation.user_conversation_state.user_session_id,
-                user_session_type=conversation.user_conversation_state.conversation_state
-            ).save()
+        summary = chat_session._get_gpt_call_summary()
+        
+        response = {
+            "mode": chat_session.session.session_type.session_state.name,
+            "message": {
+                "role": "assistant",
+                "content": reply
+            },
+            "goal_extracted": GoalsSerializer(goal_extracted).data if goal_extracted else {},
+            "event_extracted": EventsSerializer(event_extracted).data if event_extracted else {},
+            "summary": summary
+        }
+        
+        return Response(response)
 
-        toool_result = conversation.call_tools()
-        if toool_result:
-            logger.info("tool was called, conversation state set to normal")
-            conversation.user_conversation_state.set_mode("normal")
-            response.update(toool_result)
-        else: logger.info("tools were not called")
 
-        response["conversation_state"] = conversation.user_conversation_state.conversation_state
+class ResetChatSession(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    def post(self, request: Request):
+        
+        response = {"status": False}
+        if Session.objects(user_id=request.user_details.user.id, archived=False).count():
+            session_instance: Session = Session.objects(user_id=request.user_details.user.id, archived=False).first()
+            session_instance.archive()
+            response["status"] = True
 
         return Response(response)
 
 
-# updated with image support
 class Documents(APIView):
 
+    authentication_classes = [TokenAuthentication]
 
     @exception_handler()
-    @request_schema_validation(schema={
-        "file": {"type": "string", "required": True, "empty": False, "check_with": "base64_string"},
-        "file_type": {"type": "string", "required": False, "empty": False, "allowed": ["pdf", "image"], "default": "pdf"}
-    }, validator=ConversationValidator)
+    def post(self, request: Request):
+        pdfIO = BytesIO(request.FILES["attachment"].read())
+        
+        sessions = Session.objects(user_id=request.user_details.user.id, archived=False).all()
+        document_upload_sessions = [session for session in sessions if session.session_type.name == "document_upload"]
+
+        if document_upload_sessions:
+            user_session = document_upload_sessions[0]
+        else: user_session = DocumentUploadSession.get_session(request.user_details.user.id)
+        
+        pdf = PDF(pdfIO)
+        
+        document_upload_session = DocumentUploadSession(MONGO_INSTANCE, GPT_KEY, user_session)
+
+        document_upload_session.execute_session_procedures(pdf)
+
+        document_uploaded = DocumentUploaded.from_pdf_document(user_session, pdf)
+
+        user_session.archive()  
+        
+        return Response(DocumentUploadedSerializer(document_uploaded).data)
+
+
+class DocumentUploadedView(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    @request_schema_validation({
+        "id": {"required": True, "type": "string", "empty": False},
+        "shared_globaly": {"required": True, "type": "boolean"},
+    })
+    def put(self, request: Request):
+        
+        req = request.N_Payload
+
+        if not DocumentUploaded.objects(id=req["id"]).count():
+            raise APIException("Not Found", "document with id not found", status_code=404)
+        
+        document_upload_instance: DocumentUploaded = DocumentUploaded.objects(id=req["id"]).first()
+
+        if document_upload_instance.session.user_id != request.user_details.user.id:
+            raise APIException("Not Found", "document with id not found", status_code=404)
+        
+        if req["shared_globaly"]: document_upload_instance.share()
+        else: document_upload_instance.unshare()
+
+        return Response(DocumentUploadedSerializer(document_upload_instance).data)
+
+
+class DocumentUploadedDashboardView(MongoFilteredListView, UserManagerUtilityMixin):
+    
+    authentication_classes = [TokenAuthentication]
+
+    model = DocumentUploaded
+    serializer = DocumentUploadedSerializer
+    pagination = DefaultPagination()
+
+    @staticmethod
+    def get_user_sessions(request: Request):
+        session_state = SessionState.objects(name="upload").first()
+        session_type = SessionType.objects(name="document_upload", session_state=session_state).first()
+        # return [s.id for s in Session.objects(user_id=request.user_details.user.id, session_type=session_type).all()]
+        return Session.objects(user_id=request.user_details.user.id, session_type=session_type).all()
+
+    static_filters = {"session__in": get_user_sessions}
+
+
+class DocumentGet(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    @request_schema_validation({
+        "id": {"required": True, "type": "string", "empty": False}
+    })
     def post(self, request: Request):
 
         req = request.N_Payload
+
+        if not DocumentUploaded.objects(id = req["id"]).count():
+            raise APIException("Not Found", "document not found", status_code=404)
         
-        io_ = BytesIO(req['file'])
-        io_.seek(0)
+        document = DocumentUploaded.objects(id = req["id"]).first()
 
-        if req["file_type"] == "pdf":
-            pdf = PDF(io_)
-            DE = PDFDocumentExtract(pdf, GPT_KEY, EXTRACT_USER_RELATED_INFO, get_callable_df_with_columns(["i_parameter_label", "parameter_type", "parameter_value"]))
-            results = DE.extract()
-
-        elif req["file_type"] == "image":
-            IMG = ImageDocumentExtract(io_, GPT_KEY, EXTRACT_USER_RELATED_INFO, get_callable_df_with_columns(["i_parameter_label", "parameter_type", "parameter_value"]))
-            result = DE.extract()
-            results = [result]
-
-            
-        ret_results = []
-        if isinstance(results, pd.DataFrame) and not results.empty:
-            ret_results = results.to_dict("records")
-
-            faiss_history = MongoHistoryWithFAISS(
-                request.user_details.user.id, 
-                MONGO_INSTANCE,
-                ConversationHistoryWithFaissSupportSchema, 
-                ConversationHistoryWithFaissSupportSchemaSerializer
-            )
-            faiss_history.update(results)
-
-        return Response({"extracted": ret_results})
+        if document.session.user_id != request.user_details.user.id:
+            raise APIException("Not Found", "document not found", status_code=404)
+        
+        return Response({"document": document.file_bytes})
 
 
 class DoctorView(MongoModelManagerView, UserManagerUtilityMixin):
@@ -619,6 +310,28 @@ class DoctorView(MongoModelManagerView, UserManagerUtilityMixin):
     PUT_inject = {
         "user_id": UserManagerUtilityMixin.get_user_id,
     }
+
+
+class SharedDocuments(APIView):
+    
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    @request_schema_validation({
+        "user_id": {"type": "integer", "required": True, "min": 0}
+    })
+    def post(self, request: Request):
+        
+        req = request.N_Payload
+        
+        session_state = SessionState.objects(name="upload").first()
+        session_type = SessionType.objects(name="document_upload", session_state=session_state).first()
+        users_document_sessions = Session.objects(user_id=req["user_id"], session_type=session_type).all()
+
+        document_uploaded_instances = DocumentUploaded.objects(session__in=users_document_sessions, shared_globaly=True)
+
+        return Response(DocumentUploadedSerializer(document_uploaded_instances, many=True).data)
+
 
 
 class GoalsView(APIView):
@@ -710,9 +423,15 @@ class UserEventDashboardView(MongoFilteredListView, UserManagerUtilityMixin):
     serializer = EventsSerializer
     pagination = DefaultPagination()
 
+    @staticmethod
+    def get_user_sessions(request: Request):
+        session_state = SessionState.objects(name="appointment_or_service_purchase").first()
+        session_type = SessionType.objects(name="chat", session_state=session_state).first()
+        return Session.objects(user_id=request.user_details.user.id, session_type=session_type).all()
+
     static_filters = {
         "event_type": "appointment",
-        "user_id": UserManagerUtilityMixin.get_user_id
+        "session__in": get_user_sessions
     }
 
 
@@ -725,10 +444,15 @@ class GoalsView(MongoFilteredListView, UserManagerUtilityMixin):
     serializer = GoalsSerializer
     pagination = DefaultPagination()
 
-    static_filters = {
-        "user_id": UserManagerUtilityMixin.get_user_id 
-    }
+    @staticmethod
+    def get_user_sessions(request: Request):
+        session_state = SessionState.objects(name="goal").first()
+        session_type = SessionType.objects(name="chat", session_state=session_state).first()
+        return Session.objects(user_id=request.user_details.user.id, session_type=session_type).all()
 
+    static_filters = {
+        "session__in": get_user_sessions 
+    }
 
 
 # admin apis
@@ -754,5 +478,73 @@ class AdminResetKeyInformationFiassStore(APIView):
         store.reset()
 
         return Response({"status": True, "time": tock})
+
+
+class AdminResetUser(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [UserAdminPermissions]
+
+    @exception_handler()
+    @request_schema_validation({
+        "user_id": {"type": "integer", "required": True, "min": 0, "nullable": False}
+    })
+    def post(self, request: Request):
+
+        req = request.N_Payload
+        user_id = req["user_id"]
+
+        user_sessions = Session.objects(user_id=user_id).all()
+
+        response = {
+            "Session": Session.objects(user_id=user_id).count(),
+            "IndexDocumentSchema": IndexDocumentSchema.objects(history_id=req["user_id"]).count(),
+            "GPTCallHistory": GPTCallHistory.objects(session__in=user_sessions).count(),
+            "ChatHistory": ChatHistory.objects(session__in=user_sessions).count(),
+            "ConversationHistoryWithFaissSupportSchema": ConversationHistoryWithFaissSupportSchema.objects(session__in=user_sessions).count(),
+            "Goals": Goals.objects(session__in=user_sessions).count(),
+            "Events": Events.objects(session__in=user_sessions).count(),
+        }
+
+        GPTCallHistory.objects(session__in=user_sessions).delete()
+        IndexDocumentSchema.objects(history_id=req["user_id"]).delete()
+        ChatHistory.objects(session__in=user_sessions).delete()
+        ConversationHistoryWithFaissSupportSchema.objects(session__in=user_sessions).delete()
+        Goals.objects(session__in=user_sessions).delete()
+        Events.objects(session__in=user_sessions).delete()
+        Session.objects(user_id=user_id).delete()
+
+        return Response(response)
+
+
+class AdminUserCounts(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [UserAdminPermissions]
+
+    @exception_handler()
+    @request_schema_validation({
+        "user_id": {"type": "integer", "required": True, "min": 0, "nullable": False}
+    })
+    def post(self, request: Request):
+
+        req = request.N_Payload
+        user_id = req["user_id"]
+
+        user_sessions = Session.objects(user_id=user_id).all()
+
+        response = {
+            "total": {
+                "Session": Session.objects(user_id=user_id).count(),
+                "GPTCallHistory": GPTCallHistory.objects(session__in=user_sessions).count(),
+                "ChatHistory": ChatHistory.objects(session__in=user_sessions).count(),
+                "ConversationHistoryWithFaissSupportSchema": ConversationHistoryWithFaissSupportSchema.objects(session__in=user_sessions).count(),
+                "IndexDocumentSchema": IndexDocumentSchema.objects(history_id=req["user_id"]).count(),
+                "Goals": Goals.objects(session__in=user_sessions).count(),
+                "Events": Events.objects(session__in=user_sessions).count()
+            }
+        }
+
+        return Response(response)
 
 

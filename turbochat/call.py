@@ -1,6 +1,7 @@
 
 from typing import Any
 from turbochat.gptprompts import Messages, Tools
+import openai
 
 
 class GPT:

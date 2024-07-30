@@ -66,6 +66,29 @@ class GPTMsgPrompt:
         return status, GPTMsgPrompt._validator.errors
 
 
+    def has_image(self):
+        
+        if self.is_user():
+            content = self.__prompt["content"]
+            if isinstance(content, list):
+                for cont in content:
+                    if "image_url" in cont: return True
+
+        else: False
+
+    
+    def get_image_content(self):
+        
+        content_ = []
+        if self.has_image():
+            content = self.__prompt["content"]
+            for cont in content:
+                if "image_url" in cont:
+                    content_.append(cont)
+        
+        return content_
+
+
     def is_user(self): return self.__prompt["role"] == "user"
     
 
@@ -118,7 +141,7 @@ class GPTToolPrompt:
 
     _validator = PromptValidator()
 
-    def __init__(self, prompt) -> None:
+    def __init__(self, prompt: dict) -> None:
         # No way to validate tool definitions for not
         # any definition will be coonsidered as correct definition        
         

@@ -18,16 +18,17 @@ Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi
 
 
 ### converse-history
-GET http://127.0.0.1:8000/conversation/chathistory/?page_size=2
+GET http://127.0.0.1:8000/conversation/chathistory/
 Content-Type: application/json
-Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi6gSPg2SP9KuoUd3TWGuEAVbm8Ih0D0dwCr-uxafKi69pf9mj3H6PMeu9GXLbFhz4Fg-53vmEEDyyH__n2B7M26MiD5irjfNgNWj4Ruwuif_j_7YZXhFIkKq0tuCT_im5H_9m1PGPRl39psbVKpRdDdOlx6oBEJ1MNjUHW3s_8t4kofpQozOTWY1AfQ0EEZOrN1In0GG1hPvZX62oVrYJP4yCVcXerNYqPGhe54Gw==
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
 
 
 ### converse
 POST http://127.0.0.1:8000/conversation/converse/
 Content-Type: application/json
-# Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
-Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi6gSPg2SP9KuoUd3TWGuEAVbm8Ih0D0dwCr-uxafKi69pf9mj3H6PMeu9GXLbFhz4Fg-53vmEEDyyH__n2B7M26MiD5irjfNgNWj4Ruwuif_j_7YZXhFIkKq0tuCT_im5H_9m1PGPRl39psbVKpRdDdOlx6oBEJ1MNjUHW3s_8t4kofpQozOTWY1AfQ0EEZOrN1In0GG1hPvZX62oVrYJP4yCVcXerNYqPGhe54Gw==
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+# "text": "I want to create a goal where I reach from 1min holding my breath to 4min. This is to increase my lung capacity. I started last week and I am already at 2min mark. By the end of next week I plan to reach 3min mark and than in the next week 4min mark."
 
 {
     "message": {
@@ -35,7 +36,7 @@ Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi
         "content": [
             {
                 "type": "text",
-                "text": "Hi tell me a good diet to maintain my gut culture"
+                "text": "this has been going on since last 2 month."
             }
         ]
     }
@@ -85,3 +86,51 @@ Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi
 POST http://127.0.0.1:8000/conversation/admin-reset-fiass-store-key-information-store/
 Authorization: Bearer gAAAAABmlrlzDiAQxu02fjnJ_lFK5sNvtxZwg-Z5WY6zzZhhUcZmilP2iYrrKcgy3XW3TyXf1OCj1L24tRI2Rc-XFCRnYew5FA1rYiz8S1tOipoMJMmDGcjquU8AEDQDZV1G63cdAMjI68Dgrxqk-bKHMkj1Grmkh1CFLINPtE7_zqTnPiPXjoLGdNsNxoMgYmH-Hu8RkvzXT8pL8dZdeJUka09rzV3DY5hyPGQifOAouXzAZhsbrf3oNe7QgEQpZ62FbO5Ibn0Qu41tFj_GnTSbubitpawAIg==
 
+
+###
+POST http://127.0.0.1:8000/conversation/admin-reset-user/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+{"user_id": 7}
+
+
+###
+POST http://127.0.0.1:8000/conversation/admin-user-counts/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+{"user_id": 7}
+
+
+###
+GET http://127.0.0.1:8000/conversation/user-documents-uploaded-dashboard/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+
+###
+POST http://127.0.0.1:8000/conversation/user-documents-get/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+{"id": "66a7a005a9ff8d85a91ca956"}
+
+
+###
+POST http://127.0.0.1:8000/conversation/shared-documents-get/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+
+{"user_id": 7}
+
+###
+PUT http://127.0.0.1:8000/conversation/share-document/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+{
+    "id": "66a7a005a9ff8d85a91ca956",
+    "shared_globaly": true
+}
