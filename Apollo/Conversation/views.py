@@ -423,9 +423,15 @@ class UserEventDashboardView(MongoFilteredListView, UserManagerUtilityMixin):
     serializer = EventsSerializer
     pagination = DefaultPagination()
 
+    @staticmethod
+    def get_user_sessions(request: Request):
+        session_state = SessionState.objects(name="appointment_or_service_purchase").first()
+        session_type = SessionType.objects(name="chat", session_state=session_state).first()
+        return Session.objects(user_id=request.user_details.user.id, session_type=session_type).all()
+
     static_filters = {
         "event_type": "appointment",
-        "user_id": UserManagerUtilityMixin.get_user_id
+        "session__in": get_user_sessions
     }
 
 
