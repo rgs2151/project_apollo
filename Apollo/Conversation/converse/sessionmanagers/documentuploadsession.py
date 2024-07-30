@@ -123,7 +123,6 @@ class DocumentUploadSession:
 
         if key_information_tool_call and key_information_tool_call.is_tool_call():
             
-            print(">>", user_prompt)
             key_information_tool_gpt_call: Msg = key_information_tool_call.get_gpt_call(self.gpt_key, user_prompt, None, self.tool_call_lookup)
             
             response, response_entry, result = key_information_tool_gpt_call.call()

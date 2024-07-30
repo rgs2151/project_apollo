@@ -113,8 +113,14 @@ class ChatHistoryView(MongoFilteredListView, UserManagerUtilityMixin):
     serializer = ConvHistorySerializer
     pagination = DefaultPagination()
 
+
+    @staticmethod
+    def get_user_sessions(request: Request):
+        session_types = SessionType.objects(name="chat").all()
+        return Session.objects(user_id=request.user_details.user.id, session_type__in=session_types).all()
+
     static_filters = {
-        "user_id": UserManagerUtilityMixin.get_user_id 
+        "session__in": get_user_sessions
     }
 
 

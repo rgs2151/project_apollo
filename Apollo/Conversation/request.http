@@ -18,15 +18,14 @@ Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi
 
 
 ### converse-history
-GET http://127.0.0.1:8000/conversation/chathistory/?page_size=2
+GET http://127.0.0.1:8000/conversation/chathistory/
 Content-Type: application/json
-Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi6gSPg2SP9KuoUd3TWGuEAVbm8Ih0D0dwCr-uxafKi69pf9mj3H6PMeu9GXLbFhz4Fg-53vmEEDyyH__n2B7M26MiD5irjfNgNWj4Ruwuif_j_7YZXhFIkKq0tuCT_im5H_9m1PGPRl39psbVKpRdDdOlx6oBEJ1MNjUHW3s_8t4kofpQozOTWY1AfQ0EEZOrN1In0GG1hPvZX62oVrYJP4yCVcXerNYqPGhe54Gw==
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
 
 
 ### converse
 POST http://127.0.0.1:8000/conversation/converse/
 Content-Type: application/json
-# Authorization: Bearer gAAAAABmfsAbw6E5H8t9dN4rjeiG8IFxaEYCVH-4B5iswP_IleEKpky6KTcByrC075MDtXva4I0RhJZTUycfYJ4Zm-pOVxru_hKu9KCKsXZ8n8K6tDi5wy5slSDUpsJSi7ZjdSkKnesBhUnzqJVNICDiE2gRkl9YSPiWotHre-nUi8is_12FzK1pKMsKIsaM22XYL2eep8BH7v7QNZ-Jjj1lTFLhgK8VBPbVEi_tg_yUKO2b62OOsPD9cJOBLVlYJGEdMvTky_MoLSj7KS7EsLXvs5XNbQCAjw==
 Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
 
 # "text": "I want to create a goal where I reach from 1min holding my breath to 4min. This is to increase my lung capacity. I started last week and I am already at 2min mark. By the end of next week I plan to reach 3min mark and than in the next week 4min mark."
