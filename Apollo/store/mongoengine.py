@@ -114,9 +114,12 @@ class MongoHistory(History):
 class MongoHistoryWithFAISS(MongoHistory):
 
 
+    embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+
     def __init__(self, history_id, instance: MongoClient, document: TopLevelDocumentMetaclass, document_serializer: DocumentSerializer) -> None:
         super().__init__(history_id, instance, document, document_serializer)
-        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        # self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
         if not hasattr(document, "vector_id"):
             raise Exception("document does not contain key:vector_id. This key is required")

@@ -75,7 +75,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Apollo.wsgi.application'
 
 
-MONGO_INSTANCE = connect(db='Apollo', host="mongodb://localhost:27017/")
+# MONGO_INSTANCE = connect(db='Apollo', host="mongodb://localhost:27017/")
+MONGO_INSTANCE = connect(db='Apollo_Test', host="mongodb://localhost:27017/")
 
 
 DATABASES = {

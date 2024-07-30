@@ -118,7 +118,7 @@ class GPTToolPrompt:
 
     _validator = PromptValidator()
 
-    def __init__(self, prompt) -> None:
+    def __init__(self, prompt: dict) -> None:
         # No way to validate tool definitions for not
         # any definition will be coonsidered as correct definition        
         

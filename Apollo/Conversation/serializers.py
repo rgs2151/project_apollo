@@ -13,13 +13,7 @@ class ConvHistorySerializer(DocumentSerializer):
         model = ChatHistory
         fields = '__all__'
 
-        
-class ConversationStateSerializer(DocumentSerializer):
-    class Meta:
-        model = ConversationState
-        fields = '__all__'
 
-        
 class DoctorsWithFaissSupportSchemaSerializer(DocumentSerializer):
     class Meta:
         model = DoctorsWithFaissSupportSchema
@@ -42,4 +36,11 @@ class GoalsSerializer(DocumentSerializer):
     class Meta:
         model = Goals
         fields = '__all__'
+
+
+class DocumentUploadedSerializer(DocumentSerializer):
+    class Meta:
+        model = DocumentUploaded
+        # fields = '__all__'
+        exclude = ("file_bytes",)
 
