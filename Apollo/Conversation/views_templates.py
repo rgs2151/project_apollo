@@ -1,5 +1,7 @@
 from .views import *
 from UserManager.serializers import UserDetailsSerializer
+from UserManager.models import UserDetails
+from .serializers import *
 
 def template_get_context(request):
     '''{'user': {'id': 1, 'email': 'rudramani.singha@gmail.com', 'first_name': 'Rudra', 'last_name': 'Singha', 'is_staff': True, 'groups': [{'id': 3, 'name': 'doctor'}, {'id': 4, 'name': 'user'}]}, 'onboarding_status': {'email_verificataion': True, 'user_valid': True}, 'cooldowns': {'email_secret_cooldown': 0, 'request_password_change_cooldown': None}}'''
@@ -42,6 +44,11 @@ class Goals(APIView):
     def get(self, request: Request):
         return render(request, template_name="goals.html", context=template_get_context(request))
 
+class UserDocuments(APIView):
+    authentication_classes = [TokenAuthentication]
+    @exception_handler()
+    def get(self, request: Request):
+        return render(request, template_name="documents.html", context=template_get_context(request))
 
 class DrDashboad(APIView):
     authentication_classes = [TokenAuthentication]
@@ -72,5 +79,25 @@ class ConfirmedEventsView(APIView):
     authentication_classes = [TokenAuthentication]
     @exception_handler()
     def get(self, request: Request, event):
-        return render(request, template_name="confirmed_events.html", context=template_get_context(request))
+
+        this_event = Events.objects(id=event).first()
+
+        # user_data = UserDetailsSerializer(request.user_details).data
+        client_user_id = this_event.session.user_id
+        client_data = UserDetails.objects.filter(user=client_user_id).first()
+        client_name = client_data.user.first_name + " " + client_data.user.last_name
+
+        doctor_data = DoctorsWithFaissSupportSchema.objects(id=this_event.event_contact_id).first()
+        doctor_name = doctor_data.dr_name
+
+        context = {
+            "client_name": client_name,
+            "doctor_name": doctor_name,
+            "event_time": this_event.event_time,
+            "event_date": this_event.event_date,
+            "event_id": event,
+            "client_user_id": client_user_id
+        }
+
+        return render(request, template_name="confirmed_events.html", context=context)
 

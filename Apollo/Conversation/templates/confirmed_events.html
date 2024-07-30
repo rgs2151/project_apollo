@@ -82,7 +82,7 @@
                                         <strong>Patient:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        John Doe
+                                        {{ client_name }}
                                     </div>
                                 </div>
                                 <div class="row mb-2">
@@ -91,7 +91,7 @@
                                         <strong>Doctor:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        Dr. Smith
+                                        {{ doctor_name }}
                                     </div>
                                 </div>
                                 <div class="row mb-2">
@@ -100,7 +100,7 @@
                                         <strong>Time:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        10:00 AM
+                                        {{ event_time }}
                                     </div>
                                 </div>
                                 <div class="row mb-2">
@@ -109,7 +109,7 @@
                                         <strong>Date:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        2024-08-01
+                                        {{ event_date}}
                                     </div>
                                 </div>
                                 <div class="row mb-2">
@@ -118,7 +118,7 @@
                                         <strong>Note:</strong>
                                     </div>
                                     <div class="col-sm-9">
-                                        Follow-up appointment
+                                        Appointment
                                     </div>
                                 </div>
                             </div>
@@ -131,7 +131,7 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Venue</h6>
                             </div>
                             <div class="card-body d-flex justify-content-center align-items-center">
-                                <a href="https://meet.google.com/" target="_blank" class="btn btn-primary btn-lg">
+                                <a href="https://meet.jit.si/{{event_id}}" target="_blank" class="btn btn-primary btn-lg">
                                     <i class="fas fa-video" style="font-size: 4rem;"></i> 
                                     <div>Join Meeting</div>
                                 </a>
@@ -146,6 +146,10 @@
         </div>
 
     </div>
+
+    <script>
+        let global_client_user_id = {{ client_user_id }};
+    </script>
 
 </div>
 {% endblock %}

@@ -52,7 +52,7 @@ Keep asking these questions natruallly in the conversation until you have all th
 
 You have the ability to use functions.
 Once you have collected all the information described above and the user has confirmed the goal details,
-Use extract_goal_details function to set the goal and confirm to the user that you have set it.
+Use extract_goal_details function to set the goal.
 ''',
     "priority": 99
 }
@@ -68,11 +68,10 @@ Keep asking these questions natruallly in the conversation until you have all th
 - confirm the exact doctor or service package
 - confirm the appointment/purchase date and appointment/purchase time
 - ensure that the appointment/service request matches the doctor/service provider's availability.
-- confirm the appointment/purchase details with the user.
 
 You have the ability to use functions. 
 Once you have collected all the information described above and the user has confirmed the appointment/purchase details,
-Use extract_request_details function to set the appointment/purchase and confirm to the user that you have set it.
+Use extract_request_details function to set the appointment/purchase.
 ''',
     "priority": 99
 }

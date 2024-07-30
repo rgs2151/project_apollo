@@ -2,6 +2,7 @@ $(document).ready(function () {
 
     let calendar = new EventCalendar(document.getElementById('calendarHolder'), {
         view: 'timeGridWeek',
+        height: '55vh',
     });
 
     // Fetch the appointment requests
@@ -24,15 +25,24 @@ $(document).ready(function () {
                 end.setHours(end.getHours() + 2);
 
                 calendar.addEvent({
-                    title: 'User id: ' + event.user_id + ' \nEvent id: ' + event.id,
+                    title: 'Title: ' + event.event_description,
                     start: start,
                     end: end,
                     color: '#191919',
+                    extendedProps: {
+                        'complete_event': event,
+                    }
                 });
             });
         },
         error: function(error) {
             console.log(error);
         }
+    });
+
+    calendar.setOption('eventClick', function eventClick(info) {
+        // console.log(info.event.extendedProps.complete_event);
+        href = window.location.origin + '/conversation/confirmed-events/' + info.event.extendedProps.complete_event.id;
+        window.open(href, '_blank');
     });
 });

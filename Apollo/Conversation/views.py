@@ -153,7 +153,52 @@ class ChatView(APIView):
         chat_session = ChatSession.get_chatsession(MONGO_INSTANCE, GPT_KEY, user_session, req["message"])
         reply, goal_extracted, event_extracted = chat_session.execute_session_procedures(req["message"])
 
-        if goal_extracted or event_extracted: chat_session.session.archive()
+        if goal_extracted or event_extracted: 
+            chat_session.session.archive()
+            user_session = ChatSession.get_session(request.user_details.user.id)
+            
+
+            if goal_extracted:
+                # formatting = "This was the goal created:\n"
+                # for k, v in goal_extracted.items():
+                #     formatting += f"{k}: {v}\n"
+                #     formatting += "acknowledge that goal with above information was created. Inform the user and start a new conversation."
+                
+                user_prompt={
+                    "role":"user",
+                    "content": [
+                        {
+                        "type": "text",
+                        "text": "System special msg: Acknowledge that a goal was created. Inform the user and start a new conversation."
+                        }
+                    ]
+                }
+
+                chat_session = ChatSession.get_chatsession(MONGO_INSTANCE, GPT_KEY, user_session, user_prompt)
+                
+                reply, _, _ = chat_session.execute_session_procedures(user_prompt)
+                print("reply", reply)
+
+            if event_extracted:
+                # formatting = "This was the event created:\n"
+                # for k, v in event_extracted.items():
+                #     formatting += f"{k}: {v}\n"
+                #     formatting += "acknowledge that event with above information was created. Inform the user and start a new conversation."
+                
+                user_prompt={
+                    "role":"user",
+                    "content": [
+                        {
+                        "type": "text",
+                        "text": "System special msg: Acknowledge that an event was created. Inform the user and start a new conversation."
+                        }
+                    ]
+                }
+                
+                chat_session = ChatSession.get_chatsession(MONGO_INSTANCE, GPT_KEY, user_session, user_prompt)
+
+                reply, _, _ = chat_session.execute_session_procedures(user_prompt)
+                print("reply", reply)
 
         summary = chat_session._get_gpt_call_summary()
         

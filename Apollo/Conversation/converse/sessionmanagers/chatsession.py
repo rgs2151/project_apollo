@@ -9,7 +9,7 @@ class DocumentStore:
 
 
     def __init__(self, mongo_instance, session: Session):
-
+        
         self.session = session
         self.mongo_instance = mongo_instance
         
@@ -38,7 +38,7 @@ class DocumentStore:
 
     def set_up_doctor_store(self):
         self.doctor_store = MongoHistoryWithFAISS(
-            self.session.user_id,
+            0,
             self.mongo_instance,
             DoctorsWithFaissSupportSchema,
             DoctorsWithFaissSupportSchemaSerializer
@@ -90,7 +90,7 @@ class ContextCallLookUp:
         self.user_prompt = GPTMsgPrompt(user_prompt).get_text_content()
 
 
-    def get_doctor_store(self, user_prompt: dict):
+    def get_doctor_store(self):
         if self.document_store.doctor_store:
             doctors = self.document_store.doctor_store.get(self.user_prompt, k=10)
             req_key_information_cols = ["user_id", "dr_name", "dr_days", "dr_time_start", "dr_time_end"]
@@ -111,6 +111,8 @@ class ToolCallLookUp:
 
         self.set_session(session)
 
+    def get_appointment_extract(self, **kwargs):
+        return kwargs
 
     def set_session(self, session: Session):
         self.session = session
@@ -430,22 +432,30 @@ class ChatSession:
                 goal_extracted["session"] = self.session
                 goal_created = Goals(**goal_extracted)
                 goal_created.save()
+                # goal_created = GoalsSerializer(goal_created).data
 
 
             if "appointment_extract_tool" in stash and stash["appointment_extract_tool"]:
                 appointment_extracted = stash["appointment_extract_tool"][0]
                 appointment_extracted["session"] = self.session
+                appointment_extracted["event_contact_id"] = "667f04f4978fb3e49ecf619f"
+
                 appointment_created = Events(**appointment_extracted)
                 appointment_created.save()
+                # appointment_created = EventsSerializer(appointment_created).data
 
 
         return goal_created, appointment_created
 
 
     def execute_session_procedures(self, user_prompt: dict):
+        goal_extracted, event_extracted = self.consume_mode_required_tool_results(user_prompt)
+
+        if goal_extracted or event_extracted:
+            return "", goal_extracted, event_extracted
+
         reply = self.get_reply(user_prompt)
         self.store_key_information(user_prompt)
-        goal_extracted, event_extracted = self.consume_mode_required_tool_results(user_prompt)
         return reply, goal_extracted, event_extracted
 
 
