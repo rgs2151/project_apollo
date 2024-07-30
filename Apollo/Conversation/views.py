@@ -171,6 +171,21 @@ class ChatView(APIView):
         return Response(response)
 
 
+class ResetChatSession(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    def post(self, request: Request):
+        
+        response = {"status": False}
+        if Session.objects(user_id=request.user_details.user.id, archived=False).count():
+            session_instance: Session = Session.objects(user_id=request.user_details.user.id, archived=False).first()
+            session_instance.archive()
+            response["status"] = True
+
+        return Response(response)
+
 class Documents(APIView):
 
     authentication_classes = [TokenAuthentication]
@@ -315,6 +330,7 @@ class SharedDocuments(APIView):
         document_uploaded_instances = DocumentUploaded.objects(session__in=users_document_sessions, shared_globaly=True)
 
         return Response(DocumentUploadedSerializer(document_uploaded_instances, many=True).data)
+
 
 
 class GoalsView(APIView):

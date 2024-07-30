@@ -14,10 +14,9 @@ urlpatterns = [
 
     path("history/", History.as_view(), name="conversation-history"),
     path("keyinformation/", ConversationHistoryWithFaissSupportView.as_view(), name="conversation-keyinformation"),
-    # path("converse/", Converse.as_view(), name="conversation-converse"),
     path("converse/", ChatView.as_view(), name="conversation-chat"),
+    path("reset-chat-session/", ResetChatSession.as_view(), name="conversation-reset-chat-session"),
     path("chathistory/", ChatHistoryView.as_view(), name="conversation-converse-history"),
-    # path("documents/", Documents.as_view(), name="conversation-documents"),
     path("doctor-events-dashboard/", DoctorEventDashboardView.as_view(), name="conversation-doctor-events-dashboard"),
     path("doctor-events/", DoctorEventView.as_view(), name="conversation-doctor-events"),
     path("doctors/", DoctorView.as_view(), name="conversation-doctors"),
