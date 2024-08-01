@@ -1,5 +1,8 @@
 from .models import *
 from rest_framework_mongoengine.serializers import DocumentSerializer
+from rest_framework import serializers
+from UserManager.models import UserDetails
+from UserManager.serializers import UserDetailsSerializer
 
 
 class ConversationHistoryWithFaissSupportSchemaSerializer(DocumentSerializer):
@@ -47,7 +50,26 @@ class ServiceWithFaissSupportSchemaSerializer(DocumentSerializer):
         fields = '__all__'
 
 
+class UserDetailsField(serializers.Field):
+    
+    def to_representation(self, value):
+        try:
+            user_details = UserDetails.objects.get(user__id=value)
+            return UserDetailsSerializer(user_details)
+        except UserDetails.DoesNotExist:
+            return None
+
+
+class SessionSerializerWithUserDetails(DocumentSerializer):
+    user_details = UserDetailsField(source="user_id")
+    session_type = SessionTypeSerializer()
+    class Meta:
+        model = Session
+        fields = '__all__'
+
+
 class EventsSerializer(DocumentSerializer):
+    session = SessionSerializerWithUserDetails()
     class Meta:
         model = Events
         fields = '__all__'
