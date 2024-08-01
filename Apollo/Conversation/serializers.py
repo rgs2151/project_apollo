@@ -8,7 +8,28 @@ class ConversationHistoryWithFaissSupportSchemaSerializer(DocumentSerializer):
         fields = '__all__'
 
 
+class SessionStateSerializer(DocumentSerializer):
+    class Meta:
+        model = SessionState
+        fields = '__all__'
+
+
+class SessionTypeSerializer(DocumentSerializer):
+    session_state = SessionStateSerializer()
+    class Meta:
+        model = SessionType
+        fields = '__all__'
+
+
+class SessionSerializer(DocumentSerializer):
+    session_type = SessionTypeSerializer()
+    class Meta:
+        model = Session
+        fields = '__all__'
+
+
 class ConvHistorySerializer(DocumentSerializer):
+    session = SessionSerializer()
     class Meta:
         model = ChatHistory
         fields = '__all__'

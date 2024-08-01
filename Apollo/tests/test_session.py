@@ -1007,37 +1007,4 @@ class TestChatSession(SessionTestCase):
 
         tool_results = chat_session.get_mode_required_tool_results(user_prompt_will_give_goal_tool_call)
 
-        print(tool_results)
-
-# unable to test it
-#     def test_consume_mode_required_tool_results(self):
-
-#         if not RUN_GPT_CALL_TESTS: return
-
-#         session: Session = ChatSession.get_session(10, session_state="goal")
         
-#         chat_session = ChatSession(self.connection, GPT_KEY, session)
-
-#         user_prompt_will_give_goal_tool_call = {
-#             "role": "user", "content": [
-#                 {"type": "text", "text": """
-# I am doubly sure about creating the following goal
-# goal_type: excersice daily to improve stamina
-# goal_description: decided to improve stamina for upcoming marathon race
-# goal_milestones: increase stamina 
-# goal_progress: 2%
-# goal_target_date: 7-31-2024
-# """}
-#             ]
-#         }
-
-#         goal_created, appointment_created = chat_session.consume_mode_required_tool_results(user_prompt_will_give_goal_tool_call)
-
-#         self.assertTrue(goal_created)
-#         self.assertFalse(appointment_created)
-#         self.assertIsInstance(goal_created, Goals)
-#         self.assertEqual(goal_created.session, session)
-#         self.assertTrue(goal_created.id)
-#         self.assertTrue(Goals.objects.count())
-
-
