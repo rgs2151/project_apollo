@@ -17,6 +17,12 @@ Content-Type: application/json
 Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
 
 
+### key information graph
+POST http://127.0.0.1:8000/conversation/keyinformation-graph/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+
 ### converse-history
 GET http://127.0.0.1:8000/conversation/chathistory/?page_size=10000
 Content-Type: application/json

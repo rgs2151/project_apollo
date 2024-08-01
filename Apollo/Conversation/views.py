@@ -91,6 +91,21 @@ class History(APIView):
         return Response({"data": data.to_dict("records"), "data_columns": data.columns.tolist()})
 
 
+class ConversationHistorySummary(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    def post(self, request: Request):
+        if Session.objects(user_id=request.user_details.user_id).count():
+            sessions = Session.objects(user_id=request.user_details.user_id).all()
+            history = ConversationHistoryWithFaissSupportSchema.objects(session__in=sessions)
+            df = pd.DataFrame(ConversationHistoryWithFaissSupportSchemaSerializer(history, many=True).data)
+            graph = df[["id", "parameter_type"]].groupby("parameter_type").count().reset_index().rename(columns={"id": "count"}).to_dict("records")
+            return Response(graph)
+
+
+
 class ConversationHistoryWithFaissSupportView(MongoFilteredListView, UserManagerUtilityMixin):
 
     authentication_classes = [TokenAuthentication]
