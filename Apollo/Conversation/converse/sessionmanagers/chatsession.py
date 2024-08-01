@@ -93,9 +93,13 @@ class ContextCallLookUp:
     def get_doctor_store(self):
         if self.document_store.doctor_store:
             doctors = self.document_store.doctor_store.get(self.user_prompt, k=10)
-            req_key_information_cols = ["user_id", "dr_name", "dr_days", "dr_time_start", "dr_time_end"]
+            # req_key_information_cols = ["user_id", "dr_name", "dr_days", "dr_time_start", "dr_time_end"]
+            # doctors = doctors[req_key_information_cols].rename(columns={
+            #     "user_id": "doctor_id", "dr_name": "name", "dr_days": "days_available", "dr_time_start": "start_time", "dr_time_end": "end_time"
+            # })
+            req_key_information_cols = ["id", "dr_name", "dr_days", "dr_time_start", "dr_time_end"]
             doctors = doctors[req_key_information_cols].rename(columns={
-                "user_id": "doctor_id", "dr_name": "name", "dr_days": "days_available", "dr_time_start": "start_time", "dr_time_end": "end_time"
+                "id": "doctor_id", "dr_name": "name", "dr_days": "days_available", "dr_time_start": "start_time", "dr_time_end": "end_time"
             })
             return json.dumps(doctors.to_dict("records"), indent=2) if not doctors.empty else ""
         
@@ -111,8 +115,10 @@ class ToolCallLookUp:
 
         self.set_session(session)
 
+
     def get_appointment_extract(self, **kwargs):
         return kwargs
+
 
     def set_session(self, session: Session):
         self.session = session
@@ -438,7 +444,9 @@ class ChatSession:
             if "appointment_extract_tool" in stash and stash["appointment_extract_tool"]:
                 appointment_extracted = stash["appointment_extract_tool"][0]
                 appointment_extracted["session"] = self.session
-                appointment_extracted["event_contact_id"] = "667f04f4978fb3e49ecf619f"
+                if DoctorsWithFaissSupportSchema.objects(dr_name=appointment_extracted["event_contact"]).count():
+                    doctor = DoctorsWithFaissSupportSchema.objects(dr_name=appointment_extracted["event_contact"]).first()
+                    appointment_created["doctor_id"] = doctor.id
 
                 appointment_created = Events(**appointment_extracted)
                 appointment_created.save()

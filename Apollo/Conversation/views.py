@@ -91,6 +91,21 @@ class History(APIView):
         return Response({"data": data.to_dict("records"), "data_columns": data.columns.tolist()})
 
 
+class ConversationHistorySummary(APIView):
+
+    authentication_classes = [TokenAuthentication]
+
+    @exception_handler()
+    def post(self, request: Request):
+        if Session.objects(user_id=request.user_details.user_id).count():
+            sessions = Session.objects(user_id=request.user_details.user_id).all()
+            history = ConversationHistoryWithFaissSupportSchema.objects(session__in=sessions)
+            df = pd.DataFrame(ConversationHistoryWithFaissSupportSchemaSerializer(history, many=True).data)
+            graph = df[["id", "parameter_type"]].groupby("parameter_type").count().reset_index().rename(columns={"id": "count"}).to_dict("records")
+            return Response(graph)
+
+
+
 class ConversationHistoryWithFaissSupportView(MongoFilteredListView, UserManagerUtilityMixin):
 
     authentication_classes = [TokenAuthentication]
@@ -100,9 +115,24 @@ class ConversationHistoryWithFaissSupportView(MongoFilteredListView, UserManager
     pagination = DefaultPagination()
 
     static_filters = {
-        "history_id": UserManagerUtilityMixin.get_user_id 
+        "history_id": UserManagerUtilityMixin.get_user_id
     }
 
+    allow_filters = {
+        "session": {"required": False, "type": "string", "empty": False}
+    }
+
+
+    def get(self, request: Request, *args, **kwargs):
+        req = request.N_Payload
+        if "session_id" in req:
+            if Session.objects(id=req["session_id"]).count():
+                session = Session.objects(id=req["session_id"]).first()
+                if session.user_id != request.user_details.user.id: raise Http404(request)
+            else: raise Http404(request)
+        return super().get(request, *args, **kwargs)
+
+    
 
 # confirmed
 class ChatHistoryView(MongoFilteredListView, UserManagerUtilityMixin):

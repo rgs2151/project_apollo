@@ -27,6 +27,7 @@ urlpatterns = [
     path("shared-documents-get/", SharedDocuments.as_view(), name="conversation-shared-documents"),
     path("share-document/", DocumentUploadedView.as_view(), name="conversation-share-document"),
     path("user-upload-document/", Documents.as_view(), name="conversation-document"),
+    path("keyinformation-graph/", ConversationHistorySummary.as_view(), name="conversation-keyinformation-graph"),
 
     # Get and Template APIs
     path("confirmed-events/<event>", ConfirmedEventsView.as_view(), name="conversation-confirmed-events"),

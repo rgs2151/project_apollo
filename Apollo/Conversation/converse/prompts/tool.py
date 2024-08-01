@@ -152,7 +152,7 @@ APPOINTMENT_EXTRACT_TOOL_DEFINITION = {
             - event_type: Type of event requested by the user
             - event_description: description of the event
             - event_contact: Name of the Doctor or service provider company
-            - event_contact_id: ID of the Doctor or service provider company from your context
+            - doctor_id: ID of the Doctor
             - event_date: Scheduled date of the event
             - event_time: Scheduled time of the event
 
@@ -160,6 +160,7 @@ APPOINTMENT_EXTRACT_TOOL_DEFINITION = {
         "parameters": {
             "type": "object",
             "properties": {
+
                 "event_type": {
                     "type": "string",
                     "enum": ["appointment", "service"],
@@ -179,9 +180,9 @@ APPOINTMENT_EXTRACT_TOOL_DEFINITION = {
                     "description": "Name of the Doctor or service provider company",
                 },
 
-                "event_contact_id": {
+                "doctor_id": {
                     "type": "string",
-                    "description": "ID of the Doctor or service provider company from your context",
+                    "description": "ID of the Doctor from your context",
                 },
 
                 "event_date": {
@@ -199,7 +200,7 @@ APPOINTMENT_EXTRACT_TOOL_DEFINITION = {
                 "event_type",
                 "event_description",
                 "event_contact",
-                "event_contact_id",
+                "doctor_id",
                 "event_date",
                 "event_time",
             ],

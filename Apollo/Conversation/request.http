@@ -14,7 +14,13 @@ Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi
 ### key information
 GET http://127.0.0.1:8000/conversation/keyinformation/
 Content-Type: application/json
-Authorization: Bearer gAAAAABmes60ROVm5Dqh62CXRBQ4V5P7SDQsrMq4qZTKY6BjS1qrZC6rNi6gSPg2SP9KuoUd3TWGuEAVbm8Ih0D0dwCr-uxafKi69pf9mj3H6PMeu9GXLbFhz4Fg-53vmEEDyyH__n2B7M26MiD5irjfNgNWj4Ruwuif_j_7YZXhFIkKq0tuCT_im5H_9m1PGPRl39psbVKpRdDdOlx6oBEJ1MNjUHW3s_8t4kofpQozOTWY1AfQ0EEZOrN1In0GG1hPvZX62oVrYJP4yCVcXerNYqPGhe54Gw==
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
+
+
+### key information graph
+POST http://127.0.0.1:8000/conversation/keyinformation-graph/
+Content-Type: application/json
+Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL7FvmSvlbxXAG48SFdzEu61Zpd-_zvzfDAgegKM_StELDj7BhbYNnxQbbmA9Dqs4M9HlLYRkNcRsucHbVj0XuuNZpkboyysBG6R9lHyFGA76g8MlGD4_sIJEEaUezrjt6CRL8MQgyKf4Jbw3KyDKK2_vtNWg2EtaMQF2pr1Yx2kf5AlmichZRCiNUKKF327WjNJ8AroDUO-p6VikGjtZ4Cg3uf4zF1ejcXC2HvMFw==
 
 
 ### converse-history
@@ -36,7 +42,7 @@ Authorization: Bearer gAAAAABmpr6XN-izDKPPtHLQNeUPBUkn5HbTXlEKUFhF4vDhEpwelmzkWL
         "content": [
             {
                 "type": "text",
-                "text": "this has been going on since last 2 month."
+                "text": "Do it for thursday 4PM"
             }
         ]
     }
