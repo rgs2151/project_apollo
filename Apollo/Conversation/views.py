@@ -157,6 +157,9 @@ class ChatView(APIView):
             chat_session.session.archive()
             user_session = ChatSession.get_session(request.user_details.user.id)
             
+            
+
+
 
             if goal_extracted:
                 # formatting = "This was the goal created:\n"
@@ -173,9 +176,6 @@ class ChatView(APIView):
                     ]
                 }
 
-                chat_session = ChatSession.get_chatsession(MONGO_INSTANCE, GPT_KEY, user_session, user_prompt)
-                
-                reply, _, _ = chat_session.execute_session_procedures(user_prompt)
 
 
             if event_extracted:
@@ -193,11 +193,10 @@ class ChatView(APIView):
                         }
                     ]
                 }
-                
-                chat_session = ChatSession.get_chatsession(MONGO_INSTANCE, GPT_KEY, user_session, user_prompt)
 
-                reply, _, _ = chat_session.execute_session_procedures(user_prompt)
-
+            chat_session = ChatSession.get_chatsession(MONGO_INSTANCE, GPT_KEY, user_session, user_prompt)
+            
+            reply, _, _ = chat_session.execute_session_procedures(user_prompt)
 
         summary = chat_session._get_gpt_call_summary()
         

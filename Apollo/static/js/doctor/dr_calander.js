@@ -4,7 +4,7 @@ $(document).ready(function () {
         view: 'timeGridWeek',
         height: '55vh',
     });
-
+    
     // Fetch the appointment requests
     $.ajax({
         url: window.location.origin + '/conversation/doctor-events-dashboard/?event_status=true',
@@ -23,9 +23,15 @@ $(document).ready(function () {
                 let start = new Date(event.event_date + 'T' + event.event_time);
                 let end = new Date(event.event_date + 'T' + event.event_time);
                 end.setHours(end.getHours() + 2);
+                
+                // appointment requester details
+                user_first_name = event.session.user_details.user.first_name
+                user_last_name = event.session.user_details.user.last_name
+                user_email = event.session.user_details.user.email
+
 
                 calendar.addEvent({
-                    title: 'Title: ' + event.event_description,
+                    title: 'Appointment with: \n' + user_first_name + ' ' + user_last_name + '\n' + user_email,
                     start: start,
                     end: end,
                     color: '#191919',

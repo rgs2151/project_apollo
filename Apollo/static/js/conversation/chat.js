@@ -7,6 +7,27 @@ $('#uploadImageButton').click(function() {
     $('#fileInput').click();
 });
 
+$('#resetStateButton').click(function() {
+    reset_state();
+});
+
+// make it such that when user press enter while typing the response, it submits the response
+$("#responseInput").keypress(function (e) {
+    if (e.which == 13) {
+        $("#submitResponseButton").click();
+    }
+});
+
+$("#closeImageButton").click(function() {
+    $("#imgUploadHolder").css('display', 'none');
+    $("#imageHolder").attr('src', '');
+    $("#fileInput").val('');
+    temp_image_holder = null;
+
+    $("#uploadImageButton").prop('disabled', false);
+});
+
+
 // ================================= //
 // Voice Recognition Section//
 // ================================= //
@@ -30,28 +51,37 @@ $(document).ready(function () {
     }
 });
 
-// Use the microphone
-var currently_speaking = false;
-$("#microphoneButton").click(function () {
-    if (currently_speaking) {
-        $(this).css('color', 'white');
-        currently_speaking = false;
-        
-        // set a 2s timeout to stop the microphone
-        setTimeout(function() {
-            annyang.pause();
-        }, 3000);
-        
-        console.log('Stopped Listening...');
-    } else {
-        $(this).css('color', 'red');
-        currently_speaking = true;
-        
-        annyang.resume();
-
-        console.log('Listening...');
-    }
+// make it such that the microphone is push to talk instead by holding the button, when the button is released, it stops listening
+$("#microphoneButton").mousedown(function () {
+    annyang.resume();
+    
+    console.log('Listening...');
+    $(this).css('color', 'red');
 });
+
+$("#microphoneButton").mouseup(function () {
+
+    $(this).css('color', 'white');
+
+    // disable the microphone button and set it to loading rotation
+    $(this).prop('disabled', true);
+    // get its child i element and set its class to fa spin
+    // remove the microphone icon first
+    $(this).children('i').removeClass('fa-microphone');
+    $(this).children('i').addClass('fa-spinner loader');
+    // $(this).children('i').addClass('');
+    
+    setTimeout(function() {
+        annyang.pause();
+        // enable the microphone button and set it to normal
+        $('#microphoneButton').prop('disabled', false);
+        $('#microphoneButton').children('i').removeClass('fa-spinner loader');
+        $('#microphoneButton').children('i').addClass('fa-microphone');
+    }, 2500);
+
+    console.log('Stopped Listening...');
+});
+
 
 // ================================= //
 // Cat Section//
@@ -99,7 +129,28 @@ function make_divider(state) {
     $("#chat_history_area").prepend(divider);
 }
 
-let temp_image_holder = null;
+function reset_state() {
+    // conversation/reset-chat-session/
+    $.ajax({
+        url: window.location.origin + '/conversation/reset-chat-session/',
+        headers: {'Content-Type': 'application/json'},
+        xhrFields: { withCredentials: true },
+        type: 'post',
+        data: JSON.stringify({}),
+        success: function(response) {
+            console.log(response);
+
+            current_state = "normal"; 
+
+        },
+        error: function(response) {
+            console.log(response);
+        }
+    });
+}
+
+var temp_image_holder = null;
+var current_state = null;
 
 
 // Get the existing conversation
@@ -115,8 +166,6 @@ $(document).ready(function () {
         success: function (response) {
             console.log(response);
             // possible states: 'normal', 'goal', 'appointment_or_service', 'advice'
-            
-            current_state = null;
             
             for (var i = 0; i < response.data.length; i++) {
                 var message = response.data[i];
@@ -137,7 +186,21 @@ $(document).ready(function () {
                 }
 
                 if (role == "user") {
-                    make_user_response(text, sess_state);
+                    // check if the content type is direct text has image
+                    // if its a list then it has image assuming
+                    if (typeof text === 'object') {
+                        if (text[1]) {
+                            // that means image is also there
+                            make_user_response(text[0].text, sess_state, text[1].image_url.url);
+                        } else {
+                            // means one of the legacy one that just has text
+                            // so we skip this for now hack
+                            // make_user_response(text[0].text, sess_state);
+                        }
+                    } else {
+                        make_user_response(text, sess_state);
+                    }
+
                 } else {
                     make_assistant_response(text, sess_state);
                 }
@@ -168,6 +231,10 @@ $('#fileInput').change(function(event) {
         };
 
         reader.readAsDataURL(file);
+
+        // enable the imageholder above the input field
+        $("#imgUploadHolder").css('display', 'block');
+        $("#imageHolder").attr('src', URL.createObjectURL(file));
     }
 });
 
@@ -178,7 +245,7 @@ $("#submitResponseButton").click(function () {
     // disable the button
     $("#submitResponseButton").prop('disabled', true);
     
-    make_user_response(prompt, "normal", temp_image_holder);
+    make_user_response(prompt, current_state, temp_image_holder);
 
     // make data to send to user
     if (temp_image_holder) {
@@ -191,6 +258,9 @@ $("#submitResponseButton").click(function () {
                 ],
             }, 
         })
+
+        // clear the image holder
+        $('#closeImageButton').click();
     } else {
         to_model = JSON.stringify({ 
             'message': {
@@ -208,11 +278,23 @@ $("#submitResponseButton").click(function () {
         data: to_model,
         success: function (response) {
             console.log(response);
-            console.log(response.conversation_state);
+            console.log(response.mode);
+
+            new_state = response.mode
+            // clean the sess_state name:
+            if (new_state == "appointment_or_service_purchase") {
+                new_state = "appointment";
+            }
+
+            // Make divider if the state has changed
+            if (current_state != new_state) {
+                make_divider(new_state);
+                current_state = new_state;
+            }
 
             make_assistant_response(
                 response.message.content, 
-                "normal"
+                new_state
             );
             
             // enable the button

@@ -55,7 +55,7 @@ class UserDetailsField(serializers.Field):
     def to_representation(self, value):
         try:
             user_details = UserDetails.objects.get(user__id=value)
-            return UserDetailsSerializer(user_details)
+            return UserDetailsSerializer(user_details).data
         except UserDetails.DoesNotExist:
             return None
 
