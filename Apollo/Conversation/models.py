@@ -885,7 +885,7 @@ class Events(Document):
     event_type = fields.StringField(required=True)
     event_description = fields.StringField(required=True)
     event_contact = fields.StringField(required=True)
-    event_contact_id = fields.StringField(required=True)
+    doctor_id = fields.StringField(required=True)
     event_date = fields.StringField(required=True)
     event_time = fields.StringField(required=True)
     event_status = fields.BooleanField(required=False, default=False)
