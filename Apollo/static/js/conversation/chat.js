@@ -58,9 +58,6 @@ $("#microphoneButton").click(function () {
 // ================================= //
 
 // helper functions
-
-
-
 function make_assistant_response(response_text, state) {
     // <div class="message-wrapper">
     //     <div class="message-assistant message-normal">Hi, I am your health assistant. How are you doing today?</div>
@@ -117,13 +114,32 @@ $(document).ready(function () {
         type: 'get',
         success: function (response) {
             console.log(response);
-
+            // possible states: 'normal', 'goal', 'appointment_or_service', 'advice'
+            
+            current_state = null;
+            
             for (var i = 0; i < response.data.length; i++) {
                 var message = response.data[i];
-                if (message.prompt.role == "user") {
-                    make_user_response(message.prompt.content, "normal");
+
+                var text = message.prompt.content;
+                var role = message.prompt.role;
+                var sess_state = message.session.session_type.session_state.name;
+
+                // clean the sess_state name:
+                if (sess_state == "appointment_or_service_purchase") {
+                    sess_state = "appointment";
+                }
+
+                // Make divider if the state has changed
+                if (current_state != sess_state) {
+                    make_divider(sess_state);
+                    current_state = sess_state;
+                }
+
+                if (role == "user") {
+                    make_user_response(text, sess_state);
                 } else {
-                    make_assistant_response(message.prompt.content, "normal");
+                    make_assistant_response(text, sess_state);
                 }
             }
         },

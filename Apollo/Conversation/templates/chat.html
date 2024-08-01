@@ -60,10 +60,13 @@
             border-bottom: 2px dashed #ec407a;
         }
 
-        .fa-brain {
-            font-size: 1.5rem;
-            color: #66bb6a;
+        .fa-brain,
+        .fa-ellipsis-v,
+        .fa-ellipsis-h {
+            font-size: 2rem;
+            color: #000;
         }
+        
 
     </style>
 
@@ -97,7 +100,7 @@
         .message-wrapper {
             display: flex;
             flex-direction: column;
-            margin: 10px 15%;
+            margin: 10px 10%;
         }
 
         .message-wrapper img {
@@ -162,6 +165,18 @@
                 <div
                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Talk to your health assistant</h6>
+
+                    <!-- make dropdown button with one option to reset state -->
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                            aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="#" id="resetStateButton">Reset state</a>
+                        </div>
+                    </div> 
                 </div>
 
                 <!-- Card Body -->
@@ -170,7 +185,7 @@
                         <div class="col-12 p-4 chat_history_area" id="chat_history_area" markdown="1">
                             <!-- font awesome divider that has a brain and says long term memory -->
                             <div class="divider">
-                                <span><i class="fas fa-brain"></i><br>long term memory</span>
+                                <span><i class="fas fa-brain"></i><br>long term memory<br><i class="fas fa-ellipsis-h"></i></span>
                                 
                             </div>
                         </div>
