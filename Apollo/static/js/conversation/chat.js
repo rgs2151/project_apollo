@@ -104,6 +104,37 @@ function make_divider(state) {
 
 let temp_image_holder = null;
 
+
+// Get the existing conversation
+$(document).ready(function () {
+
+    // conversation/chathistory/
+
+    $.ajax({
+        url: window.location.origin + '/conversation/chathistory/?page_size=100',
+        headers: {'Content-Type': 'application/json'},
+        xhrFields: { withCredentials: true },
+        type: 'get',
+        success: function (response) {
+            console.log(response);
+
+            for (var i = 0; i < response.data.length; i++) {
+                var message = response.data[i];
+                if (message.prompt.role == "user") {
+                    make_user_response(message.prompt.content, "normal");
+                } else {
+                    make_assistant_response(message.prompt.content, "normal");
+                }
+            }
+        },
+        error: function (response) {
+            console.log(response);
+        }
+    });
+
+});
+
+
 // Upload the document!
 $('#fileInput').change(function(event) {
     var file = event.target.files[0];
