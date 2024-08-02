@@ -39,7 +39,7 @@
 /* shelf */
 
 .shelf_container {
-    height: 400px;
+    height: 500px;
     overflow-y: scroll;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none;  /* IE and Edge */
@@ -52,13 +52,16 @@
 #file-items {
     display: flex;
     flex-wrap: wrap;
+    /* flex-direction: column; */
+    justify-content: center;
+    align-items: center;
 }
 
 .file-item {
     min-width: 150px;
     flex: 1 1 auto;
     /* max-width: calc(100% - 20px); */
-    max-width: 200px;
+    max-width: 250px;
 }
 
 .card-img-top {
@@ -109,6 +112,20 @@
 }
 
 </style>
+
+<style>
+    .inspect_img {
+        max-height: 400px;
+        object-fit: cover;
+    }
+
+    #wordCloudChart {
+        height: 100% !important;
+        width: 100% !important;
+        /* background-color: green; */
+    }
+</style>
+
 {% endblock %}
 
 {% block page_content_fluid %}

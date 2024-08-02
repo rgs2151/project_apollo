@@ -446,7 +446,7 @@ class ChatSession:
                 appointment_extracted["session"] = self.session
                 if DoctorsWithFaissSupportSchema.objects(dr_name=appointment_extracted["event_contact"]).count():
                     doctor = DoctorsWithFaissSupportSchema.objects(dr_name=appointment_extracted["event_contact"]).first()
-                    appointment_created["doctor_id"] = doctor.id
+                    appointment_extracted["doctor_id"] = str(doctor.id)
 
                 appointment_created = Events(**appointment_extracted)
                 appointment_created.save()

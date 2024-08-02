@@ -87,7 +87,7 @@ class ConfirmedEventsView(APIView):
         client_data = UserDetails.objects.filter(user=client_user_id).first()
         client_name = client_data.user.first_name + " " + client_data.user.last_name
 
-        doctor_data = DoctorsWithFaissSupportSchema.objects(id=this_event.event_contact_id).first()
+        doctor_data = DoctorsWithFaissSupportSchema.objects(id=this_event.doctor_id).first()
         doctor_name = doctor_data.dr_name
 
         context = {

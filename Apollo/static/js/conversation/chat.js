@@ -131,22 +131,24 @@ function make_divider(state) {
 
 function reset_state() {
     // conversation/reset-chat-session/
-    $.ajax({
-        url: window.location.origin + '/conversation/reset-chat-session/',
-        headers: {'Content-Type': 'application/json'},
-        xhrFields: { withCredentials: true },
-        type: 'post',
-        data: JSON.stringify({}),
-        success: function(response) {
-            console.log(response);
-
-            current_state = "normal"; 
-
-        },
-        error: function(response) {
-            console.log(response);
-        }
-    });
+    if (current_state != "normal") {
+        $.ajax({
+            url: window.location.origin + '/conversation/reset-chat-session/',
+            headers: {'Content-Type': 'application/json'},
+            xhrFields: { withCredentials: true },
+            type: 'post',
+            data: JSON.stringify({}),
+            success: function(response) {
+                console.log(response);
+    
+                current_state = "normal"; 
+                make_divider(current_state);
+            },
+            error: function(response) {
+                console.log(response);
+            }
+        });
+    }
 }
 
 var temp_image_holder = null;

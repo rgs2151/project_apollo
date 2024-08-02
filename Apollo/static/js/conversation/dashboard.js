@@ -16,6 +16,29 @@ function make_goal_entry(goal) {
     `;
 }
 
+function make_event_entry(event){
+    return `
+        <div class="card mb-4 p-2">
+            <div class="d-flex justify-content-between">
+                <h5 class="card-title">${event.event_description}</h5>
+            </div>
+            <div class="d-flex justify-content-between">
+                <p class="card-text"><i class="fas fa-user-md"></i> ${event.event_contact}</p>
+                <p class="card-text"><i class="fas fa-calendar-alt"></i> ${event.event_date}</p>
+                <p class="card-text"><i class="fas fa-clock"></i> ${event.event_time}</p>
+                <div class="d-flex" style="position: relative; top: -20px;">
+
+                    ${event.event_status ? 
+                        `<a href="${window.location.origin + '/conversation/confirmed-events/' + event.id}" target="_blank" class="btn btn-primary"><i class="fas fa-door-open"></i> Appointment Page</a>` :
+                        `<button class="btn btn-secondary" disabled><i class="fas fa-clock"></i> Pending Approval</button>`
+                    }
+
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 $(document).ready(function() {
 
     // Populate the health indicators table
@@ -41,7 +64,7 @@ $(document).ready(function() {
                 }
             );
 
-            $('#healthIndicators').DataTable().columns([0,1,5]).visible(false);
+            $('#healthIndicators').DataTable().columns([0,1,5, 6]).visible(false);
 
         },
         error: function (response) {
@@ -62,17 +85,9 @@ $(document).ready(function() {
                 $('#upcomingEvents').text("No upcoming events found");
                 return;
             }
-
-            // Make the DataTable
-            $('#upcomingEvents').DataTable(
-                {
-                    data: response.data,
-                    columns: make_columns(response.data),
-                    searching: false,
-                }
-            );
-
-            $('#upcomingEvents').DataTable().columns([0,1,2,5,-1]).visible(false);
+            response.data.forEach(event => {
+                $('#upcomingEvents').append(make_event_entry(event));
+            });
         },
     });
 

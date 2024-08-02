@@ -433,7 +433,7 @@ class DoctorEventDashboardView(MongoFilteredListView, UserManagerUtilityMixin):
 
     static_filters = {
         "event_type": "appointment",
-        "event_contact_id": lambda request: f"{request.doctor_id}"
+        "doctor_id": lambda request: f"{request.doctor_id}"
     }
     
     def get(self, request: Request, *args, **kwargs):
