@@ -58,13 +58,13 @@ class IsSuperUser(UserPermissions):
     @staticmethod
     def permission(request: Request):
 
-        message = None
+        if not hasattr(request, "user_details"):
+            return False, "no user permissions"
+        
+        if not request.user_details.user.is_superuser:
+            return False , "no superuser permissions"
 
-        if request.user_details.user.is_superuser:
-            message = "no superuser permissions"
-            return False , message
-
-        return True, message
+        return True, None
 
 
 class HasAdminPermissions(UserPermissions):
@@ -122,8 +122,6 @@ class UserGroupPermissions(UserPermissions):
             if not status: return status
 
         return True
-    
-    def __call__(self) -> Any: return self
     
 
     def has_object_permission(self, request, view, obj):

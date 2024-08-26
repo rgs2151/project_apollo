@@ -13,7 +13,7 @@ from .settings import USER_MANAGER_SETTINGS
 from utility.views import *
 from .models import *
 from .serializers import *
-from .authentication import TokenAuthentication
+from .authentication import TokenAuthentication, RefreshTokenAuthentication
 from .permissions import UserAdminPermissions
 from .pagination import *
 
@@ -60,12 +60,13 @@ class UserRegister(APIView):
         if USER_MANAGER_SETTINGS.get("TESTING_MODE", False):
             response['email_verification_link'] = email_verification_link
         
-
         response = Response(response)
 
         if USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
-            expiery = USER_MANAGER_SETTINGS["TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
-            response.set_cookie("Authorization", f"Bearer {token}", expires=expiery)
+
+            if "TOKEN" in USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
+                expiery = USER_MANAGER_SETTINGS["TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
+                response.set_cookie("Authorization", f"Bearer {token}", expires=expiery, httponly=True, secure=True)
 
 
         return response
@@ -92,12 +93,42 @@ class UserLogin(APIView):
             raise APIException("InvalidPassword", "password incorrect", status_code=405)
         
         token = user_details_instance.issue_token(request)
+        refresh_token = user_details_instance.issue_refresh_token(request)
         
+        response = Response({
+            "auth_token": token,
+            "refresh_token": refresh_token
+        })
+
+        if USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
+
+            if "TOKEN" in USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
+                expiery = USER_MANAGER_SETTINGS["TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
+                response.set_cookie("Authorization", f"Bearer {token}", expires=expiery, httponly=True, secure=True)
+
+            if "REFRESH_TOKEN" in USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
+                expiery = USER_MANAGER_SETTINGS["REFRESH_TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
+                response.set_cookie("Refresh", f"Bearer {token}", expires=expiery, httponly=True, secure=True)
+
+        return response
+
+
+class UserRefresToken(APIView):
+
+    authentication_classes = [RefreshTokenAuthentication]
+    
+    @exception_handler()
+    def get(self, request: Request):
+
+        token = request.user_details.issue_token(request)
+
         response = Response({"auth_token": token})
 
         if USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
-            expiery = USER_MANAGER_SETTINGS["TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
-            response.set_cookie("Authorization", f"Bearer {token}", expires=expiery)
+
+            if "TOKEN" in USER_MANAGER_SETTINGS["ENABLE_COOKIES"]:
+                expiery = USER_MANAGER_SETTINGS["TOKEN"].get("TOKEN_EXPIERY_TIME").total_seconds()
+                response.set_cookie("Authorization", f"Bearer {token}", expires=expiery, httponly=True, secure=True)
 
         return response
 
@@ -283,6 +314,7 @@ class LogOut(APIView):
 
 # Admin Routes for Dashboard
 
+
 class UserDashboard(FilteredListView):
 
     authentication_classes=[TokenAuthentication]
@@ -313,6 +345,8 @@ class Groups(FilteredListView):
 
 class GroupManager(APIView):
 
+    authentication_classes=[TokenAuthentication]
+    permission_classes = [UserAdminPermissions]
 
     @exception_handler()
     @request_schema_validation({
@@ -382,6 +416,8 @@ class GroupManager(APIView):
 
 class UserGroupManager(APIView):
 
+    authentication_classes=[TokenAuthentication]
+    permission_classes = [UserAdminPermissions]
 
     @exception_handler()
     @request_schema_validation({
@@ -461,4 +497,36 @@ class UserGroupManager(APIView):
             removed.append(GroupSerializer(group_instance).data)
 
         return Response({"groups": removed})
+
+
+class UserWipeOut(APIView):
+
+    authentication_classes=[TokenAuthentication]
+    permission_classes = [UserAdminPermissions]
+
+    @exception_handler()
+    @request_schema_validation({
+        "user_id": {"type": "integer", "required": True, "empty": False}
+    })
+    def post(self, request: Request):
+
+        req = request.data
+
+        admin_user_id = request.user_details.user.id
+
+        if req["user_id"] == admin_user_id:
+            raise APIException("Invalid User", "cannot delete current user", status_code=502)
+        
+        if not UserDetails.objects.filter(user__id=req["user_id"]).exists():
+            raise APIException("User Not Found", "cannot find user with the id", status_code=404)
+        
+        user_details = UserDetails.objects.filter(user__id=req["user_id"]).first()
+
+        if user_details.user.is_superuser:
+            raise APIException("Not Allowed", "cannot delete superuser", status_code=502)
+        
+        user_details.user.delete()
+
+        return Response({"status": True})
+
 

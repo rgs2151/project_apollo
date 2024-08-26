@@ -1,17 +1,19 @@
-from django.test import TestCase, override_settings, RequestFactory
-from rest_framework.test import APIRequestFactory
+from django.test import TestCase, RequestFactory
+from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth.models import Group
 from .models import User, UserDetails
-from rest_framework.response import Response
 from django.urls import reverse
-from django.conf import settings
-import requests
-
+from rest_framework.test import APIRequestFactory
+from rest_framework.response import Response
 from utility.secret import *
 from .middleware import TokenAuthMiddleware
-from .authentication import TokenAuthentication
+from .authentication import TokenAuthentication, RefreshTokenAuthentication
 from .permissions import *
+from unittest.mock import patch
+from UserManager.accounts.google.tests import TestGoogle
+from UserManager.accounts.google.model import Google
+import datetime
 
-from django.db.models import Field
 
 
 """
@@ -104,7 +106,6 @@ class TestUserDetails(TestCase):
         request = self.factory.post('/some-url-that-does-not-exist')
         user_details = UserDetails.initialize_user_details(user, request)
         token = user_details.issue_token(request)
-        email_secret_link, email_sent = user_details.issue_email_secret(request)
         
         self.assertIsInstance(token, str)
         status, user_details_instance = user_details.validate_token(token)
@@ -112,6 +113,27 @@ class TestUserDetails(TestCase):
         
         token = "randomjunk"
         status, user_details_instance = user_details.validate_token(token)
+        self.assertFalse(status)
+    
+
+    def validate_refresh_token(self):
+
+        user = self.get_sample_user()
+        request = self.factory.post('/some-url-that-does-not-exist')
+        user_details = UserDetails.initialize_user_details(user, request)
+        refresh_token = user_details.issue_refresh_token(request)
+
+        self.assertIsInstance(refresh_token, str)
+        status, user_details_instance = user_details.validate_refresh_token(refresh_token)
+        self.assertTrue(status)
+
+        token = user_details.issue_token(request)
+        self.assertIsInstance(token, str)
+        status, user_details_instance = user_details.validate_refresh_token(token)
+        self.assertFalse(status)
+
+        token = "randomjunk"
+        status, user_details_instance = user_details.validate_refresh_token(token)
         self.assertFalse(status)
         
 
@@ -138,7 +160,7 @@ class TestUserDetails(TestCase):
         # wrong password
         login_payload = {
             "email": "mananlad38@gmail.com",
-            "password": "wrongpassword",
+            "password": "Wrong@1password",
         }
         response = self.client.post(reverse('user-login'), login_payload, content_type='application/json')
         self.assertEqual(response.status_code, 405)
@@ -260,7 +282,7 @@ class TestUserDetails(TestCase):
         password_change_secret = password_change_link.split('/')[-1]
         old_password = "1Password!"
         new_password = "someotherrandompassword"
-        status, user_details_instance_after_change_passoword = UserDetails.change_password(password_change_secret, old_password, new_password)
+        status, user_details_instance_after_change_passoword = UserDetails.change_password(password_change_secret, new_password)
         
         self.assertTrue(status)
         self.assertEqual(user_details_instance.user, user_details_instance_after_change_passoword.user)
@@ -268,14 +290,6 @@ class TestUserDetails(TestCase):
         new_passowrd_status = user_details_instance_after_change_passoword.user.check_password(new_password)
         self.assertTrue(new_passowrd_status)
     
-
-    def test_say(self):
-        print(">>", len(dir(UserDetails)))
-        for attr in dir(UserDetails):
-            print(type(getattr(UserDetails, attr)))
-            if issubclass(Field, getattr(UserDetails, attr).__class__):
-                print(getattr(UserDetails, attr))
-
 
     @staticmethod
     def register_user(client):
@@ -296,9 +310,62 @@ class TestUserDetails(TestCase):
         return None, response
 
 
+    @staticmethod
+    def register_super_user(client):
+        
+        response = None
+        response = client.post(reverse('user-register'), {
+            "first_name": "super",
+            "last_name": "user",
+            "email": "super@gmail.com",
+            "password": "1Password!",
+        }, content_type='application/json')
+        
+        if response.status_code == 200:
+            response_ = response.json()
+            user_details_instance = UserDetails.objects.get(user = response_["user_details"]["user"]["id"])
+
+            user_details_instance.email_verified_at = datetime.datetime.now()
+            user_details_instance.save()
+            user_details_instance.user.is_superuser = 1
+            user_details_instance.user.is_staff = 1
+            user_details_instance.user.save()
+            
+            return user_details_instance, response
+            
+        return None, response
+    
+
+    @staticmethod
+    def register_admin_user(client):
+        
+        response = None
+        response = client.post(reverse('user-register'), {
+            "first_name": "admin",
+            "last_name": "user",
+            "email": "admin@gmail.com",
+            "password": "1Password!",
+        }, content_type='application/json')
+        
+        if response.status_code == 200:
+            response_ = response.json()
+            user_details_instance = UserDetails.objects.get(user = response_["user_details"]["user"]["id"])
+
+            user_details_instance.email_verified_at = datetime.datetime.now()
+            user_details_instance.save()
+            user_details_instance.user.is_staff = 1
+            user_details_instance.user.save()
+
+            return user_details_instance, response
+            
+        return None, response
+
+
 "python manage.py test UserManager.tests.TestTokenAuthMiddleware.test_middleware"
+# This one is not getting user anywhere
 class TestTokenAuthMiddleware(TestCase):
     
+
     def setUp(self):
         
         self.factory = RequestFactory()
@@ -320,11 +387,14 @@ class TestTokenAuthMiddleware(TestCase):
 
 "python manage.py test UserManager.tests.TestTokenAuthentication.test_authenticator"
 "python manage.py test UserManager.tests.TestTokenAuthentication.test_authenticator_cookie_based"
+"python manage.py test UserManager.tests.TestTokenAuthentication.test_authenticator_for_google_user"
 class TestTokenAuthentication(TestCase):
     
+
     def setUp(self):
         self.factory = APIRequestFactory()
         self.authentication = TokenAuthentication()
+        self.refresh_token_authentication = RefreshTokenAuthentication()
         self. user_details_instance, response = TestUserDetails.register_user(self.client)
 
 
@@ -338,7 +408,6 @@ class TestTokenAuthentication(TestCase):
         self.assertEqual(self.user_details_instance, request.user_details)
 
 
-
     def test_authenticator_cookie_based(self):
         auth_token = self.user_details_instance.issue_token()
         request = self.factory.get('/some-url-that-does-not-exist')
@@ -349,8 +418,51 @@ class TestTokenAuthentication(TestCase):
         self.assertEqual(self.user_details_instance, request.user_details)
 
 
-from django.contrib.auth.models import Group
+    def test_referesh_authenticator(self):
+        
+        auth_token = self.user_details_instance.issue_refresh_token()
+        request = self.factory.get('/some-url-that-does-not-exist', HTTP_REFRESH=f'Bearer {auth_token}')
+        self.refresh_token_authentication.authenticate(request)
+        self.assertIsInstance(request.user_details, UserDetails)
+        self.assertIsInstance(request.user, User)
+        self.assertEqual(self.user_details_instance, request.user_details)
 
+
+    def test_referesh_authenticator_cookie_based(self):
+        auth_token = self.user_details_instance.issue_refresh_token()
+        request = self.factory.get('/some-url-that-does-not-exist')
+        request.COOKIES["Refresh"] = f'Bearer {auth_token}'
+        self.refresh_token_authentication.authenticate(request)
+        self.assertIsInstance(request.user_details, UserDetails)
+        self.assertIsInstance(request.user, User)
+        self.assertEqual(self.user_details_instance, request.user_details)
+
+
+    @patch("UserManager.accounts.google.model.Google.validate_token")
+    def test_authenticator_for_google_user(self, mock_validate_token):
+        
+        mock_validate_token.return_value = True
+
+        request = self.factory.get("some/path")
+        
+        with self.assertRaises(AuthenticationFailed):
+            self.authentication.authenticate(request)
+
+        goole_token, access_token = TestGoogle.get_google_user()
+        self.assertIsInstance(goole_token, Google)
+        self.assertIsInstance(access_token, str)
+        
+        auth_token = goole_token.issue_token(request, access_token)
+        request = self.factory.get("some/path", HTTP_AUTHORIZATION=f"Bearer {auth_token}")
+        self.authentication.authenticate(request)
+        self.assertTrue(request.user_details)
+        self.assertTrue(request.user_details.user)
+
+        request = self.factory.get("some/path", HTTP_AUTHORIZATION=f"Bearer {auth_token}")
+        request.COOKIES["Authorization"] = f"Bearer {auth_token}"
+        self.authentication.authenticate(request)
+        self.assertTrue(request.user_details)
+        self.assertTrue(request.user_details.user)
 
 
 "python manage.py test UserManager.tests.TestPermissions.test_verify_email_permission"
@@ -416,6 +528,30 @@ class TestPermissions(TestCase):
         self.assertEqual(user_details_instance.user.groups.first().name, doctor_group.name)
 
         self.assertTrue(HasGroupPermissions("doctor").has_permission(request, None))
+        
+
+"python manage.py test UserManager.tests.TestAdminFunctionalities.test_UserWipeOut"
+class TestAdminFunctionalities(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_UserWipeOut(self):
+
+        super_user_instance, _ = TestUserDetails.register_super_user(self.client)
+
+        user_instance, _ = TestUserDetails.register_user(self.client)
+
+        request = self.factory.get("some/route")
+        super_token = super_user_instance.issue_token(request)
+        self.client.cookies['Authorization'] = f'Bearer {super_token}'
+        
+        self.assertEqual(UserDetails.objects.count(), 2)
+        
+        response = self.client.post(reverse("user-admin-user-wipeout"), {"user_id": user_instance.user.id}, content_type='application/json')
+        print(response.content)
+
+        self.assertEqual(UserDetails.objects.count(), 1)
         
 
 

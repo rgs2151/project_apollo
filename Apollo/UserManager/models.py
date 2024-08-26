@@ -15,6 +15,27 @@ from utility.email import send_email, EmailSendException
 from utility.views import get_request_ip
 
 
+class LoginType(models.Model):
+
+    name = models.CharField(max_length=200, blank=False, null=False, unique=True)
+    api_version = models.CharField(max_length=10, blank=False, null=False, unique=True)
+    archived = models.IntegerField(blank=True, null=True, default=0) # assure default
+
+    class Meta:
+        db_table = 'login_type'
+
+
+    @classmethod
+    def make_sure_has(cls, login_type, api_version=""):
+        if not cls.objects.filter(name=login_type, archived=0).exists():
+            instance = cls(name=login_type, api_version=api_version)
+            instance.save()
+
+        else: instance = cls.objects.filter(name=login_type, api_version=api_version, archived=0).first()
+
+        return instance
+    
+
 class UserDetails(models.Model):
     
     user = models.OneToOneField(User, models.DO_NOTHING, primary_key=True)
@@ -26,20 +47,24 @@ class UserDetails(models.Model):
     password_change_requested_at = models.DateTimeField(blank=True, null=True, default=None)
     last_password_change_at = models.DateTimeField(blank=True, null=True, default=None)
     tokens_issued = models.IntegerField(blank=True, null=True, default=0)
+    login_type = models.OneToOneField(LoginType, models.DO_NOTHING, null=True, default=None)
     archived = models.IntegerField(blank=True, null=True, default=0) # assure default
+
 
     class Meta:
         db_table = 'user_details'
 
-
+    
     @staticmethod
-    def create_django_email_user(email, password, first_name="", last_name="") -> User:
+    def create_django_email_user(email, password=None, first_name="", last_name="", set_password=True) -> User:
         
         if User.objects.filter(email=email).exists():
             raise ValueError("user with email already exists")
         
         user = User(email=email, first_name=first_name, last_name=last_name, username=email, is_active=1)
-        user.set_password(password)
+        if set_password and password:
+            user.set_password(password)
+        
         user.save()
         return user
 
@@ -146,21 +171,38 @@ class UserDetails(models.Model):
         return email_verification_link, email_sent, email_secret_meta
 
 
-    def issue_token(self, request=None):
+    def get_basic_token_data(self, request=None):
         
         user_instanece: User = self.user
         
         if request: ip = get_request_ip(request)
         else: ip = {}
         
-        token_data = {
+        return {
             "user_id": user_instanece.id,
-            "expiery_datetime": (datetime.datetime.now() + USER_MANAGER_SETTINGS['TOKEN']['TOKEN_EXPIERY_TIME']).strftime("%Y-%m-%d %H:%M:%S"),
             "ip": ip,
         }
+
+
+    def issue_token(self, request=None, add_to_token={}):
+        
+        token_data = self.get_basic_token_data(request)
+        token_data["expiery_datetime"] = (datetime.datetime.now() + USER_MANAGER_SETTINGS['TOKEN']['TOKEN_EXPIERY_TIME']).strftime("%Y-%m-%d %H:%M:%S")
+        token_data.update(add_to_token)
         
         token = encrypt_fernet_token(token_data, USER_MANAGER_SETTINGS['TOKEN']["ENCRYPTION_KEY"]).decode('utf-8')
         
+        return token
+    
+
+    def issue_refresh_token(self, request=None):
+        
+        token_data = self.get_basic_token_data(request)
+        token_data["is_refresh_token"] = True
+        token_data["expiery_datetime"] = (datetime.datetime.now() + USER_MANAGER_SETTINGS['REFRESH_TOKEN']['TOKEN_EXPIERY_TIME']).strftime("%Y-%m-%d %H:%M:%S")
+
+        token = encrypt_fernet_token(token_data, USER_MANAGER_SETTINGS['REFRESH_TOKEN']["ENCRYPTION_KEY"]).decode('utf-8')
+
         return token
     
     
@@ -211,7 +253,18 @@ class UserDetails(models.Model):
         
         except Exception as err:
             return False, user_details
-            
+        
+
+    @staticmethod
+    def validate_refresh_token(token: str):
+        status, user_details = UserDetails.validate_token(token)
+        if not status: return status, user_details
+
+        token_data = UserDetails.decrypt_token(token)
+        if not token_data.get("is_refresh_token", False): return False, user_details
+
+        return status, user_details
+
 
     def update_user(self, update_details: dict):
         """
@@ -241,6 +294,7 @@ class UserDetails(models.Model):
                 return (can_issue_secret_after - date_now).seconds    
             
             return 0
+
 
     def issue_password_change(self, request: Request):
         date_now = timezone.make_aware(datetime.datetime.now(), timezone.get_current_timezone())
@@ -304,6 +358,4 @@ class UserDetails(models.Model):
         user_details_instance.save()
         
         return True, user_details_instance
-
-
 

@@ -3,7 +3,7 @@ from datetime import timedelta
 
 USER_MANAGER_SETTINGS = {
     
-    "ENABLE_COOKIES": False,
+    "ENABLE_COOKIES": [],
 
     "TESTING_MODE": True,
     
@@ -14,7 +14,8 @@ USER_MANAGER_SETTINGS = {
     
     "REDIRECT": {
         "EMAIL_VERIFICATION": "user-verify-email-redirect",
-        "PASSWORD_CHANGE": "user-password-change-redirect"
+        "PASSWORD_CHANGE": "user-password-change-redirect",
+        "GOOGLE": "user-google-redirect"
     },
     
     "EMAIL": {
@@ -36,8 +37,22 @@ USER_MANAGER_SETTINGS = {
     "TOKEN": {
         # update the key on app init through enviornment variables
         "ENCRYPTION_KEY": "O8tY4J4XX9Rdvs2VZMAm8uw5QDXg9rsR0s97VACT_ak=",
-        "TOKEN_EXPIERY_TIME": timedelta(days=7),
-        "TOKEN_LIMIT": 3,
+        "TOKEN_EXPIERY_TIME": timedelta(days=7)
+    },
+
+    "REFRESH_TOKEN": {
+        # update the key on app init through enviornment variables
+        "ENCRYPTION_KEY": "O8tY4J4XX9Rdvs2VZMAm8uw5QDXg9rsR0s97VACT_ak=",
+        "TOKEN_EXPIERY_TIME": timedelta(days=35)
+    },
+
+    "ACCOUNTS": {
+
+        "GOOGLE": {
+            "CLIENT_ID": "",
+            "CLIENT_SECRET": "",
+        }
+
     }
 
     
