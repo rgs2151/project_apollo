@@ -146,8 +146,8 @@ LOGGING = {
     'handlers': {
         'django_info_file': {
             'level': 'INFO',
-            # 'class': 'logging.handlers.TimedRotatingFileHandler',
-            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': BASE_DIR / 'logs/django_info.log',
             'maxBytes': 1024*1024*5,  # 5 MB
             'backupCount': 7,  # Keep the last 7 logs
@@ -156,8 +156,8 @@ LOGGING = {
         },
         'converse_debug_file': {
             'level': 'DEBUG',
-            # 'class': 'logging.handlers.TimedRotatingFileHandler',
-            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': BASE_DIR / 'logs/converse_debug.log',
             'maxBytes': 1024*1024*5,  # 5 MB
             'backupCount': 7,  # Keep the last 7 logs
@@ -166,8 +166,8 @@ LOGGING = {
         },
         'converse_info_file': {
             'level': 'INFO',
-            # 'class': 'logging.handlers.TimedRotatingFileHandler',
-            'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': BASE_DIR / 'logs/converse_info.log',
             'maxBytes': 1024*1024*5,  # 5 MB
             'backupCount': 7,  # Keep the last 7 logs
