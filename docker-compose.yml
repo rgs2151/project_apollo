@@ -5,6 +5,7 @@ services:
 
   nginx:
     build: ./nginx
+    image: nginx:latest
     container_name: nginx
     environment:
       - SERVER_NAME=0.0.0.0
