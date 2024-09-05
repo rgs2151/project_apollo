@@ -1,0 +1,54 @@
+version: '1.0'
+
+
+services:
+
+  dbsql:
+    image: mariadb:latest
+    container_name: mariadb_container
+    restart: always
+    environment:
+      - MYSQL_DATABASE=${SAMPLE_MYSQL_DATABASE}
+      - MYSQL_USER=${SAMPLE_MYSQL_USER}
+      - MYSQL_PASSWORD=${SAMPLE_MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${SAMPLE_MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./creds/sample-mysql.sql:/docker-entrypoint-initdb.d/init-users.sql
+
+
+  dbmongo:
+    image: mongo:latest
+    container_name: mongo_container
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${SAMPLE_MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${SAMPLE_MONGO_PASSWORD}
+    ports:
+      - 27017:27017
+
+  backend:
+    build: .
+    image: sample:latest
+    container_name: sample
+    command: python Apollo/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=Apollo.settings
+      - DB_NAME=${SAMPLE_MYSQL_DATABASE}
+      - DB_USER=${SAMPLE_MYSQL_USER}
+      - DB_PASSWORD=${SAMPLE_MYSQL_PASSWORD}
+      - DB_HOST=dbsql
+      - MONGODB_CONNECTION_STRING=mongodb://${SAMPLE_MONGO_USER}:${SAMPLE_MONGO_PASSWORD}@dbmongo:27017
+      - MARIADB_CONFIG=/usr/bin/mariadb_config
+    depends_on:
+      - dbsql
+      - dbmongo
+
+volumes:
+  mariadb_data:
