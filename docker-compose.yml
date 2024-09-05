@@ -3,6 +3,14 @@ version: '1.0'
 
 services:
 
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    environment:
+      - SERVER_NAME=0.0.0.0
+    restart: always
+    network_mode: host
+
   dbsql:
     image: mariadb:latest
     container_name: mariadb_container
