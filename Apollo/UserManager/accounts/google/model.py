@@ -29,14 +29,18 @@ class Google(models.Model):
 
     TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v2/tokeninfo"
 
-    login_type: LoginType = LoginType.make_sure_has("google", api_version="v2")
-
     user_details = models.OneToOneField(UserDetails, models.DO_NOTHING, primary_key=True)
     google_id = models.CharField(max_length=55, blank=False, null=True)
     refresh_token = models.CharField(max_length=200, blank=False, null=True)
 
     class Meta:
         db_table = 'user_account_google'
+
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.login_type: LoginType = LoginType.make_sure_has("google", api_version="v2")
 
 
     @staticmethod

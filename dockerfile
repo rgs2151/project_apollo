@@ -1,5 +1,5 @@
 
-FROM python:3.10.14-alpine3.20
+FROM python:3.12.5-slim-bullseye
 
 WORKDIR /app
 
@@ -9,9 +9,14 @@ COPY ./turbochat /app
 
 COPY ./utility /app
 
-RUN apk add --no-cache mariadb-connector-c-dev build-base
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libmariadb-dev-compat \
+    libmariadb-dev \
+    build-essential
 
 RUN pip install --no-cache-dir -r requirements.txt
+# CMD ["python"]
 
 EXPOSE 8000
 

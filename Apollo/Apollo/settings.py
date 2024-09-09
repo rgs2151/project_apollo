@@ -4,8 +4,11 @@ import os
 from logging import Filter
 
 
-with open("openai_key", "r") as f:
-    GPT_KEY = f.read().strip()
+__gpt_key_from_env = os.getenv('DB_NAME', None)
+if __gpt_key_from_env: GPT_KEY = __gpt_key_from_env
+else:
+    with open("openai_key", "r") as f:
+        GPT_KEY = f.read().strip()
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,16 +80,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Apollo.wsgi.application'
 
 
-MONGO_INSTANCE = connect(db='Apollo', host="mongodb://localhost:27017/")
+# MONGO_INSTANCE = connect(db='Apollo', host="mongodb://localhost:27017/")
+MONGO_INSTANCE = connect(db='Apollo', host=os.getenv('MONGODB_CONNECTION_STRING'))
 
 
 DATABASES = {
+    
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'user_management',
-        'USER': 'root',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
         'PORT': '3306',
     }
 }
@@ -146,30 +151,45 @@ LOGGING = {
     'handlers': {
         'django_info_file': {
             'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': BASE_DIR / 'logs/django_info.log',
-            'maxBytes': 1024*1024*5,  # 5 MB
+
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'interval': 1,
+            
+            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            # 'maxBytes': 1024*1024*5,  # 5 MB
+            
             'backupCount': 7,  # Keep the last 7 logs
             'formatter': 'verbose',
             'filters': ['thread_filter']
         },
         'converse_debug_file': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': BASE_DIR / 'logs/converse_debug.log',
-            'maxBytes': 1024*1024*5,  # 5 MB
+            
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'interval': 1,
+            
+            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            # 'maxBytes': 1024*1024*5,  # 5 MB
+            
             'backupCount': 7,  # Keep the last 7 logs
             'formatter': 'verbose',
             'filters': ['thread_filter']
         },
         'converse_info_file': {
             'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             'filename': BASE_DIR / 'logs/converse_info.log',
-            'maxBytes': 1024*1024*5,  # 5 MB
+            
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'interval': 1,
+
+            # 'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
+            # 'maxBytes': 1024*1024*5,  # 5 MB
+            
             'backupCount': 7,  # Keep the last 7 logs
             'formatter': 'verbose',
             'filters': ['thread_filter']
