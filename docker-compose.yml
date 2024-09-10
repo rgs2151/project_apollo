@@ -56,6 +56,7 @@ services:
       - DB_USER=${APOLLO_MYSQL_USER}
       - DB_PASSWORD=${APOLLO_MYSQL_PASSWORD}
       - DB_HOST=dbsql
+      - GPT_KEY=${GPT_KEY}
       - MONGODB_CONNECTION_STRING=mongodb://${APOLLO_MONGO_USER}:${APOLLO_MONGO_PASSWORD}@dbmongo:27017
       - MARIADB_CONFIG=/usr/bin/mariadb_config
     depends_on:
