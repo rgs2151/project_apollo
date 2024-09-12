@@ -5,4 +5,7 @@ history
 gpt-tools/*
 node_modules
 *__pycache__
-*logs
+# Ignore everything inside the logs folder
+Apollo/logs/*
+# But do not ignore the logs folder itself
+!Apollo/logs/
