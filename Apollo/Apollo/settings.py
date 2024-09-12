@@ -136,6 +136,9 @@ class ThreadFilter(Filter):
         return True
 
 
+logs_foldir = BASE_DIR / 'logs'
+logs_foldir.mkdir(exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
